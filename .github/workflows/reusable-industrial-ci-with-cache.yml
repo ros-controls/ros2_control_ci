@@ -13,7 +13,7 @@ on:
 
       upstream_workspace:
         description: 'UPSTREAM_WORKSPACE variable for industrial_ci. Usually path to local .repos file.'
-        required: true
+        required: false
         type: string
       target_workspace:
         description: 'TARGET_WORKSPACE variable for industrial_ci. If not provided, defaults to the current repo.'
