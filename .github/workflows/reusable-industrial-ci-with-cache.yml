@@ -18,6 +18,7 @@ on:
       downstream_workspace:
         description: 'DOWNSTREAM_WORKSPACE variable for industrial_ci. If set, downstream packages will be built and tested against this repo'
         required: false
+        default: ''
         type: string
       ros_distro:
         description: 'ROS_DISTRO variable for industrial_ci'
