@@ -15,6 +15,11 @@ on:
         description: 'UPSTREAM_WORKSPACE variable for industrial_ci. Usually path to local .repos file.'
         required: true
         type: string
+      downstream_workspace:
+        description: 'DOWNSTREAM_WORKSPACE variable for industrial_ci. If set, downstream packages will be built and tested against this repo'
+        required: false
+        default: ''
+        type: string
       ros_distro:
         description: 'ROS_DISTRO variable for industrial_ci'
         required: true
@@ -83,6 +88,7 @@ jobs:
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           UPSTREAM_WORKSPACE: ${{ inputs.upstream_workspace }}
+          DOWNSTREAM_WORKSPACE: ${{ inputs.downstream_workspace }}
           ROS_DISTRO: ${{ inputs.ros_distro }}
           ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
