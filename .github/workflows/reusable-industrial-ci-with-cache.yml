@@ -1,5 +1,5 @@
 name: Reusable industrial_ci Workflow with Cache
-# Reusable action to simplify dealing with ROS/ROS2 industrial_ci builds with cache with upstream_workspace
+# Reusable action to simplify dealing with ROS/ROS2 industrial_ci builds with cache
 # author: Denis Štogl <denis@stoglrobotics.de>
 
 on:
