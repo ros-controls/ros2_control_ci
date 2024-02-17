@@ -1,0 +1,19 @@
+name: Reviewer lottery
+# Reusable action to simplify reviewer lottery for ROS 2 control repositories
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+
+on:
+  workflow_call:
+
+jobs:
+  assign_reviewers:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]' && github.actor != 'mergify[bot]'
+    steps:
+    - uses: actions/checkout@v4
+    - run:
+        wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/reviewer-lottery.yml -O .github/reviewer-lottery.yml
+    - uses: uesteibar/reviewer-lottery@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        config: .github/reviewer-lottery.yml
