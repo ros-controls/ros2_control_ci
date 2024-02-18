@@ -11,10 +11,6 @@ on:
         required: false
         default: 'ubuntu-latest'
         type: string
-    secrets:
-      CODECOV_TOKEN:
-        description: 'Repository upload token - get it from codecov.io'
-        required: true
 
 env:
   # this will be src/{repo-owner}/{repo-name}
@@ -56,6 +52,8 @@ jobs:
           file: ros_ws/lcov/total_coverage.info
           flags: unittests
           name: codecov-umbrella
+          # Repository upload token - get it from codecov.io and add it to the repository secrets
+          # from a public fork it is not necessary
           token: ${{ secrets.CODECOV_TOKEN }}
       - uses: actions/upload-artifact@v4.3.1
         with:
