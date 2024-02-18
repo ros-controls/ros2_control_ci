@@ -22,9 +22,6 @@ jobs:
     - uses: ros-tooling/setup-ros@0.7.1
     - name: Install system hooks
       run: sudo apt-get install -qq ros-${{ inputs.ros_distro }}-ament-cppcheck ros-${{ inputs.ros_distro }}-ament-cpplint ros-${{ inputs.ros_distro }}-ament-lint-cmake ros-${{ inputs.ros_distro }}-ament-copyright
-    - uses: actions/setup-python@v5.0.0
-      with:
-        python-version: '3.10'
     - uses: pre-commit/action@v3.0.1
       with:
         extra_args: --all-files --hook-stage manual
