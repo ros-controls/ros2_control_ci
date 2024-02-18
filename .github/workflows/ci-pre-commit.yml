@@ -6,4 +6,4 @@ on:
 
 jobs:
   pre-commit:
-    uses: ./.github/workflows/reusable-ci-format.yml
+    uses: ./.github/workflows/reusable-pre-commit.yml
