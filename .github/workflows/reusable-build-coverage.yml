@@ -31,10 +31,6 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
         with:
           path: ${{ env.path }}
-      - name: Debug output
-        run: |
-          echo "repo_name: ${{ steps.package_list_action.outputs.repo_name }}"
-          echo "package_list: ${{ steps.package_list_action.outputs.package_list }}"
       - uses: ros-tooling/action-ros-ci@0.3.6
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
