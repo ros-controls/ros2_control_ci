@@ -10,7 +10,7 @@ outputs:
     description: "A white-space separated list of packages"
     value: ${{ steps.colcon.outputs.package_list }}
   repo_name:
-    description: "A white-space separated list of packages"
+    description: "The name of the repo, last part of ${{ github.repository }}"
     value: ${{ steps.colcon.outputs.REPO_NAME }}
 
 
