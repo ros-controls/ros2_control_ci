@@ -5,6 +5,11 @@ name: Format
 
 on:
   workflow_call:
+    inputs:
+      ros_distro:
+        description: 'ROS2 distribution name'
+        required: true
+        type: string
 
 jobs:
   pre-commit:
@@ -14,6 +19,9 @@ jobs:
       AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true
     steps:
     - uses: actions/checkout@v4
+    - uses: ros-tooling/setup-ros@0.7.1
+    - name: Install system hooks
+      run: sudo apt-get install -qq ros-${{ inputs.ros_distro }}-ament-cppckeck ros-${{ inputs.ros_distro }}-ament-cpplint ros-${{ inputs.ros_distro }}-ament-lint-cmake ros-${{ inputs.ros_distro }}-ament-copyright
     - uses: actions/setup-python@v5.0.0
       with:
         python-version: '3.10'
