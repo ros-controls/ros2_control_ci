@@ -14,8 +14,6 @@ on:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
-    env:
-      AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true
     steps:
     - uses: actions/checkout@v4
     - uses: ros-tooling/setup-ros@0.7.1
