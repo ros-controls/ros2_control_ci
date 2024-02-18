@@ -33,7 +33,7 @@ jobs:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@v0.7
     - id: package_list_action
-      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/action-ros-lint@v0.1
@@ -51,7 +51,7 @@ jobs:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@v0.7
     - id: package_list_action
-      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/action-ros-lint@v0.1
@@ -72,7 +72,7 @@ jobs:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@0.7.1
     - id: package_list_action
-      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+      uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/action-ros-lint@v0.1

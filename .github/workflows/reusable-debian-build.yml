@@ -58,7 +58,7 @@ jobs:
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
           fi
       - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
       - name: Build workspace

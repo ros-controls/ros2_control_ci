@@ -42,7 +42,7 @@ jobs:
           ref: ${{ inputs.ref }}
           path: ${{ env.path }}
       - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
       - uses: ros-tooling/action-ros-ci@0.3.6
