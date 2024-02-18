@@ -25,6 +25,8 @@ jobs:
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
       - uses: actions/checkout@v4
+        with:
+          path: ${{ env.path }}
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
         with:
