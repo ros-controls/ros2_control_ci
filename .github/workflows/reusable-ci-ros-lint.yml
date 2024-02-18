@@ -32,7 +32,7 @@ jobs:
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@v0.7
-    - name: Set package list
+    - id: package_list_action
       uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
       with:
         path: ${{ env.path }}
@@ -40,7 +40,7 @@ jobs:
       with:
         distribution: ${{ inputs.ros_distro }}
         linter: ${{ matrix.linter }}
-        package-name: ${{ env.package_list }}
+        package-name: ${{ steps.package_list_action.outputs.package_list }}
 
   ament_lint_100:
     name: ament_cpplint
@@ -50,7 +50,7 @@ jobs:
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@v0.7
-    - name: Set package list
+    - id: package_list_action
       uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
       with:
         path: ${{ env.path }}
@@ -59,7 +59,7 @@ jobs:
         distribution: ${{ inputs.ros_distro }}
         linter: cpplint
         arguments: "--linelength=100 --filter=-whitespace/newline"
-        package-name: ${{ env.package_list }}
+        package-name: ${{ steps.package_list_action.outputs.package_list }}
 
   ament_cppcheck:
     name: ament_cppcheck
@@ -71,7 +71,7 @@ jobs:
       with:
         path: ${{ env.path }}
     - uses: ros-tooling/setup-ros@0.7.1
-    - name: Set package list
+    - id: package_list_action
       uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
       with:
         path: ${{ env.path }}
@@ -80,4 +80,4 @@ jobs:
         distribution: ${{ inputs.ros_distro }}
         linter: cppcheck
         arguments: "--language=c++"
-        package-name: ${{ env.package_list }}
+        package-name: ${{ steps.package_list_action.outputs.package_list }}

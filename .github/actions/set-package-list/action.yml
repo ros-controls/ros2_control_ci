@@ -1,13 +1,19 @@
-name: 'Set package list'
-description: 'Set the package_list environment variable'
+name: 'Get package list'
+# has to be run after ROS 2 setup, i.e., by ros-tooling/setup-ros
+description: 'Get a list of packages in the given path'
 inputs:
   path:
     description: 'Path to the packages'
     required: true
-# has to be run after ROS 2 setup, i.e., by ros-tooling/setup-ros
+outputs:
+  package_list:
+    description: "A white-space separated list of packages"
+    value: ${{ steps.colcon.outputs.package_list }}
+
 runs:
   using: 'composite'
   steps:
-    - run: |
-        echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_ENV
+    - id: colcon
+      run: |
+        echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
       shell: bash
