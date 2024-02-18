@@ -18,11 +18,16 @@ on:
         default: 'master'
         required: false
         type: string
+      os_name:
+        description: 'On which OS to run the linter'
+        required: false
+        default: 'ubuntu-latest'
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
-    name: ${{ inputs.ros_distro }} ubuntu-22.04
-    runs-on: ubuntu-22.04
+    name: ${{ inputs.ros_distro }} ${{ inputs.os_name }}
+    runs-on: ${{ inputs.os_name }}
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
@@ -36,22 +41,20 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.path }}
-      - name: Get list of packages
-        # we need both paths, there is no wildcard/glob for packages defined in the root folder and subfolders at the same time
-        run: |
-          echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_ENV
-          echo "package_list=$(colcon list --paths ${{ env.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ env.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_ENV
-          echo "repo ${{ env.REPO_NAME}} has packages: ${{ env.package_list }}"
+      - id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@ci_lint
+        with:
+          path: ${{ env.path }}
       - uses: ros-tooling/action-ros-ci@0.3.6
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
-          package-name: ${{ env.package_list }}
+          package-name: ${{ steps.package_list_action.outputs.package_list }}
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
-            ${{ env.path }}/${{ env.REPO_NAME}}.${{ inputs.ros_distro }}.repos
+            ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - uses: actions/upload-artifact@v4.3.1
         with:
-          name: colcon-logs-ubuntu-22.04-${{ inputs.ros_distro }}
+          name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
           path: ros_ws/log

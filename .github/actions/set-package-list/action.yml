@@ -9,6 +9,10 @@ outputs:
   package_list:
     description: "A white-space separated list of packages"
     value: ${{ steps.colcon.outputs.package_list }}
+  repo_name:
+    description: "A white-space separated list of packages"
+    value: ${{ steps.colcon.outputs.REPO_NAME }}
+
 
 runs:
   using: 'composite'
@@ -16,4 +20,5 @@ runs:
     - id: colcon
       run: |
         echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
       shell: bash
