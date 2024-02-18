@@ -13,7 +13,6 @@ on:
 
 jobs:
   pre-commit:
-    name: Format
     runs-on: ubuntu-latest
     env:
       AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true
