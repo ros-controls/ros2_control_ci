@@ -63,22 +63,22 @@ jobs:
           fi
           rosdep update
           rosdep install -iyr --from-path src || true
-      - name: Get list of packages
-        # we need both paths, there is no wildcard/glob for packages defined in the root folder and subfolders at the same time
-        run: |
-          echo "package_list=$(colcon list --paths ${{ env.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ env.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_ENV
+      - id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+        with:
+          path: ${{ env.path }}
       - name: Build workspace
         shell: bash
         # source also underlay workspace with generate_parameter_library on rhel9
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon build --packages-up-to ${{ env.package_list }} --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
       - name: Test workspace
         shell: bash
         continue-on-error: true
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon test --packages-select ${{ env.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose

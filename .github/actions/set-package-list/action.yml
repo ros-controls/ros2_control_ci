@@ -1,0 +1,30 @@
+name: 'Get package list'
+# has to be run after ROS 2 setup, i.e., by ros-tooling/setup-ros
+description: 'Get a list of packages in the given path'
+inputs:
+  path:
+    description: 'Path to the repository after checkout'
+    required: true
+outputs:
+  package_list:
+    description: "A white-space separated list of packages"
+    value: ${{ steps.colcon.outputs.package_list }}
+  repo_name:
+    description: "The name of the repo, last part of github.repository"
+    value: ${{ steps.split_repo.outputs.repo_name }}
+
+
+runs:
+  using: 'composite'
+  steps:
+    - id: colcon
+      run: |
+        echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+      shell: bash
+    - id: split_repo
+      run: |
+        echo "repo_name=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
+      shell: bash
+    - run: |
+        echo "repo ${{ steps.split_repo.outputs.repo_name }} contains the packages: ${{ steps.colcon.outputs.package_list }}"
+      shell: bash
