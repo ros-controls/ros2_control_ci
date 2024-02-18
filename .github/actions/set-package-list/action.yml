@@ -3,7 +3,7 @@ name: 'Get package list'
 description: 'Get a list of packages in the given path'
 inputs:
   path:
-    description: 'Path to the packages'
+    description: 'Path to the repository after checkout'
     required: true
 outputs:
   package_list:
@@ -11,7 +11,7 @@ outputs:
     value: ${{ steps.colcon.outputs.package_list }}
   repo_name:
     description: "The name of the repo, last part of github.repository"
-    value: ${{ steps.colcon.outputs.REPO_NAME }}
+    value: ${{ steps.split_repo.outputs.repo_name }}
 
 
 runs:
@@ -20,5 +20,11 @@ runs:
     - id: colcon
       run: |
         echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
-        echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
+      shell: bash
+    - id: split_repo
+      run: |
+        echo "repo_name=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
+      shell: bash
+    - run: |
+        echo "repo ${{ steps.split_repo.outputs.repo_name }} contains the packages: ${{ steps.colcon.outputs.package_list }}"
       shell: bash
