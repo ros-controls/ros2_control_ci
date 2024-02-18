@@ -11,6 +11,10 @@ on:
         required: false
         default: 'ubuntu-latest'
         type: string
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Repository upload token - get it from codecov.io'
+        required: true
 
 env:
   # this will be src/{repo-owner}/{repo-name}
