@@ -1,4 +1,4 @@
-name: Iron Binary Build - main
+name: Iron Stack Build
 # author: Denis Štogl <denis@stoglrobotics.de>
 # description: 'Build & test all dependencies from released (binary) packages.'
 
@@ -9,7 +9,7 @@ on:
     - cron: '03 1 * * *'
 
 jobs:
-  binary:
+  stack-build:
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false
