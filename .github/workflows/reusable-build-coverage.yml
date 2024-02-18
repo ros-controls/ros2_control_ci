@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       os_name:
-        description: 'On which OS to run the linter'
+        description: 'On which OS to run the workflow, e.g. ubuntu-22.04'
         required: false
         default: 'ubuntu-latest'
         type: string
