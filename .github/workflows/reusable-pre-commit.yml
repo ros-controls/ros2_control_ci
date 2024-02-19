@@ -17,18 +17,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ros-tooling/setup-ros@0.7.1
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}
     - name: Install system hooks
       run: |
         sudo apt-get install -qq ros-${{ inputs.ros_distro }}-ament-cppcheck ros-${{ inputs.ros_distro }}-ament-cpplint ros-${{ inputs.ros_distro }}-ament-lint-cmake ros-${{ inputs.ros_distro }}-ament-copyright
         source /opt/ros/${{ inputs.ros_distro }}/setup.bash
-        echo ROS_PATH=$PATH >> $GITHUB_ENV
-    - env:
-        PATH: ${{ env.ROS_PATH }}
-      run: |
-        echo $PATH
-        python --version
-    - uses: pre-commit/action@v3.0.1
-      env:
-        PATH: ${{ env.ROS_PATH }}
-      with:
-        extra_args: --all-files --hook-stage manual
+        python -m pip install pre-commit
+        pre-commit run --show-diff-on-failure --color=always --all-files --hook-stage manual
