@@ -1,0 +1,49 @@
+name: Update pre-commit
+# Update pre-commit config and create PR if changes are detected
+# author: Christoph Fröhlich <christoph.froehlich@ait.ac.at>
+
+on:
+  workflow_call:
+
+jobs:
+  auto_update_and_create_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pre-commit
+        run: |
+          pip install pre-commit
+
+      - name: Auto-update with pre-commit
+        run: |
+          pre-commit autoupdate || true  # Ignoring errors
+
+      - name: Check for changes
+        id: git_status
+        run: |
+          git diff --quiet && echo "::set-output name=changed::false" || echo "::set-output name=changed::true"
+
+      - name: There are changes
+        if: steps.git_status.outputs.changed == 'true'
+        run: |
+          echo "Files have changed"
+          git diff --exit-code || true
+
+      - name: No changes!
+        if: steps.git_status.outputs.changed == 'false'
+        run: |
+          echo "No changes detected"
+
+      - name: Create Pull Request
+        if: steps.git_status.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: auto-update
+          commit-message: Auto-update with pre-commit
+          title: Bump version of pre-commit hooks
+          body: This pull request contains auto-updated files of pre-commit config.
+          delete-branch: true
