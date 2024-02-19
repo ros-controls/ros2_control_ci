@@ -1,7 +1,6 @@
-name: Format
-# This is a format job. Pre-commit has a first-party GitHub action, so we use
-# that: https://github.com/pre-commit/action
+name: Pre-commit
 # The pre-commit configuration is in .pre-commit-config.yaml
+# we don't use the pre-commit action because it doesn't support local hooks in its virtual environment
 
 on:
   workflow_call:
@@ -20,8 +19,8 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: ~/.cache/pre-commit
-        key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}
-    - name: Install system hooks
+        key: pre-commit-3|${{ inputs.ros_distro }}|${{ hashFiles('.pre-commit-config.yaml') }}
+    - name: Install system hooks and run pre-commit
       run: |
         sudo apt-get install -qq ros-${{ inputs.ros_distro }}-ament-cppcheck ros-${{ inputs.ros_distro }}-ament-cpplint ros-${{ inputs.ros_distro }}-ament-lint-cmake ros-${{ inputs.ros_distro }}-ament-copyright
         source /opt/ros/${{ inputs.ros_distro }}/setup.bash
