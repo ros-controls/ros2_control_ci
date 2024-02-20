@@ -9,10 +9,15 @@ on:
         description: 'ROS2 distribution name'
         required: true
         type: string
+      os_name:
+        description: 'On which OS to run the linter'
+        required: false
+        default: 'ubuntu-latest'
+        type: string
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: os_name
     steps:
     - uses: actions/checkout@v4
     - uses: ros-tooling/setup-ros@0.7.1
