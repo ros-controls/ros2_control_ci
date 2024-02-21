@@ -4,7 +4,7 @@
 
 This repository holds reusable workflows for CI of the ros2_control framework.
 
-It also build the full ros2_control stack once per day.
+It also builds the full ros2_control stack once per day.
 
 [![Rolling Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml)
 [![Iron Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/iron-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/iron-binary-build.yml)
