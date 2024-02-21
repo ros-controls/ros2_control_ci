@@ -1,0 +1,58 @@
+name: Reusable Coverage Build
+on:
+  workflow_call:
+    inputs:
+      ros_distro:
+        description: 'ROS2 distribution name'
+        required: true
+        type: string
+      os_name:
+        description: 'On which OS to run the workflow, e.g. ubuntu-22.04'
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+
+env:
+  # this will be src/{repo-owner}/{repo-name}
+  path: src/${{ github.repository }}
+
+jobs:
+  coverage:
+    name: coverage build ${{ inputs.ros_distro }}
+    runs-on: ${{ inputs.os_name }}
+    steps:
+      - uses: ros-tooling/setup-ros@0.7.1
+        with:
+          required-ros-distributions: ${{ inputs.ros_distro }}
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.path }}
+      - id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+        with:
+          path: ${{ env.path }}
+      - uses: ros-tooling/action-ros-ci@0.3.6
+        with:
+          target-ros2-distro: ${{ inputs.ros_distro }}
+          import-token: ${{ secrets.GITHUB_TOKEN }}
+          # build all packages listed here
+          package-name: ${{ steps.package_list_action.outputs.package_list }}
+
+          vcs-repo-file-url: |
+            https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos?token=${{ secrets.GITHUB_TOKEN }}
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - uses: codecov/codecov-action@v4.0.1
+        with:
+          file: ros_ws/lcov/total_coverage.info
+          flags: unittests
+          name: codecov-umbrella
+      - uses: actions/upload-artifact@v4.3.1
+        with:
+          name: colcon-logs-coverage-${{ inputs.ros_distro }}
+          path: ros_ws/log
