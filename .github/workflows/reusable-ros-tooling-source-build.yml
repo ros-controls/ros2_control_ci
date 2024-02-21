@@ -31,8 +31,6 @@ jobs:
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
-    strategy:
-      fail-fast: false
     steps:
       - uses: ros-tooling/setup-ros@0.7.1
         with:
