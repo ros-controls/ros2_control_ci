@@ -50,6 +50,9 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: Workaround for codecov/feedback#263
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: codecov/codecov-action@v4.0.1
         with:
           fail_ci_if_error: true
