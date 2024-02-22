@@ -57,7 +57,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-          root_dir: ${{ env.path }}
+          working-directory: ${{ env.path }}
 
       - uses: actions/upload-artifact@v4.3.1
         with:
