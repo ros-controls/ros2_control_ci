@@ -11,6 +11,9 @@ on:
         required: false
         default: 'ubuntu-latest'
         type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 
 env:
   # this will be src/{repo-owner}/{repo-name}
