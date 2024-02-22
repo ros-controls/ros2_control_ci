@@ -61,6 +61,7 @@ jobs:
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
           working-directory: ${{ env.path }}
+          verbose: true
 
       - uses: actions/upload-artifact@v4.3.1
         with:
