@@ -53,7 +53,7 @@ jobs:
       - name: Workaround for codecov/feedback#263
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: codecov/codecov-action@v4.0.1
+      - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           file: ros_ws/lcov/total_coverage.info
