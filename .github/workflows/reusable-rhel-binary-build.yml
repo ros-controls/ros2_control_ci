@@ -61,7 +61,8 @@ jobs:
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
           fi
-          rosdep update
+          dnf check-update
+          rosdep update --rosdistro ${{ inputs.ros_distro }}
           rosdep install -iyr --from-path src || true
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
