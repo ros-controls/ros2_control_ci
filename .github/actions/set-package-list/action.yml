@@ -4,7 +4,6 @@ description: 'Get a list of packages in the given path'
 inputs:
   path:
     description: 'Path to the repository after checkout'
-    required: true
 outputs:
   package_list:
     description: "A white-space separated list of packages"
@@ -19,7 +18,7 @@ runs:
   steps:
     - id: colcon
       run: |
-        ls ${{ inputs.path }}
+        ls -lash
         echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
       shell: bash
     - id: split_repo
