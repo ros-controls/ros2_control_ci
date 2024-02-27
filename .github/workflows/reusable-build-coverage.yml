@@ -26,7 +26,7 @@ jobs:
           required-ros-distributions: ${{ inputs.ros_distro }}
       - uses: actions/checkout@v4
       - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@lcov_paths
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       - uses: ros-tooling/action-ros-ci@0.3.6
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
