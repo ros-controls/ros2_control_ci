@@ -12,10 +12,6 @@ on:
         default: 'ubuntu-latest'
         type: string
 
-env:
-  # this will be src/{repo-owner}/{repo-name}
-  path: src/${{ github.repository }}
-
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
