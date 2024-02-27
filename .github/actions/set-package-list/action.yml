@@ -19,6 +19,7 @@ runs:
   steps:
     - id: colcon
       run: |
+        ls ${{ inputs.path }}
         echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
       shell: bash
     - id: split_repo
