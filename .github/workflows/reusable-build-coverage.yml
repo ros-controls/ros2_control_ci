@@ -15,10 +15,6 @@ on:
       CODECOV_TOKEN:
         required: true
 
-env:
-  # this will be src/{repo-owner}/{repo-name}
-  path: src/${{ github.repository }}
-
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
@@ -28,12 +24,8 @@ jobs:
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
       - uses: actions/checkout@v4
-        with:
-          path: ${{ env.path }}
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
-        with:
-          path: ${{ env.path }}
       - uses: ros-tooling/action-ros-ci@0.3.6
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
@@ -50,9 +42,6 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      - name: Workaround for codecov/feedback#263
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
@@ -60,7 +49,6 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: ${{ env.path }}
           verbose: true
 
       - uses: actions/upload-artifact@v4.3.1
