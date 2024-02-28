@@ -12,10 +12,6 @@ on:
         default: 'ubuntu-latest'
         type: string
 
-env:
-  # this will be src/{repo-owner}/{repo-name}
-  path: src/${{ github.repository }}
-
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
@@ -25,12 +21,8 @@ jobs:
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
       - uses: actions/checkout@v4
-        with:
-          path: ${{ env.path }}
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
-        with:
-          path: ${{ env.path }}
       - uses: ros-tooling/action-ros-ci@0.3.6
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
