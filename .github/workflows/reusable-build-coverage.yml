@@ -11,9 +11,6 @@ on:
         required: false
         default: 'ubuntu-latest'
         type: string
-    secrets:
-      CODECOV_TOKEN:
-        required: true
 
 jobs:
   coverage:
