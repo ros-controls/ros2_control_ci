@@ -17,8 +17,14 @@ runs:
   using: 'composite'
   steps:
     - id: colcon
+      # if a path is given, list the packages in the given path and its subdirectories from the path
+      # if no path is given, list all packages in the workspace
       run: |
-        echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        if [[ -n "${{ inputs.path }}" ]]; then
+          echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        else
+          echo "package_list=$(colcon list --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+        fi
       shell: bash
     - id: split_repo
       run: |
