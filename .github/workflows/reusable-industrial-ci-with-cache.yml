@@ -105,7 +105,7 @@ jobs:
         run:
           wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O .github/issue_template_failed_ci.md
       - uses: JasonEtco/create-an-issue@v2
-        if: ${{ always() && (steps.ici.outputs.build_target_workspace != '0' || steps.ici.outputs.target_test_results == '1' ) && github.event_name == 'schedule' }}
+        if: ${{ always() && (steps.ici.outputs.build_target_workspace != '0' || steps.ici.outputs.target_test_results != '0' ) && github.event_name == 'schedule' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION_NAME: ${{ inputs.ros_distro }}/${{ inputs.ros_repo }}
@@ -115,7 +115,7 @@ jobs:
           update_existing: true
           filename: .github/issue_template_failed_ci.md
       - uses: JasonEtco/create-an-issue@v2
-        if: ${{ always() && (steps.ici.outputs.build_downstream_workspace != '0' || steps.ici.outputs.downstream_test_results == '1' ) && github.event_name == 'schedule' }}
+        if: ${{ always() && (steps.ici.outputs.build_downstream_workspace != '0' || steps.ici.outputs.downstream_test_results != '0' ) && github.event_name == 'schedule' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION_NAME: ${{ inputs.ros_distro }}/${{ inputs.ros_repo }}
