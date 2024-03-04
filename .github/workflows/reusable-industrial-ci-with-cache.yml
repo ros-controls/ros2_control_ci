@@ -109,7 +109,10 @@ jobs:
         run:
           wget https://raw.githubusercontent.com/fmauch/ros2_control_ci/parse_ici_output/.github/issue_template_failed_ci_downstream.md -O .github/issue_template_failed_ci_downstream.md
       - uses: JasonEtco/create-an-issue@v2
-        if: ${{ always() && (steps.ici.outputs.build_target_workspace != '0' || steps.ici.outputs.target_test_results != '0' )}}
+        if: |
+          ${{ always() &&
+          ((steps.ici.outputs.build_target_workspace != '0' && steps.ici.outputs.build_target_workspace != '') ||
+           (steps.ici.outputs.target_test_results != '0' && steps.ici.outputs.target_test_results != '') )}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION_NAME: ${{ inputs.ros_distro }}/${{ inputs.ros_repo }}
@@ -119,7 +122,10 @@ jobs:
           update_existing: true
           filename: .github/issue_template_failed_ci.md
       - uses: JasonEtco/create-an-issue@v2
-        if: ${{ always() && (steps.ici.outputs.build_downstream_workspace != '0' || steps.ici.outputs.downstream_test_results != '0' )}}
+        if: |
+          ${{ always() &&
+          ((steps.ici.outputs.build_downstream_workspace != '0' && steps.ici.outputs.build_downstream_workspace != '') ||
+           (steps.ici.outputs.downstream_test_results != '0' && steps.ici.outputs.downstream_test_results != ''))}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION_NAME: ${{ inputs.ros_distro }}/${{ inputs.ros_repo }}
