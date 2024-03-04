@@ -109,6 +109,8 @@ jobs:
         run:
           wget https://raw.githubusercontent.com/fmauch/ros2_control_ci/parse_ici_output/.github/issue_template_failed_ci_downstream.md -O .github/issue_template_failed_ci_downstream.md
       - uses: JasonEtco/create-an-issue@v2
+        # `make` and so `colcon build` returns 2 on errors, while `colcon test-result` returns 1 on
+        # when any test failed.
         if: ${{ always() && (steps.ici.outputs.build_target_workspace == '2' || steps.ici.outputs.target_test_results == '1')}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
