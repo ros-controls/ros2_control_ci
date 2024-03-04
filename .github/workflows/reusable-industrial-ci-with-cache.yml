@@ -107,7 +107,7 @@ jobs:
       - name: Download issue template for downstream failure  # Has to be a local file
         if: ${{ always() && steps.ici.outcome == 'failure'}}
         run:
-          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci_downstream.md -O .github/issue_template_failed_ci_downstream.md
+          wget https://raw.githubusercontent.com/fmauch/ros2_control_ci/parse_ici_output/.github/issue_template_failed_ci_downstream.md -O .github/issue_template_failed_ci_downstream.md
       - uses: JasonEtco/create-an-issue@v2
         if: ${{ always() && (steps.ici.outputs.build_target_workspace != '0' || steps.ici.outputs.target_test_results != '0' )}}
         env:
