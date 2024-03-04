@@ -100,10 +100,14 @@ jobs:
           OS_CODE_NAME: ${{ inputs.os_code_name }}
           BEFORE_INSTALL_UPSTREAM_DEPENDENCIES: ${{ inputs.before_install_upstream_dependencies }}
         id: ici
-      - name: Download issue template # Has to be a local file
+      - name: Download issue template  for target failure  # Has to be a local file
         if: ${{ always() && steps.ici.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
           wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O .github/issue_template_failed_ci.md
+      - name: Download issue template for downstream failure  # Has to be a local file
+        if: ${{ always() && steps.ici.outcome == 'failure' && github.event_name == 'schedule' }}
+        run:
+          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci_downstream.md -O .github/issue_template_failed_ci_downstream.md
       - uses: JasonEtco/create-an-issue@v2
         if: ${{ always() && (steps.ici.outputs.build_target_workspace != '0' || steps.ici.outputs.target_test_results != '0' ) && github.event_name == 'schedule' }}
         env:
