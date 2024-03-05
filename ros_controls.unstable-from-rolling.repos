@@ -9,8 +9,8 @@ repositories:
     version: master
   ros-controls/ros2_control:
     type: git
-    url: https://github.com/saikishor/ros2_control.git
-    version: fix/rclpy_imports_for_older_distros
+    url: https://github.com/ros-controls/ros2_control.git
+    version: master
   ros-controls/ros2_controllers:
     type: git
     url: https://github.com/ros-controls/ros2_controllers.git
