@@ -53,5 +53,6 @@ jobs:
           branch: auto-update-${{ github.event.inputs.ref_for_scheduled_build }}
           commit-message: Bump version of pre-commit hooks
           title: Bump version of pre-commit hooks
-          body: This pull request contains auto-updated files of the pre-commit config.
+          body: This pull request contains auto-updated files of the pre-commit config. @ros-controls/ros2-maintainers please run the pre-commit workflow manually on the branch `auto-update-${{ github.event.inputs.ref_for_scheduled_build }}` before merging.
           delete-branch: true
+          draft: true
