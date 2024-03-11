@@ -55,4 +55,3 @@ jobs:
           title: Bump version of pre-commit hooks
           body: This pull request contains auto-updated files of the pre-commit config.
           delete-branch: true
-          draft: true
