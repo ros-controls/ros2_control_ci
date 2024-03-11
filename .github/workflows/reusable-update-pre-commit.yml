@@ -4,6 +4,12 @@ name: Update pre-commit
 
 on:
   workflow_call:
+    inputs:
+      ref_for_scheduled_build:
+        description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   auto_update_and_create_pr:
@@ -12,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref_for_scheduled_build }}
 
       - name: Install pre-commit
         run: |
@@ -42,8 +50,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: auto-update
-          commit-message: Auto-update with pre-commit
+          branch: auto-update-${{ github.event.inputs.ref_for_scheduled_build }}
+          commit-message: Bump version of pre-commit hooks
           title: Bump version of pre-commit hooks
-          body: This pull request contains auto-updated files of pre-commit config.
+          body: This pull request contains auto-updated files of the pre-commit config.
           delete-branch: true
