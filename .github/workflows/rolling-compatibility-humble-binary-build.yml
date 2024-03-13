@@ -10,7 +10,7 @@ on:
     - cron: '03 1 * * *'
 
 jobs:
-  stack-build:
+  stack-build-on-humble:
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false
