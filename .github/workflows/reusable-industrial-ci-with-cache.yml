@@ -44,7 +44,11 @@ on:
         default: ''
         required: false
         type: string
-
+      rosdep_skip_keys:
+        description: 'ROSDEP_SKIP_KEYS variable for industrial_ci'
+        default: ''
+        required: false
+        type: string
       ccache_dir:
         description: 'Local path to store cache (from "github.workspace"). For standard industrial_ci configuration do not have to be changed'
         default: '.ccache'
@@ -99,6 +103,7 @@ jobs:
           ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
           BEFORE_INSTALL_UPSTREAM_DEPENDENCIES: ${{ inputs.before_install_upstream_dependencies }}
+          ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
         id: ici
       - name: Download issue template  for target failure  # Has to be a local file
         if: ${{ always() && steps.ici.outcome == 'failure' && github.event_name == 'schedule' }}
