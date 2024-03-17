@@ -1,4 +1,4 @@
-name: Pre-commit
+name: Reusable pre-commit
 # The pre-commit configuration is in .pre-commit-config.yaml
 # we don't use the pre-commit action because it doesn't support local hooks in its virtual environment
 

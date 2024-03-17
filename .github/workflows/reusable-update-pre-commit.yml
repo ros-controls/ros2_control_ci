@@ -1,4 +1,4 @@
-name: Update pre-commit
+name: Reusable Update pre-commit
 # Update pre-commit config and create PR if changes are detected
 # author: Christoph Fröhlich <christoph.froehlich@ait.ac.at>
 

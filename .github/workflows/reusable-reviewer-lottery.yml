@@ -1,4 +1,4 @@
-name: Reviewer lottery
+name: Reusable Reviewer Lottery
 # Reusable action to simplify reviewer lottery for ROS 2 control repositories
 # author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
 
