@@ -22,8 +22,10 @@ runs:
       run: |
         if [[ -n "${{ inputs.path }}" ]]; then
           echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          echo "package_path_list=$(colcon list --paths ${{ inputs.path }} --paths-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --paths-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
         else
           echo "package_list=$(colcon list --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          echo "package_list=$(colcon list --paths-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
         fi
       shell: bash
     - id: split_repo
