@@ -31,5 +31,8 @@ jobs:
         run: |
           for path in ${{ steps.package_list_action.outputs.package_path_list }}
           do
-            TZ=UTC /root/.local/bin/rosdoc2 build --package-path $path
+            # for nektos/act: set timezone manually
+            # TODO(anyone): fix pyenv issue
+            # TZ=UTC /root/.local/bin/rosdoc2 build --package-path $path
+            rosdoc2 build --package-path $path
           done
