@@ -29,4 +29,7 @@ jobs:
           path: ${{ env.path }}
       - name: run rosdoc2
         run: |
-          TZ=UTC /root/.local/bin/rosdoc2 build --package-path ${{ steps.package_list_action.outputs.package_path_list }}
+          for path in ${{ steps.package_list_action.outputs.package_path_list }}
+          do
+            TZ=UTC /root/.local/bin/rosdoc2 build --package-path $path
+          done
