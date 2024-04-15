@@ -43,7 +43,7 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
-      - uses: ros-tooling/action-ros-ci@0.3.6
+      - uses: ros-tooling/action-ros-ci@0.3.7
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
