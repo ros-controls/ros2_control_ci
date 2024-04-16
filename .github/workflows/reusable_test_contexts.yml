@@ -1,0 +1,12 @@
+name: Reusable test contexts
+
+on:
+  workflow_call:
+
+jobs:
+  reusable-test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Reusable Github.job ${{ github.job }}"
+          echo "Reusable Github.workflow ${{ github.workflow }}"
