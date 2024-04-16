@@ -16,9 +16,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt install -y python3-pip git doxygen graphviz
+          python3 -m venv .venv
+          source .venv/bin/activate
           git clone https://github.com/ros-infrastructure/rosdoc2.git
-          cd rosdoc2
-          pip install --user --upgrade .
+          pip install --upgrade rosdoc2/
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -29,10 +30,8 @@ jobs:
           path: ${{ env.path }}
       - name: run rosdoc2
         run: |
+          source .venv/bin/activate
           for path in ${{ steps.package_list_action.outputs.package_path_list }}
           do
-            # for nektos/act: set timezone manually
-            # TODO(anyone): fix pyenv issue
-            # TZ=UTC /root/.local/bin/rosdoc2 build --package-path $path
             rosdoc2 build --package-path $path
           done
