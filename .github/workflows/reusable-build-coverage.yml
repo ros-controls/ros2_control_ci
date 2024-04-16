@@ -19,12 +19,15 @@ jobs:
     steps:
       - uses: ros-tooling/setup-ros@0.7.1
       - name: Temporary fix for rolling by setting the ROSDISTRO_INDEX_URL
+        # see https://docs.ros.org/en/rolling/How-To-Guides/Using-Custom-Rosdistro.html
+        # TODO(anyone): remove/deactivate after rolling is fixed on noble
         run: |
           if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
             sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
             echo "ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml" >> $GITHUB_ENV
           fi
-      - name: Test some rosdep commands
+      - name: Test some rosdep commands to see if the step above worked
+        # TODO(anyone): remove/deactivate after rolling is fixed on noble
         run: |
           rosdep update
           echo "ROS_DISTRO: $ROS_DISTRO"
