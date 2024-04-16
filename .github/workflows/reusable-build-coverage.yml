@@ -25,8 +25,11 @@ jobs:
           if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
             sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
             export ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml
-            rosdep update
           fi
+      - name: Test some rosdep commands
+        run: |
+          rosdep update
+          rosdep resolve test_msgs std_msgs
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
