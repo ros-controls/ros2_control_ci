@@ -18,8 +18,21 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     steps:
       - uses: ros-tooling/setup-ros@0.7.1
-        with:
-          required-ros-distributions: ${{ inputs.ros_distro }}
+      - name: Temporary fix for rolling by setting the ROSDISTRO_INDEX_URL
+        # see https://docs.ros.org/en/rolling/How-To-Guides/Using-Custom-Rosdistro.html
+        # TODO(anyone): remove/deactivate after rolling is fixed on noble
+        run: |
+          if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
+            sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
+            echo "ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml" >> $GITHUB_ENV
+          fi
+      - name: Test some rosdep commands to see if the step above worked
+        # TODO(anyone): remove/deactivate after rolling is fixed on noble
+        run: |
+          rosdep update
+          echo "ROS_DISTRO: $ROS_DISTRO"
+          rosdep resolve test_msgs std_msgs || true
+          rosdep resolve test_msgs std_msgs --os=ubuntu:jammy --rosdistro=rolling
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
@@ -29,7 +42,6 @@ jobs:
           import-token: ${{ secrets.GITHUB_TOKEN }}
           # build all packages listed here
           package-name: ${{ steps.package_list_action.outputs.package_list }}
-
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos?token=${{ secrets.GITHUB_TOKEN }}
           colcon-defaults: |
