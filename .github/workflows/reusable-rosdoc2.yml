@@ -1,0 +1,37 @@
+name: rosdoc2
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+
+on:
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # this will be src/{repo-owner}/{repo-name}
+      path: src/${{ github.repository }}
+    steps:
+      - uses: ros-tooling/setup-ros@0.7.1
+      - name: Install rosdoc2 and deps
+        run: |
+          sudo apt-get update
+          sudo apt install -y python3-pip git doxygen graphviz
+          python3 -m venv .venv
+          source .venv/bin/activate
+          git clone https://github.com/ros-infrastructure/rosdoc2.git
+          pip install --upgrade rosdoc2/
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: ${{ env.path }}
+      - id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+        with:
+          path: ${{ env.path }}
+      - name: run rosdoc2
+        run: |
+          source .venv/bin/activate
+          for path in ${{ steps.package_list_action.outputs.package_path_list }}
+          do
+            rosdoc2 build --package-path $path
+          done
