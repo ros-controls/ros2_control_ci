@@ -7,18 +7,70 @@ on:
         required: true
         type: string
       os_name:
-        description: 'On which OS to run the workflow, e.g. ubuntu-22.04'
+        description: 'On which runner-OS to run the workflow, e.g. ubuntu-22.04'
         required: false
         default: 'ubuntu-latest'
+        type: string
+      container:
+        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        required: false
+        default: ''
         type: string
 
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
     runs-on: ${{ inputs.os_name }}
+    container: ${{ inputs.container }}
     steps:
+      - name: "Determine prerequisites"
+        id: prereq
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y
+          apt install -y sudo apt-utils
+          echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          echo "need_python=$(command -v python3 >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          echo "need_rosdep=$(command -v rosdep >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          echo "need_ros=$(if [ -d "/opt/ros/${{ inputs.ros_distro }}" ]; then echo 0; else echo 1; fi)" >> $GITHUB_OUTPUT
+
+      # needed for github actions, and only if a bare ubuntu image is used
+      # Consider switching to https://github.com/actions/setup-node when it works
+      # https://github.com/nektos/act/issues/973
+      # - uses: actions/setup-node@v4
+      #   if: ${{ steps.prereq.outputs.need_node == '1' }}
+      #   with:
+      #     node-version: 16
+      - name: Install node
+        if: ${{ steps.prereq.outputs.need_node == '1' }}
+        run: |
+          apt install -y curl
+          curl -sS https://webi.sh/node | sh
+          echo ~/.local/opt/node/bin >> $GITHUB_PATH
+
+      # not working for noble yet
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.11'
+      # needed only if a bare ubuntu image is used
+      - name: Install python
+        if: ${{ steps.prereq.outputs.need_python == '1' }}
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt install -y python3-pip
+
+      # why is this necessary for ros:rolling-ros-core-noble?
+      # and why does this not work with setup-ros?
+      - name: Install ros-dev-tools
+        if: ${{ steps.prereq.outputs.need_rosdep == '1' }}
+        run: |
+          apt install -y ros-dev-tools \
+          python3-colcon-common-extensions python3-colcon-mixin python3-colcon-coveragepy-result
+          rosdep init
+
+      # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.2
-      # - name: Temporary fix for rolling by setting the ROSDISTRO_INDEX_URL
+        if: ${{ steps.prereq.outputs.need_ros == '1' }}
+
+      # - name: Temporary fix for rolling@jammy by setting the ROSDISTRO_INDEX_URL
       #   # see https://docs.ros.org/en/rolling/How-To-Guides/Using-Custom-Rosdistro.html
       #   run: |
       #     if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
@@ -31,7 +83,8 @@ jobs:
       #     echo "ROS_DISTRO: $ROS_DISTRO"
       #     rosdep resolve test_msgs std_msgs || true
       #     rosdep resolve test_msgs std_msgs --os=ubuntu:jammy --rosdistro=rolling
-      # - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       - uses: ros-tooling/action-ros-ci@0.3.7
