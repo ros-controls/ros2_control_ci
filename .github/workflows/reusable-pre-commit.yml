@@ -24,6 +24,9 @@ jobs:
   pre-commit:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
+    env:
+      # this will be src/{repo-owner}/{repo-name}
+      path: src/${{ github.repository }}
     steps:
       - name: "Determine prerequisites"
         id: prereq
@@ -47,6 +50,9 @@ jobs:
       # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.2
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: ${{ env.path }}
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
@@ -63,4 +69,5 @@ jobs:
         run: |
           source .venv/bin/activate
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
+          cd ${{ env.path }}
           pre-commit run --show-diff-on-failure --color=always --all-files --hook-stage manual
