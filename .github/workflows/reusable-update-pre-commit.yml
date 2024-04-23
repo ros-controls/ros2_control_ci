@@ -23,10 +23,14 @@ jobs:
 
       - name: Install pre-commit
         run: |
-          pip install pre-commit
+          sudo apt-get install -qq python3-venv
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python3 -m pip install pre-commit
 
       - name: Auto-update with pre-commit
         run: |
+          source .venv/bin/activate
           pre-commit autoupdate || true  # Ignoring errors
 
       - name: Check for changes
