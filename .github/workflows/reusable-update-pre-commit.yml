@@ -43,7 +43,7 @@ jobs:
         id: git_status
         run: |
           cd ${{ env.path }}
-          git diff --quiet ${{ env.path }} && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: There are changes
         if: steps.git_status.outputs.changed == 'true'
