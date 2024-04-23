@@ -42,13 +42,13 @@ jobs:
       - name: Check for changes
         id: git_status
         run: |
-          git diff --quiet && echo "::set-output name=changed::false" || echo "::set-output name=changed::true"
+          git diff --quiet ${{ env.path }} && echo "::set-output name=changed::false" || echo "::set-output name=changed::true"
 
       - name: There are changes
         if: steps.git_status.outputs.changed == 'true'
         run: |
           echo "Files have changed"
-          git diff --exit-code || true
+          git diff --exit-code ${{ env.path }} || true
 
       - name: No changes!
         if: steps.git_status.outputs.changed == 'false'
@@ -66,3 +66,4 @@ jobs:
           body: This pull request contains auto-updated files of the pre-commit config. @ros-controls/ros2-maintainers please run the pre-commit workflow manually on the branch `auto-update-${{ github.event.inputs.ref_for_scheduled_build }}` before merging.
           delete-branch: true
           draft: true
+          path: ${{ env.path }}
