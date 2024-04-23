@@ -39,21 +39,6 @@ jobs:
         # Consider switching to https://github.com/actions/setup-node when it works
         # https://github.com/nektos/act/issues/973
         if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
-
-        # - name: Temporary fix for rolling@jammy by setting the ROSDISTRO_INDEX_URL
-        #   # see https://docs.ros.org/en/rolling/How-To-Guides/Using-Custom-Rosdistro.html
-        #   run: |
-        #     if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
-        #       sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
-        #       echo "ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml" >> $GITHUB_ENV
-        #     fi
-        # - name: Test some rosdep commands to see if the step above worked
-        #   run: |
-        #     rosdep update
-        #     echo "ROS_DISTRO: $ROS_DISTRO"
-        #     rosdep resolve test_msgs std_msgs || true
-        #     rosdep resolve test_msgs std_msgs --os=ubuntu:jammy --rosdistro=rolling
-
         run: |
           apt install -y curl
           curl -sS https://webi.sh/node | sh
