@@ -48,7 +48,8 @@ jobs:
         if: steps.git_status.outputs.changed == 'true'
         run: |
           echo "Files have changed"
-          git diff --exit-code ${{ env.path }} || true
+          cd ${{ env.path }}
+          git diff --exit-code || true
 
       - name: No changes!
         if: steps.git_status.outputs.changed == 'false'
