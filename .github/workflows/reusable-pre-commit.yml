@@ -35,8 +35,6 @@ jobs:
       # needed for github actions, and only if a bare ubuntu image is used
       - uses: actions/setup-node@v4
         if: ${{ steps.prereq.outputs.need_node == '1' && !env.ACT }}
-        # with:
-        #   node-version: 16
       - name: Install node
         # Consider switching to https://github.com/actions/setup-node when it works
         # https://github.com/nektos/act/issues/973
