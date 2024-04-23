@@ -14,11 +14,16 @@ on:
 jobs:
   auto_update_and_create_pr:
     runs-on: ubuntu-latest
+    env:
+      # this will be src/{repo-owner}/{repo-name}
+      path: src/${{ github.repository }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+          path: ${{ env.path }}
           ref: ${{ github.event.inputs.ref_for_scheduled_build }}
 
       - name: Install pre-commit
@@ -31,6 +36,7 @@ jobs:
       - name: Auto-update with pre-commit
         run: |
           source .venv/bin/activate
+          cd ${{ env.path }}
           pre-commit autoupdate || true  # Ignoring errors
 
       - name: Check for changes
