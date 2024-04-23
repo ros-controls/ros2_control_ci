@@ -26,8 +26,8 @@ jobs:
       - name: "Determine prerequisites"
         id: prereq
         run: |
-          DEBIAN_FRONTEND=noninteractive apt update && apt upgrade -y
-          apt install -y sudo apt-utils
+          command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
+          DEBIAN_FRONTEND=noninteractive sudo apt update && sudo apt upgrade -y
           echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
 
       # needed for github actions, and only if a bare ubuntu image is used
@@ -38,7 +38,7 @@ jobs:
         # https://github.com/nektos/act/issues/973
         if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
         run: |
-          apt install -y curl
+          sudo apt install -y curl
           curl -sS https://webi.sh/node | sh
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
