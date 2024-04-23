@@ -42,12 +42,12 @@ jobs:
       - name: Check for changes
         id: git_status
         run: |
-          git diff --quiet ${{ env.path }} && echo "changed=false" >> $GITHUB_STATE || echo "changed=true" >> $GITHUB_STATE
+          cd ${{ env.path }}
+          git diff --quiet ${{ env.path }} && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: There are changes
         if: steps.git_status.outputs.changed == 'true'
         run: |
-          echo "Files have changed"
           cd ${{ env.path }}
           git diff --exit-code || true
 
