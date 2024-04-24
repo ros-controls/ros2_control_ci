@@ -14,30 +14,41 @@ on:
 jobs:
   auto_update_and_create_pr:
     runs-on: ubuntu-latest
+    env:
+      # this will be src/{repo-owner}/{repo-name}
+      path: src/${{ github.repository }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+          path: ${{ env.path }}
           ref: ${{ github.event.inputs.ref_for_scheduled_build }}
 
       - name: Install pre-commit
         run: |
-          pip install pre-commit
+          sudo apt-get install -qq python3-venv
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python3 -m pip install pre-commit
 
       - name: Auto-update with pre-commit
         run: |
+          source .venv/bin/activate
+          cd ${{ env.path }}
           pre-commit autoupdate || true  # Ignoring errors
 
       - name: Check for changes
         id: git_status
         run: |
-          git diff --quiet && echo "::set-output name=changed::false" || echo "::set-output name=changed::true"
+          cd ${{ env.path }}
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: There are changes
         if: steps.git_status.outputs.changed == 'true'
         run: |
-          echo "Files have changed"
+          cd ${{ env.path }}
           git diff --exit-code || true
 
       - name: No changes!
@@ -56,3 +67,4 @@ jobs:
           body: This pull request contains auto-updated files of the pre-commit config. @ros-controls/ros2-maintainers please run the pre-commit workflow manually on the branch `auto-update-${{ github.event.inputs.ref_for_scheduled_build }}` before merging.
           delete-branch: true
           draft: true
+          path: ${{ env.path }}

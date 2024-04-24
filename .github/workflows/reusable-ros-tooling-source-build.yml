@@ -23,18 +23,42 @@ on:
         required: false
         default: 'ubuntu-latest'
         type: string
+      container:
+        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
     name: ${{ inputs.ros_distro }} ${{ inputs.os_name }}
     runs-on: ${{ inputs.os_name }}
+    container: ${{ inputs.container }}
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
     steps:
+      - name: "Determine prerequisites"
+        id: prereq
+        run: |
+          command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
+          DEBIAN_FRONTEND=noninteractive sudo apt update && sudo apt upgrade -y
+          echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+
+      # needed for github actions, and only if a bare ubuntu image is used
+      - uses: actions/setup-node@v4
+        if: ${{ steps.prereq.outputs.need_node == '1' && !env.ACT }}
+      - name: Install node
+        # Consider switching to https://github.com/actions/setup-node when it works
+        # https://github.com/nektos/act/issues/973
+        if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
+        run: |
+          sudo apt install -y curl
+          curl -sS https://webi.sh/node | sh
+          echo ~/.local/opt/node/bin >> $GITHUB_PATH
+
+      # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.2
-        with:
-          required-ros-distributions: ${{ inputs.ros_distro }}
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}

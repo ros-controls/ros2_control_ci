@@ -7,32 +7,43 @@ on:
         required: true
         type: string
       os_name:
-        description: 'On which OS to run the workflow, e.g. ubuntu-22.04'
+        description: 'On which runner-OS to run the workflow, e.g. ubuntu-22.04'
         required: false
         default: 'ubuntu-latest'
+        type: string
+      container:
+        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        required: false
+        default: ''
         type: string
 
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
     runs-on: ${{ inputs.os_name }}
+    container: ${{ inputs.container }}
     steps:
+      - name: "Determine prerequisites"
+        id: prereq
+        run: |
+          command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
+          DEBIAN_FRONTEND=noninteractive sudo apt update && sudo apt upgrade -y
+          echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+
+      # needed for github actions, and only if a bare ubuntu image is used
+      - uses: actions/setup-node@v4
+        if: ${{ steps.prereq.outputs.need_node == '1' && !env.ACT }}
+      - name: Install node
+        # Consider switching to https://github.com/actions/setup-node when it works
+        # https://github.com/nektos/act/issues/973
+        if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
+        run: |
+          sudo apt install -y curl
+          curl -sS https://webi.sh/node | sh
+          echo ~/.local/opt/node/bin >> $GITHUB_PATH
+
+      # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.2
-      - name: Temporary fix for rolling by setting the ROSDISTRO_INDEX_URL
-        # see https://docs.ros.org/en/rolling/How-To-Guides/Using-Custom-Rosdistro.html
-        # TODO(anyone): remove/deactivate after rolling is fixed on noble
-        run: |
-          if [[ "${{ inputs.ros_distro }}" == "rolling" ]]; then
-            sudo sed -i "s|ros\/rosdistro\/master|ros\/rosdistro\/rolling\/2024-02-28|" /etc/ros/rosdep/sources.list.d/20-default.list
-            echo "ROSDISTRO_INDEX_URL=https://raw.githubusercontent.com/ros/rosdistro/rolling/2024-02-28/index-v4.yaml" >> $GITHUB_ENV
-          fi
-      - name: Test some rosdep commands to see if the step above worked
-        # TODO(anyone): remove/deactivate after rolling is fixed on noble
-        run: |
-          rosdep update
-          echo "ROS_DISTRO: $ROS_DISTRO"
-          rosdep resolve test_msgs std_msgs || true
-          rosdep resolve test_msgs std_msgs --os=ubuntu:jammy --rosdistro=rolling
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
