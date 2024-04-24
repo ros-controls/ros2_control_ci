@@ -56,7 +56,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
-          key: pre-commit-3|${{ inputs.ros_distro }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          key: pre-commit|${{ inputs.ros_distro }}|${{ hashFiles('${{ env.path }}/pre-commit-config.yaml') }}
       - name: Install pre-commit and system hooks
         shell: bash
         run: |
