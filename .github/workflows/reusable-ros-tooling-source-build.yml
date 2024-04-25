@@ -59,6 +59,8 @@ jobs:
 
       # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.2
+        with:
+          use-ros2-testing: true
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
