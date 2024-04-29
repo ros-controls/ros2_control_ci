@@ -9,6 +9,7 @@ It also builds the full ros2_control stack once per day.
 ## Released versions
 
 [![Rolling Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml)
+[![Jazzy Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml)
 [![Iron Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/iron-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/iron-binary-build.yml)
 [![Humble Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml)
 
@@ -16,4 +17,5 @@ It also builds the full ros2_control stack once per day.
 We thrive to make the rolling development version of the ros2_control stack compatible with earlier releases of ROS2. This is done by building the rolling version of the stack from source with the earlier releases of ROS2.
 
 [![Check Rolling Compatibility on Iron with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-iron-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-iron-binary-build.yml)
+[![Check Rolling Compatibility on Jazzy with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-jazzy-binary-build.yml)
 [![Check Rolling Compatibility on Humble with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-humble-binary-build.yml)
