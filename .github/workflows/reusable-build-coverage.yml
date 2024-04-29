@@ -54,7 +54,7 @@ jobs:
         run: |
           if [ -f ${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
             echo "Local repos file found"
-            echo "repo_file=$(${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos)" >> $GITHUB_OUTPUT
+            echo "repo_file=${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
           else
             echo "No local repos file found"
             echo "repo_file=" >> $GITHUB_OUTPUT
