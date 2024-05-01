@@ -43,13 +43,13 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.2
+      - uses: ros-tooling/setup-ros@0.7.3
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
-      - uses: ros-tooling/action-ros-ci@0.3.7
+      - uses: ros-tooling/action-ros-ci@0.3.9
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
