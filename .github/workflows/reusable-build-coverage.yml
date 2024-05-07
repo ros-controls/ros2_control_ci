@@ -49,14 +49,23 @@ jobs:
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+      - name: Check for local repos file
+        id: check_local_repos
+        run: |
+          if [ -f ${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
+            echo "Local repos file found"
+            echo "repo_file=${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
+          else
+            echo "No local repos file found"
+            echo "repo_file=" >> $GITHUB_OUTPUT
+          fi
       - uses: ros-tooling/action-ros-ci@0.3.11
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
           # build all packages listed here
           package-name: ${{ steps.package_list_action.outputs.package_list }}
-          vcs-repo-file-url: |
-            https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos?token=${{ secrets.GITHUB_TOKEN }}
+          vcs-repo-file-url: ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-defaults: |
             {
               "build": {
