@@ -9,21 +9,11 @@ on:
         description: 'ROS2 distribution name'
         required: true
         type: string
-      os_name:
-        description: 'On which OS to run the linter'
-        required: false
-        default: 'ubuntu-latest'
-        type: string
-      container:
-        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
-        required: false
-        default: ''
-        type: string
 
 jobs:
   pre-commit:
-    runs-on: ${{ inputs.os_name }}
-    container: ${{ inputs.container }}
+    runs-on: ubuntu-latest
+    container: ros:${{ inputs.ros_distro }}
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
@@ -32,8 +22,9 @@ jobs:
         id: prereq
         run: |
           command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
-          DEBIAN_FRONTEND=noninteractive sudo apt update && sudo apt upgrade -y
+          sudo apt update
           echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          echo "need_ros2=$(if [ -d "/opt/ros/${{ inputs.ros_distro }}" ]; then echo 0; else echo 1; fi)" >> $GITHUB_OUTPUT
 
       # needed for github actions, and only if a bare ubuntu image is used
       - uses: actions/setup-node@v4
@@ -49,8 +40,10 @@ jobs:
 
       # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.4
+        if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
