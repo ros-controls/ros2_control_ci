@@ -38,6 +38,9 @@ jobs:
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
+      # TODO(anyone): remove once this is included in the ros:rolling container
+      - name: Install colcon-lcov-result
+        run: sudo apt-get install -qq python3-colcon-lcov-result
 
       - uses: actions/checkout@v4
       - id: package_list_action
