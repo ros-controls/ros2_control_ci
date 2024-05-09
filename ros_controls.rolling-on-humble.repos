@@ -55,3 +55,7 @@ repositories:
     type: git
     url: https://github.com/gazebo-release/gz_tools_vendor.git
     version: rolling
+  gz/sdformat_vendor:
+    type: git
+    url: https://github.com/gazebo-release/sdformat_vendor.git
+    version: rolling
