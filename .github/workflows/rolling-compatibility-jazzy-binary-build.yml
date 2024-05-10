@@ -1,4 +1,6 @@
-name: Check Rolling Compatibility on Iron with Stack Build
+name: Check Rolling Compatibility on Jazzy
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+# description: 'Build & test the rolling stack on Jazzy distro.'
 
 on:
   workflow_dispatch:
