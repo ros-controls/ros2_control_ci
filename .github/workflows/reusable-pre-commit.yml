@@ -34,7 +34,7 @@ jobs:
         # https://github.com/nektos/act/issues/973
         if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
         run: |
-          sudo apt update && sudo apt install -y curl
+          sudo apt install -y curl
           curl -sS https://webi.sh/node | sh
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
