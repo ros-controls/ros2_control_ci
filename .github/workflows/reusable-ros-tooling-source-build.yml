@@ -58,7 +58,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.3
+      - uses: ros-tooling/setup-ros@0.7.4
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
-      - uses: ros-tooling/action-ros-ci@0.3.9
+      - uses: ros-tooling/action-ros-ci@0.3.11
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
