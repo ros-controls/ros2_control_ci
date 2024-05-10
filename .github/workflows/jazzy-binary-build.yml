@@ -1,5 +1,5 @@
-name: Rolling Stack Build
-# author: Denis Štogl <denis@stoglrobotics.de>
+name: Jazzy Stack Build
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
 # description: 'Build & test all dependencies from released (binary) packages.'
 
 on:
