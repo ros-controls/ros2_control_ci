@@ -4,6 +4,10 @@ name: Iron Stack Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/iron-binary-build.yml'
+      - 'ros_controls.iron.repos'
   schedule:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'

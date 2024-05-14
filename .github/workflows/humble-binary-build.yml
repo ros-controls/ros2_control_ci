@@ -4,6 +4,10 @@ name: Humble Stack Build
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/humble-binary-build.yml'
+      - 'ros_controls.humble.repos'
   schedule:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'
