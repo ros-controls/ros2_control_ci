@@ -35,3 +35,7 @@ repositories:
     type: git
     url: https://github.com/ros-controls/ros2_controllers.git
     version: master
+  gz/gz_plugin_vendor:
+    type: git
+    url: https://github.com/gazebo-release/gz_plugin_vendor.git
+    version: rolling
