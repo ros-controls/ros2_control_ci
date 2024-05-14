@@ -24,3 +24,4 @@ jobs:
       ros_repo: ${{ matrix.ROS_REPO }}
       target_workspace: ros_controls.rolling-on-iron.repos
       ref_for_scheduled_build: master
+      rosdep_skip_keys: libshaderc-dev glslc # not available on jammy
