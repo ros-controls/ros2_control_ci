@@ -7,10 +7,10 @@ repositories:
     type: git
     url: https://github.com/ros-controls/control_toolbox.git
     version: ros2-master
-  # ros-controls/gz_ros2_control:
-  #   type: git
-  #   url: https://github.com/ros-controls/gz_ros2_control.git
-  #   version: master
+  ros-controls/gz_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/gz_ros2_control.git
+    version: master
   ros-controls/kinematics_interface:
     type: git
     url: https://github.com/ros-controls/kinematics_interface.git
@@ -23,10 +23,10 @@ repositories:
     type: git
     url: https://github.com/ros-controls/ros2_control.git
     version: master
-  # ros-controls/ros2_control_demos:
-  #   type: git
-  #   url: https://github.com/ros-controls/ros2_control_demos.git
-  #   version: master
+  ros-controls/ros2_control_demos:
+    type: git
+    url: https://github.com/ros-controls/ros2_control_demos.git
+    version: master
   ros-controls/ros2_controllers:
     type: git
     url: https://github.com/ros-controls/ros2_controllers.git
