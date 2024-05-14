@@ -26,7 +26,7 @@ jobs:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: ${{ matrix.ROS_REPO }}
       # install upstream dependencies for gz*, but exclude some packages inside rosidl repository
-      upstream_workspace: ros_controls.rolling-upstream.repos -rosidl_generator_tests -rosidl_typesupport_introspection_tests -rosidl_typesupport_introspection_c -rosidl_typesupport_introspection_cpp -rosidl_typesupport_interface -rosidl_runtime_c -rosidl_runtime_cpp -rosidl_parser -rosidl_generator_type_description -rosidl_generator_c -rosidl_generator_cpp -rosidl_cmake -rosidl_cli -rosidl_adapter
+      upstream_workspace: ros_controls.rolling-upstream.repos -../ros2/rosidl/rosidl_generator_tests -../ros2/rosidl/rosidl_typesupport_introspection_tests -../ros2/rosidl/rosidl_typesupport_introspection_c -../ros2/rosidl/rosidl_typesupport_introspection_cpp -../ros2/rosidl/rosidl_typesupport_interface -../ros2/rosidl/rosidl_runtime_c -../ros2/rosidl/rosidl_runtime_cpp -../ros2/rosidl/rosidl_parser -../ros2/rosidl/rosidl_generator_type_description -../ros2/rosidl/rosidl_generator_c -../ros2/rosidl/rosidl_generator_cpp -../ros2/rosidl/rosidl_cmake -../ros2/rosidl/rosidl_cli -../ros2/rosidl/rosidl_adapter
       target_workspace: ros_controls.rolling-on-humble.repos
       ref_for_scheduled_build: master
       rosdep_skip_keys: libshaderc-dev glslc # not available on jammy
