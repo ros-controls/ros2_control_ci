@@ -78,6 +78,22 @@ jobs:
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
             ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        id: action-ros
+      - name: Download issue template  for target failure  # Has to be a local file
+        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
+        run:
+          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O .github/issue_template_failed_ci.md
+      - uses: JasonEtco/create-an-issue@v2
+        # action-ros-ci does not report more details on test failures afaik
+        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTION_NAME: ${{ inputs.ros_distro }}/source
+          REF: ${{ inputs.ref }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          update_existing: true
+          filename: .github/issue_template_failed_ci.md
       - uses: actions/upload-artifact@v4.3.3
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
