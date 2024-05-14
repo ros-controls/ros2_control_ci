@@ -103,3 +103,7 @@ repositories:
     type: git
     url: https://github.com/gazebo-release/gz_dartsim_vendor.git
     version: rolling
+  gz/ros_gz:
+    type: git
+    url: https://github.com/gazebosim/ros_gz.git
+    version: ros2

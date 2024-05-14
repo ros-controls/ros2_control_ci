@@ -11,6 +11,9 @@ on:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'
 
+env: 
+  GZ_VERSION: "harmonic"
+  
 jobs:
   stack-build-on-iron:
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
