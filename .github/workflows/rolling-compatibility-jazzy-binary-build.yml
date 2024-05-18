@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - '.github/workflows/rolling-compatibility-iron-binary-build.yml'
+      - '.github/workflows/rolling-compatibility-jazzy-binary-build.yml'
       - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.rolling-on-jazzy.repos'
   schedule:
