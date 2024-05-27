@@ -55,7 +55,7 @@ jobs:
             echo "No local repos file found"
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
-      - uses: ros-tooling/action-ros-ci@0.3.13
+      - uses: ros-tooling/action-ros-ci@0.3.14
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
