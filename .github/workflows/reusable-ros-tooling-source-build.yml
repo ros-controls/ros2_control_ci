@@ -58,7 +58,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.4
+      - uses: ros-tooling/setup-ros@0.7.7
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v4
@@ -69,14 +69,24 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
-      - uses: ros-tooling/action-ros-ci@0.3.11
+      - name: Check for local repos file
+        id: check_local_repos
+        run: |
+          if [ -f  ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
+            echo "Local repos file found"
+            echo "repo_file=${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
+          else
+            echo "No local repos file found"
+            echo "repo_file=" >> $GITHUB_OUTPUT
+          fi
+      - uses: ros-tooling/action-ros-ci@0.3.14
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
-            ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos
+            ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         id: action-ros
       - name: Download issue template  for target failure  # Has to be a local file
@@ -94,7 +104,7 @@ jobs:
         with:
           update_existing: true
           filename: .github/issue_template_failed_ci.md
-      - uses: actions/upload-artifact@v4.3.3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
           path: ros_ws/log

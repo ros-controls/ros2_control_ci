@@ -4,6 +4,11 @@ name: Check Rolling Compatibility on Iron
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/rolling-compatibility-iron-binary-build.yml'
+      - '.github/workflows/reusable-industrial-ci-with-cache.yml'
+      - 'ros_controls.rolling-on-iron.repos'
   schedule:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'

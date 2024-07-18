@@ -11,15 +11,14 @@ jobs:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
     steps:
-      - uses: ros-tooling/setup-ros@0.7.4
+      - uses: ros-tooling/setup-ros@0.7.7
       - name: Install rosdoc2 and deps
         run: |
           sudo apt-get update
           sudo apt install -y python3-pip git doxygen graphviz
           python3 -m venv .venv
           source .venv/bin/activate
-          # TODO(anyone) remove if https://github.com/sphinx-doc/sphinx/pull/12298/files is merged
-          pip install Sphinx==7.2.6
+          pip install Sphinx
           git clone https://github.com/ros-infrastructure/rosdoc2.git
           pip install --upgrade rosdoc2/
       - uses: actions/checkout@v4
