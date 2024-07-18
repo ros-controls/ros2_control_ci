@@ -69,6 +69,16 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
+      - name: Check for local repos file
+        id: check_local_repos
+        run: |
+          if [ -f  ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
+            echo "Local repos file found"
+            echo "repo_file=${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
+          else
+            echo "No local repos file found"
+            echo "repo_file=" >> $GITHUB_OUTPUT
+          fi
       - uses: ros-tooling/action-ros-ci@0.3.14
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
@@ -76,7 +86,7 @@ jobs:
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
-            ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos
+            ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - uses: actions/upload-artifact@v4.3.4
         with:
