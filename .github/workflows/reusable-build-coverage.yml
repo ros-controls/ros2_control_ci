@@ -72,6 +72,11 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: Debug tools
+        run: |
+          pip3 show coverage || true
+          pip3 show pytest-cov || true
+          apt list python3-coverage || true
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
