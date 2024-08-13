@@ -47,7 +47,7 @@ jobs:
         run: |
           sudo apt-get install -qq lcov python3-colcon-lcov-result
           sudo apt-get install -qq python3-colcon-coveragepy-result python3-pytest-cov python3-pip python3-venv
-          python3 -m venv .venv
+          python3 -m venv .venv --system-site-packages
           . .venv/bin/activate
           python3 -m pip install coverage
           echo PATH=$PATH >> $GITHUB_ENV
@@ -97,6 +97,11 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: search for coverage files and combine them
+        run: |
+          find ros_ws -name total_coverage.info
+          find ros_ws -name .coverage
+          coverage combine --data-file ros_ws/coveragepy/.coverage $(find ros_ws -name .coverage)
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
