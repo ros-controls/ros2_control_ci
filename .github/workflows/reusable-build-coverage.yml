@@ -50,13 +50,14 @@ jobs:
         # https://github.com/colcon/colcon-coveragepy-result
         # https://github.com/colcon/colcon-lcov-result
         # install coverage.py in a virtual environment and add it to the PATH
+        # in the end it has to be available in the PATH for codecov-action
         run: |
           set -v
           sudo apt-get install -qq lcov python3-colcon-lcov-result
           sudo apt-get install -qq python3-colcon-coveragepy-result python3-pytest-cov python3-pip python3-venv
           python3 -m venv .venv --system-site-packages
-          . .venv/bin/activate
-          python3 -m pip install coverage
+          source .venv/bin/activate
+          python3 -m pip install coverage --upgrade
           echo PATH=$PATH >> $GITHUB_ENV
       - name: Test coverage tools (bash)
         shell: bash
@@ -116,11 +117,13 @@ jobs:
         run: |
           find ros_ws -name total_coverage.info
           find ros_ws -name .coverage
-          python3 -m coverage combine --data-file ros_ws/coveragepy/.coverage $(find ros_ws -name .coverage)
+        # throws error: Can't combine arc data with line data
+        # it seems that coverage.py and pytest-cov do not work together
+        # python3 -m coverage combine --data-file ros_ws/coveragepy/.coverage $(find ros_ws -name .coverage)
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
+          files: ros_ws/lcov/total_coverage.info,ros_ws/build/controller_manager/.coverage
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
