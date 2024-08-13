@@ -59,6 +59,7 @@ jobs:
           source .venv/bin/activate
           python3 -m pip install coverage --upgrade
           echo PATH=$PATH >> $GITHUB_ENV
+        shell: bash
       - name: Test coverage tools (bash)
         shell: bash
         run: |
