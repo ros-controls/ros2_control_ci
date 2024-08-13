@@ -107,7 +107,7 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          files: ros_ws/lcov/total_coverage.info,ros_ws/build/controller_manager/.coverage
+          directory: ros_ws
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
