@@ -95,16 +95,27 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: Test coverage tools
+        run: |
+          which coverage || true
+          python3 -m coverage --version || true
+          coverage --version || true
+          source .venv/bin/activate
+          python3 -m coverage --version || true
+          coverage --version || true
+          which coverage || true
+          ls .venv/bin
       - name: Search for .coverage files and convert them
         # TODO(anyone): remove this once codecov-action does not throw
         # "coverage.py is not installed or can't be found."
+        # note: reports from pytest-cov are already in the correct format
         run: |
           find ros_ws -name total_coverage.info
           find ros_ws -name .coverage
           for coverage_file in $(find ros_ws -name .coverage); do
             output_file="${coverage_file%/.coverage}/coverage.xml"
             if [ ! -f "$output_file" ]; then
-              coverage xml --data-file "$coverage_file" -o "$output_file"
+              python3 -m coverage xml --data-file "$coverage_file" -o "$output_file"
             fi
           done
         # python3 -m coverage combine --data-file ros_ws/coveragepy/.coverage $(find ros_ws -name .coverage)
