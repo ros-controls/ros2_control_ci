@@ -39,8 +39,8 @@ jobs:
         with:
           use-ros2-testing: true
       # TODO(anyone): remove once this is included in the ros:rolling container
-      - name: Install colcon-lcov-result
-        run: sudo apt-get install -qq python3-colcon-lcov-result python3-colcon-coveragepy-result
+      - name: Install coverage tools
+        run: sudo apt-get install -qq lcov python3-colcon-lcov-result python3-colcon-coveragepy-result
 
       - uses: actions/checkout@v4
       - id: package_list_action
