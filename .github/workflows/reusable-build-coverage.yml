@@ -47,7 +47,7 @@ jobs:
           sudo apt-get install -qq lcov python3-colcon-lcov-result
           sudo apt-get install -qq python3-colcon-coveragepy-result python3-pytest-cov python3-pip python3-venv
           python3 -m venv .venv
-          source .venv/bin/activate
+          . .venv/bin/activate
           python3 -m pip install coverage
       - name: Test coverage tools (bash)
         shell: bash
@@ -62,7 +62,7 @@ jobs:
         run: |
           python3 -m coverage --version || true
           coverage --version || true
-          source .venv/bin/activate
+          . .venv/bin/activate
           python3 -m coverage --version || true
           coverage --version || true
       - uses: actions/checkout@v4
