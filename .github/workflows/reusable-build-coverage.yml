@@ -40,8 +40,22 @@ jobs:
           use-ros2-testing: true
       # TODO(anyone): remove once this is included in the ros:rolling container
       - name: Install coverage tools
-        run: sudo apt-get install -qq lcov python3-colcon-lcov-result python3-colcon-coveragepy-result python3-pytest-cov
-
+        # https://coverage.readthedocs.io/en/7.6.1/
+        # https://github.com/colcon/colcon-coveragepy-result
+        # https://github.com/colcon/colcon-lcov-result
+        run: |
+          sudo apt-get install -qq lcov python3-colcon-lcov-result python3-colcon-coveragepy-result python3-pytest-cov
+          python3 -m pip install coverage
+      - name: Test coverage tools (bash)
+        shell: bash
+        run: |
+          python3 -m coverage --version || true
+          coverage --version || true
+      - name: Test coverage tools (sh)
+        shell: sh
+        run: |
+          python3 -m coverage --version || true
+          coverage --version || true
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
@@ -72,10 +86,6 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      - name: Debug tools
-        run: |
-          apt list python3-pytest-cov || true
-          apt list python3-coverage || true
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
