@@ -57,6 +57,7 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
       - name: Test coverage tools
         run: |
+          pwd
           which coverage || true
           python3 -m coverage --version || true
           coverage --version || true
@@ -97,6 +98,7 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Test coverage tools
         run: |
+          pwd
           which coverage || true
           python3 -m coverage --version || true
           coverage --version || true
