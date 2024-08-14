@@ -6,6 +6,10 @@ on:
         description: 'ROS2 distribution name'
         required: true
         type: string
+      debug:
+        description: 'Add debug output'
+        type: boolean
+        default: false
 
 jobs:
   coverage:
@@ -56,6 +60,7 @@ jobs:
           python3 -m pip install coverage --upgrade
           echo PATH=$PATH >> $GITHUB_ENV
       - name: Test coverage tools
+        if: ${{ inputs.debug }}
         run: |
           pwd
           which coverage || true
@@ -96,17 +101,6 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      - name: Test coverage tools
-        run: |
-          pwd
-          which coverage || true
-          python3 -m coverage --version || true
-          coverage --version || true
-          source ~/.venv/bin/activate || true
-          python3 -m coverage --version || true
-          coverage --version || true
-          which coverage || true
-          ls ~/.venv/bin || true
       - name: Search for .coverage files and convert them
         # TODO(anyone): remove this once codecov-action does not throw
         # "coverage.py is not installed or can't be found."
