@@ -118,7 +118,6 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          directory: ros_ws
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
