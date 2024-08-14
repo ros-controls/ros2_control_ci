@@ -61,11 +61,11 @@ jobs:
           which coverage || true
           python3 -m coverage --version || true
           coverage --version || true
-          source .venv/bin/activate
+          source .venv/bin/activate || true
           python3 -m coverage --version || true
           coverage --version || true
           which coverage || true
-          ls .venv/bin
+          ls .venv/bin || true
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
