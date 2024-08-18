@@ -6,12 +6,19 @@ on:
         description: 'ROS2 distribution name'
         required: true
         type: string
+      debug:
+        description: 'Add debug output'
+        type: boolean
+        default: false
 
 jobs:
   coverage:
     name: coverage build ${{ inputs.ros_distro }}
     runs-on: ubuntu-latest
     container: ros:${{ inputs.ros_distro }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: "Determine prerequisites"
         id: prereq
@@ -34,14 +41,36 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.7
+      - uses: ros-tooling/setup-ros@0.7.8
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
-      # TODO(anyone): remove once this is included in the ros:rolling container
-      - name: Install colcon-lcov-result
-        run: sudo apt-get install -qq python3-colcon-lcov-result python3-colcon-coveragepy-result
-
+      - name: Install coverage tools
+        # https://coverage.readthedocs.io/en/7.6.1/
+        # https://github.com/colcon/colcon-coveragepy-result
+        # https://github.com/colcon/colcon-lcov-result
+        # install coverage.py in a virtual environment and add it to the PATH
+        # in the end it has to be available in the PATH for codecov-action
+        run: |
+          set -v
+          sudo apt-get install -qq lcov python3-colcon-lcov-result
+          sudo apt-get install -qq python3-colcon-coveragepy-result python3-pytest-cov python3-pip python3-venv
+          python3 -m venv ~/.venv --system-site-packages
+          source ~/.venv/bin/activate
+          python3 -m pip install coverage --upgrade
+          echo PATH=$PATH >> $GITHUB_ENV
+      - name: Test coverage tools
+        if: ${{ inputs.debug }}
+        run: |
+          pwd
+          which coverage || true
+          python3 -m coverage --version || true
+          coverage --version || true
+          source ~/.venv/bin/activate || true
+          python3 -m coverage --version || true
+          coverage --version || true
+          which coverage || true
+          ls ~/.venv/bin || true
       - uses: actions/checkout@v4
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
@@ -65,18 +94,48 @@ jobs:
           colcon-defaults: |
             {
               "build": {
-                "mixin": ["coverage-gcc"]
+                "mixin": ["coverage-gcc", "coverage-pytest"]
+              },
+              "test": {
+                "mixin": ["coverage-pytest"]
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: Test coverage tools
+        if: ${{ inputs.debug }}
+        run: |
+          pwd
+          which coverage || true
+          python3 -m coverage --version || true
+          coverage --version || true
+          source ~/.venv/bin/activate || true
+          python3 -m coverage --version || true
+          coverage --version || true
+          which coverage || true
+          ls ~/.venv/bin || true
+      - name: Search for .coverage files and convert them
+        continue-on-error: true
+        # TODO(anyone): remove this once codecov-action does not throw
+        # "coverage.py is not installed or can't be found."
+        # note: reports from pytest-cov are already in the correct format
+        run: |
+          find ros_ws -name total_coverage.info
+          find ros_ws -name .coverage
+          source ~/.venv/bin/activate
+          for coverage_file in $(find ros_ws -name .coverage); do
+            output_file="${coverage_file%/.coverage}/coverage.xml"
+            if [ ! -f "$output_file" ]; then
+              python3 -m coverage xml --data-file "$coverage_file" -o "$output_file"
+            fi
+          done
+        # python3 -m coverage combine --data-file ros_ws/coveragepy/.coverage $(find ros_ws -name .coverage)
       - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          file: ros_ws/lcov/total_coverage.info
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-      - uses: actions/upload-artifact@v4.3.4
+      - uses: actions/upload-artifact@v4.3.6
         with:
           name: colcon-logs-coverage-${{ inputs.ros_distro }}
           path: ros_ws/log

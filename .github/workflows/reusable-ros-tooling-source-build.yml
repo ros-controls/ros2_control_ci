@@ -58,7 +58,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.7
+      - uses: ros-tooling/setup-ros@0.7.8
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v4
@@ -89,7 +89,7 @@ jobs:
             ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         id: action-ros
-      - name: Download issue template  for target failure  # Has to be a local file
+      - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
           wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O .github/issue_template_failed_ci.md
@@ -104,7 +104,7 @@ jobs:
         with:
           update_existing: true
           filename: .github/issue_template_failed_ci.md
-      - uses: actions/upload-artifact@v4.3.4
+      - uses: actions/upload-artifact@v4.3.6
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
           path: ros_ws/log
