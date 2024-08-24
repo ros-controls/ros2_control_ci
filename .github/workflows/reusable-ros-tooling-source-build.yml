@@ -90,6 +90,10 @@ jobs:
             ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         id: action-ros
+      - name: Debug rosdep
+        run: |
+          rosdep keys -r --from-paths src --ignore-src
+        if : ${{ always() }}
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
