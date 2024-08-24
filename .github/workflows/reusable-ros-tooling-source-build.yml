@@ -92,7 +92,7 @@ jobs:
         id: action-ros
       - name: Debug rosdep
         run: |
-          rosdep keys -r --from-paths src --ignore-src
+          rosdep keys -ri --from-paths src
         if : ${{ always() }}
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
