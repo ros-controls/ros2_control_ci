@@ -1,12 +1,13 @@
-name: Reusable industrial_ci Workflow with Cache
-# Reusable action to simplify dealing with ROS/ROS2 industrial_ci builds with cache
-# author: Denis Štogl <denis@stoglrobotics.de>
+name: Reusable workflow for building a repo with all dependencies from source
+# author:
+#  Denis Štogl <denis@stoglrobotics.de>
+#  Christoph Froehlich <christoph.froehlich@ait.ac.at>
 
 on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS2 distribution name'
+        description: 'ROS 2 distribution name'
         required: true
         type: string
       ref:
@@ -14,7 +15,7 @@ on:
         required: true
         type: string
       ros2_repo_branch:
-        description: 'Branch in the ros2/ros2 repository from which ".repos" should be used.'
+        description: 'Branch in the ROS 2 repository from which ".repos" should be used.'
         default: 'master'
         required: false
         type: string
