@@ -11,7 +11,7 @@ jobs:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
     steps:
-      - uses: ros-tooling/setup-ros@0.7.8
+      - uses: ros-tooling/setup-ros@0.7.9
       - name: Install rosdoc2 and deps
         run: |
           sudo apt-get update
