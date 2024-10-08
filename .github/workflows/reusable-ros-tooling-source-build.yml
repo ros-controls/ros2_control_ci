@@ -88,7 +88,12 @@ jobs:
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
             ${{ steps.check_local_repos.outputs.repo_file }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-          colcon-defaults: https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/defaults.yaml
+          colcon-defaults: |
+            {
+                "test": {
+                    "executor": "sequential"
+                }
+            }
         id: action-ros
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
