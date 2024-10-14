@@ -110,7 +110,7 @@ jobs:
         with:
           update_existing: true
           filename: ${{ env.path }}/.github/issue_template_failed_ci.md
-      - uses: actions/upload-artifact@v4.4.1
+      - uses: actions/upload-artifact@v4.4.3
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
           path: ros_ws/log
