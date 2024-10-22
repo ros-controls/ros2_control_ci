@@ -8,6 +8,8 @@ groups:
     usernames: # github usernames of the reviewers
       - bmagyar
       - destogl
+      - christophfroehlich
+      - saikishor
 
   # Reviewers group to get broader feedback.
   - name: reviewers
