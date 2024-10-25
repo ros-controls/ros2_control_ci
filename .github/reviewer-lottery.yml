@@ -4,7 +4,7 @@ groups:
   # The best is if two maintainers do that.
   - name: maintainers # name of the group
     reviewers: 2 # how many reviewers do you want to assign?
-    internal_reviewers: 1 # how many reviewers do you want to assign when the PR author belongs to this group?
+    internal_reviewers: 2 # how many reviewers do you want to assign when the PR author belongs to this group?
     usernames: # github usernames of the reviewers
       - bmagyar
       - destogl
@@ -18,7 +18,6 @@ groups:
       - aprotyas
       - arne48
       - bijoua29
-      - christophfroehlich
       - DasRoteSkelett
       - erickisos
       - fmauch
@@ -29,7 +28,6 @@ groups:
       - olivier-stasse
       - peterdavidfagan
       - progtologist
-      - saikishor
       - VanshGehlot
       - VX792
       - mamueluth
