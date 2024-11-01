@@ -1,0 +1,23 @@
+name: Reusable industrial_ci Workflow for ABI Compatibility Check
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+
+on:
+  workflow_call:
+    inputs:
+      ros_distro:
+        description: 'ROS_DISTRO variable for industrial_ci'
+        required: true
+        type: string
+
+
+jobs:
+  reusable_abi-compatibility-ici:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-industrial/industrial_ci@master
+        env:
+          DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
+          ROS_REPO: main
+          ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
+          NOT_TEST_BUILD: true
