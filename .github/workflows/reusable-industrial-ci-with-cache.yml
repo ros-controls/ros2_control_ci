@@ -39,11 +39,6 @@ on:
         default: ''
         required: false
         type: string
-      before_install_upstream_dependencies:
-        description: 'BEFORE_INSTALL_UPSTREAM_DEPENDENCIES variable for industrial_ci'
-        default: ''
-        required: false
-        type: string
       rosdep_skip_keys:
         description: 'ROSDEP_SKIP_KEYS variable for industrial_ci'
         default: ''
@@ -91,13 +86,12 @@ jobs:
           UPSTREAM_WORKSPACE: ${{ inputs.upstream_workspace }}
           TARGET_WORKSPACE: ${{ inputs.target_workspace }}
           DOWNSTREAM_WORKSPACE: ${{ inputs.downstream_workspace }}
-          ROS_DISTRO: ${{ inputs.ros_distro }}
+          DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
           ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
-          BEFORE_INSTALL_UPSTREAM_DEPENDENCIES: ${{ inputs.before_install_upstream_dependencies }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
         id: ici
-      - name: Download issue template  for target failure  # Has to be a local file
+      - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.ici.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
           wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O .github/issue_template_failed_ci.md
