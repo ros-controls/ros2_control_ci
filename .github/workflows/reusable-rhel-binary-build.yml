@@ -77,7 +77,6 @@ jobs:
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
       - name: Test workspace
         shell: bash
-        continue-on-error: false
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
