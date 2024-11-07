@@ -25,7 +25,7 @@ repositories:
     version: master
   ros-controls/ros2_control:
     type: git
-    url: https://github.com/Amronos/ros2_control.git
+    url: https://github.com/pal-robotics-forks/ros2_control.git
     version: sdf-compatibility
   # ros-controls/ros2_control_demos:
   #   type: git
