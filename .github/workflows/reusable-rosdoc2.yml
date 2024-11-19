@@ -7,15 +7,40 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    container: ros:rolling
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}
     steps:
-      - uses: ros-tooling/setup-ros@0.7.9
-      - name: Install rosdoc2 and deps
+      - name: "Determine prerequisites"
+        id: prereq
         run: |
-          sudo apt-get update
-          sudo apt install -y python3-pip git doxygen graphviz
+          command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
+          sudo apt update
+          echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          echo "need_ros2=$(if [ -d "/opt/ros/${{ inputs.ros_distro }}" ]; then echo 0; else echo 1; fi)" >> $GITHUB_OUTPUT
+
+      # needed for github actions, and only if a bare ubuntu image is used
+      - uses: actions/setup-node@v4
+        if: ${{ steps.prereq.outputs.need_node == '1' && !env.ACT }}
+      - name: Install node
+        # Consider switching to https://github.com/actions/setup-node when it works
+        # https://github.com/nektos/act/issues/973
+        if: ${{ steps.prereq.outputs.need_node == '1' && env.ACT }}
+        run: |
+          sudo apt install -y curl
+          curl -sS https://webi.sh/node | sh
+          echo ~/.local/opt/node/bin >> $GITHUB_PATH
+
+      # needed only if a non-ros image is used
+      - uses: ros-tooling/setup-ros@0.7.9
+        if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
+        with:
+          use-ros2-testing: true
+      - name: Install rosdoc2 and deps
+        shell: bash
+        run: |
+          sudo apt install -y python3-pip python3-venv git doxygen graphviz
           python3 -m venv .venv
           source .venv/bin/activate
           pip install Sphinx
@@ -30,6 +55,7 @@ jobs:
         with:
           path: ${{ env.path }}
       - name: run rosdoc2
+        shell: bash
         run: |
           source .venv/bin/activate
           for path in ${{ steps.package_list_action.outputs.package_path_list }}
