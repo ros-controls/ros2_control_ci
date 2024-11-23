@@ -29,6 +29,10 @@ on:
         description: 'NOT_TEST_DOWNSTREAM variable for industrial_ci. If true, downstream packages will not be tested'
         default: false
         type: boolean
+      not_test_build:
+        description: 'NOT_TEST_BUILD variable for industrial_ci. If true, tests in build space will not be run.'
+        default: false
+        type: boolean
       ros_distro:
         description: 'ROS_DISTRO variable for industrial_ci'
         required: true
@@ -89,6 +93,7 @@ jobs:
         env:
           UPSTREAM_WORKSPACE: ${{ inputs.upstream_workspace }}
           TARGET_WORKSPACE: ${{ inputs.target_workspace }}
+          NOT_TEST_BUILD: ${{ inputs.not_test_build }}
           DOWNSTREAM_WORKSPACE: ${{ inputs.downstream_workspace }}
           NOT_TEST_DOWNSTREAM: ${{ inputs.not_test_downstream }}
           DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
