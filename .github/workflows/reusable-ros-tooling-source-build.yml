@@ -1,12 +1,13 @@
-name: Reusable industrial_ci Workflow with Cache
-# Reusable action to simplify dealing with ROS/ROS2 industrial_ci builds with cache
-# author: Denis Štogl <denis@stoglrobotics.de>
+name: Reusable workflow for building a repo with all dependencies from source
+# author:
+#  Denis Štogl <denis@stoglrobotics.de>
+#  Christoph Froehlich <christoph.froehlich@ait.ac.at>
 
 on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS2 distribution name'
+        description: 'ROS 2 distribution name'
         required: true
         type: string
       ref:
@@ -36,7 +37,7 @@ jobs:
     container: ${{ inputs.container }}
     env:
       # this will be src/{repo-owner}/{repo-name}
-      path: src/${{ github.repository }}
+      repo_path: src/${{ github.repository }}
     steps:
       - name: "Determine prerequisites"
         id: prereq
@@ -64,21 +65,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
-          path: ${{ env.path }}
+          path: ${{ env.repo_path }}
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
-          path: ${{ env.path }}
+          path: ${{ env.repo_path }}
+
       - name: Check for local repos file
         id: check_local_repos
         run: |
-          if [ -f  ${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
+          if [ -f  ${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
             echo "Local repos file found"
-            echo "repo_file=${{ env.path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
+            echo "repo_file=${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
           else
             echo "No local repos file found"
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
+
       - uses: ros-tooling/action-ros-ci@0.3.15
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
@@ -95,10 +98,11 @@ jobs:
                 }
             }
         id: action-ros
+
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
-          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.path }}/.github/issue_template_failed_ci.md
+          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
       - uses: JasonEtco/create-an-issue@v2
         # action-ros-ci does not report more details on test failures afaik
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
@@ -109,7 +113,7 @@ jobs:
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           update_existing: true
-          filename: ${{ env.path }}/.github/issue_template_failed_ci.md
+          filename: ${{ env.repo_path }}/.github/issue_template_failed_ci.md
       - uses: actions/upload-artifact@v4.4.3
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
