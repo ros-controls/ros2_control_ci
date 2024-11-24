@@ -1,5 +1,5 @@
 name: Reusable RHEL Binary Build
-# Reusable action to simplify dealing with RHEL binary builds
+# Reusable workflow to simplify dealing with RHEL binary builds
 # author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
 # In contrast to the industrial-ci workflow, we can skip build/test of packages ->
 # tests are flaky with RHEL builds, and we don't ensure that GUI packages work because it is

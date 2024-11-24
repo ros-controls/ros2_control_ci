@@ -1,5 +1,5 @@
 name: Reusable Debian Source Build
-# Reusable action to simplify dealing with debian source builds
+# Reusable workflow to simplify dealing with debian source builds
 # author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
 
 on:
