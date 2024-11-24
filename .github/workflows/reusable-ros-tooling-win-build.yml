@@ -9,9 +9,10 @@ on:
           https://github.com/ros-tooling/setup-ros/blob/master/src/setup-ros-windows.ts'
         required: true
         type: string
-      ref:
-        description: 'Reference on which the repo should be checkout. Usually is this name of a branch or a tag.'
-        required: true
+      ref_for_scheduled_build:
+        description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
+        default: ''
+        required: false
         type: string
       os_name:
         description: 'On which OS to run the build job'
@@ -71,10 +72,19 @@ jobs:
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
           use-ros2-testing: true
-      - uses: actions/checkout@v4
+
+      - name: Checkout default ref when build is not scheduled
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
           path: ${{ env.repo_path }}
+      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref_for_scheduled_build }}
+          path: ${{ env.repo_path }}
+
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
