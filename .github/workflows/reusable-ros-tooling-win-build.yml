@@ -34,46 +34,50 @@ jobs:
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
-      - name: Set python version paths
-        # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
-        # * setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
-        # * whatever we do here, python 3.12 is selected in the action-ros-ci step
-        # https://github.com/ros2/ros2/issues/1430#issuecomment-1634580503
-        # https://github.com/ros-tooling/setup-ros/issues/552#issuecomment-1551872040
-        # -> the only working solution I've found is to remove the other python versions
-        run: |
-          # Base path where Python versions are stored
-          $basePath = "C:/hostedtoolcache/windows/Python/"
+      # - name: Set python version paths
+      #   # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
+      #   # * setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
+      #   # * whatever we do here, python 3.12 is selected in the action-ros-ci step
+      #   # https://github.com/ros2/ros2/issues/1430#issuecomment-1634580503
+      #   # https://github.com/ros-tooling/setup-ros/issues/552#issuecomment-1551872040
+      #   # -> the only working solution I've found is to remove the other python versions
+      #   run: |
+      #     # Base path where Python versions are stored
+      #     $basePath = "C:/hostedtoolcache/windows/Python/"
 
-          # Find the first matching folder for 3.8.*
-          $pythonFolder = Get-ChildItem -Path $basePath -Filter "3.8.*" -Directory | Select-Object -First 1
-          if ($pythonFolder) {
-            $pythonVer = $pythonFolder.Name
-            $newPath = "$basePath\$pythonVer\x64;$basePath\$pythonVer\x64\Scripts;$env:PATH"
-            # Update environment variables
-            Add-Content -Path $env:GITHUB_ENV -Value "PATH=$newPath"
-            Add-Content -Path $env:GITHUB_ENV -Value "Python3_ROOT_DIR=$basePath\$pythonVer"
-            Add-Content -Path $env:GITHUB_ENV -Value "PYTHONHOME=$basePath\$pythonVer\x64"
-            Add-Content -Path $env:GITHUB_ENV -Value "PYTHONPATH=$basePath\$pythonVer\x64\lib"
-            Write-Host "Python version set to: $pythonVer"
-          } else {
-              Write-Error "No Python 3.8.* version found in $basePath"
-          }
-          Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_STRATEGY=LOCATION"
-          Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_REGISTRY=NEVER"
-          Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON=3"
-          Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON3=3.8"
+      #     # Find the first matching folder for 3.8.*
+      #     $pythonFolder = Get-ChildItem -Path $basePath -Filter "3.8.*" -Directory | Select-Object -First 1
+      #     if ($pythonFolder) {
+      #       $pythonVer = $pythonFolder.Name
+      #       $newPath = "$basePath\$pythonVer\x64;$basePath\$pythonVer\x64\Scripts;$env:PATH"
+      #       # Update environment variables
+      #       Add-Content -Path $env:GITHUB_ENV -Value "PATH=$newPath"
+      #       Add-Content -Path $env:GITHUB_ENV -Value "Python3_ROOT_DIR=$basePath\$pythonVer"
+      #       Add-Content -Path $env:GITHUB_ENV -Value "PYTHONHOME=$basePath\$pythonVer\x64"
+      #       Add-Content -Path $env:GITHUB_ENV -Value "PYTHONPATH=$basePath\$pythonVer\x64\lib"
+      #       Write-Host "Python version set to: $pythonVer"
+      #     } else {
+      #         Write-Error "No Python 3.8.* version found in $basePath"
+      #     }
+      #     Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_STRATEGY=LOCATION"
+      #     Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_REGISTRY=NEVER"
+      #     Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON=3"
+      #     Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON3=3.8"
 
-          # List of specific version patterns to match
-          $versionPatterns = @("3.12.*", "3.11.*", "3.10.*", "3.9.*")
-          # Loop through each pattern and remove matching directories
-          foreach ($pattern in $versionPatterns) {
-              $matchingPaths = Get-ChildItem -Path $basePath -Filter $pattern -Directory -ErrorAction SilentlyContinue
-              foreach ($path in $matchingPaths) {
-                  Remove-Item -Recurse -Force $path.FullName
-                  Write-Host "Deleted: $($path.FullName)"
-              }
-          }
+      #     # List of specific version patterns to match
+      #     $versionPatterns = @("3.12.*", "3.11.*", "3.10.*", "3.9.*")
+      #     # Loop through each pattern and remove matching directories
+      #     foreach ($pattern in $versionPatterns) {
+      #         $matchingPaths = Get-ChildItem -Path $basePath -Filter $pattern -Directory -ErrorAction SilentlyContinue
+      #         foreach ($path in $matchingPaths) {
+      #             Remove-Item -Recurse -Force $path.FullName
+      #             Write-Host "Deleted: $($path.FullName)"
+      #         }
+      #     }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
 
       - name: Check python version
         # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
@@ -119,6 +123,10 @@ jobs:
             Write-Output "No local repos file found"
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
 
       - uses: ros-tooling/action-ros-ci@0.3.15
         with:
