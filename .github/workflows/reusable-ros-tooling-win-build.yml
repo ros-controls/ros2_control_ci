@@ -1,0 +1,109 @@
+name: Reusable Windows Binary Build
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+
+on:
+  workflow_call:
+    inputs:
+      ros_distro:
+        description: 'ROS 2 distribution name. One of
+          https://github.com/ros-tooling/setup-ros/blob/master/src/setup-ros-windows.ts'
+        required: true
+        type: string
+      ref_for_scheduled_build:
+        description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
+        default: ''
+        required: false
+        type: string
+      os_name:
+        description: 'On which OS to run the build job'
+        required: false
+        default: 'windows-2019'
+        type: string
+      container:
+        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  reusable_ros_tooling_source_build:
+    name: ${{ inputs.ros_distro }} ${{ inputs.os_name }}
+    runs-on: ${{ inputs.os_name }}
+    container: ${{ inputs.container }}
+    env:
+      # this will be src/{repo-owner}/{repo-name}
+      repo_path: src/${{ github.repository }}
+    steps:
+      - uses: actions/setup-python@v5
+        # setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
+        # let's use the same version here for the later action-ros-ci step
+        with:
+          python-version: '3.8'
+
+      - uses: ros-tooling/setup-ros@0.7.9
+        with:
+          required-ros-distributions: ${{ inputs.ros_distro }}
+          use-ros2-testing: true
+
+      - name: Checkout default ref when build is not scheduled
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.repo_path }}
+      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref_for_scheduled_build }}
+          path: ${{ env.repo_path }}
+
+      - id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+        with:
+          path: ${{ env.repo_path }}
+
+      - name: Check for local repos file
+        id: check_local_repos
+        run: |
+          if (Test-Path ${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
+              Write-Output "Local repos file found"
+              "repo_file=${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          } else {
+            Write-Output "No local repos file found"
+            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - uses: ros-tooling/action-ros-ci@0.3.15
+        with:
+          target-ros2-distro: ${{ inputs.ros_distro }}
+          package-name: ${{ steps.package_list_action.outputs.package_list }}
+          vcs-repo-file-url: |
+            ${{ steps.check_local_repos.outputs.repo_file }}
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          colcon-defaults: |
+            {
+                "test": {
+                    "executor": "sequential"
+                }
+            }
+        id: action-ros
+
+      - name: Download issue template for target failure  # Has to be a local file
+        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
+        run:
+          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
+      - uses: JasonEtco/create-an-issue@v2
+        # action-ros-ci does not report more details on test failures afaik
+        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTION_NAME: ${{ inputs.ros_distro }}/source
+          REF: ${{ inputs.ref_for_scheduled_build }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          update_existing: true
+          filename: ${{ env.repo_path }}/.github/issue_template_failed_ci.md
