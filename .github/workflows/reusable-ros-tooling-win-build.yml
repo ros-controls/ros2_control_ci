@@ -33,7 +33,6 @@ jobs:
     env:
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
-      python_ver: 3.8.10
     steps:
       - name: Set python version paths
         # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
@@ -44,19 +43,39 @@ jobs:
         # action-ros-ci uses cmd.exe -> Git\bin\bash.exe, which gives the correct version here, but
         # ament_cmake is always finding the newest python version -> dependencies are not installed
         run: |
-          $newPath = "C:\hostedtoolcache\windows\Python\${{ env.python_ver }}\x64;C:\hostedtoolcache\windows\Python\${{ env.python_ver }}\x64\Scripts;$env:PATH"
-          Add-Content -Path $env:GITHUB_ENV -Value "PATH=$newPath"
-          Add-Content -Path $env:GITHUB_ENV -Value "Python3_ROOT_DIR=C:\hostedtoolcache\windows\Python\${{ env.python_ver }}"
-          Add-Content -Path $env:GITHUB_ENV -Value "PYTHONHOME=C:\hostedtoolcache\windows\Python\${{ env.python_ver }}\x64"
-          Add-Content -Path $env:GITHUB_ENV -Value "PYTHONPATH=C:\hostedtoolcache\windows\Python\${{ env.python_ver }}\x64\lib"
+          # Base path where Python versions are stored
+          $basePath = "C:/hostedtoolcache/windows/Python/"
+
+          # Find the first matching folder for 3.8.*
+          $pythonFolder = Get-ChildItem -Path $basePath -Filter "3.8.*" -Directory | Select-Object -First 1
+          if ($pythonFolder) {
+            $pythonVer = $pythonFolder.Name
+            $newPath = "$basePath\$pythonVer\x64;$basePath\$pythonVer\x64\Scripts;$env:PATH"
+            # Update environment variables
+            Add-Content -Path $env:GITHUB_ENV -Value "PATH=$newPath"
+            Add-Content -Path $env:GITHUB_ENV -Value "Python3_ROOT_DIR=$basePath\$pythonVer"
+            Add-Content -Path $env:GITHUB_ENV -Value "PYTHONHOME=$basePath\$pythonVer\x64"
+            Add-Content -Path $env:GITHUB_ENV -Value "PYTHONPATH=$basePath\$pythonVer\x64\lib"
+            Write-Host "Python version set to: $pythonVer"
+          } else {
+              Write-Error "No Python 3.8.* version found in $basePath"
+          }
           Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_STRATEGY=LOCATION"
           Add-Content -Path $env:GITHUB_ENV -Value "Python3_FIND_REGISTRY=NEVER"
           Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON=3"
           Add-Content -Path $env:GITHUB_ENV -Value "PY_PYTHON3=3.8"
-          Remove-Item -Recurse -Force "C:/hostedtoolcache/windows/Python/3.12.7"
-          Remove-Item -Recurse -Force "C:/hostedtoolcache/windows/Python/3.11.9"
-          Remove-Item -Recurse -Force "C:/hostedtoolcache/windows/Python/3.10.11"
-          Remove-Item -Recurse -Force "C:/hostedtoolcache/windows/Python/3.9.13"
+
+          # List of specific version patterns to match
+          $versionPatterns = @("3.12.*", "3.11.*", "3.10.*", "3.9.*")
+          # Loop through each pattern and remove matching directories
+          foreach ($pattern in $versionPatterns) {
+              $matchingPaths = Get-ChildItem -Path $basePath -Filter $pattern -Directory -ErrorAction SilentlyContinue
+              foreach ($path in $matchingPaths) {
+                  Remove-Item -Recurse -Force $path.FullName
+                  Write-Host "Deleted: $($path.FullName)"
+              }
+          }
+
 
       - name: Check python version
         # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
