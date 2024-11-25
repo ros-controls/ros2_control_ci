@@ -62,6 +62,21 @@ on:
         default: '.work'
         required: false
         type: string
+      additional_debs:
+        description: 'Additional debs to install for the build'
+        default: ''
+        required: false
+        type: string
+      c_compiler:
+        description: 'C-compiler; set to clang to use clang as the C compiler'
+        default: ''
+        required: false
+        type: string
+      cxx_compiler:
+        description: 'C++-compiler; set to clang++ to use clang as the C compiler'
+        default: ''
+        required: false
+        type: string
 
 
 jobs:
@@ -100,6 +115,9 @@ jobs:
           ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
+          ADDITIONAL_DEBS: ${{ inputs.additional_debs }}
+          CC: ${{ inputs.c_compiler }}
+          CXX: ${{ inputs.cxx_compiler }}
         id: ici
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.ici.outcome == 'failure' && github.event_name == 'schedule' }}
