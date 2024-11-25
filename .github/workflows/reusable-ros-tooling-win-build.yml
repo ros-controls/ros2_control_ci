@@ -123,7 +123,6 @@ jobs:
       - uses: ros-tooling/action-ros-ci@0.3.15
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
-          ref: ${{ inputs.ref }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           vcs-repo-file-url: |
             ${{ steps.check_local_repos.outputs.repo_file }}
@@ -146,12 +145,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION_NAME: ${{ inputs.ros_distro }}/source
-          REF: ${{ inputs.ref }}
+          REF: ${{ inputs.ref_for_scheduled_build }}
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           update_existing: true
           filename: ${{ env.repo_path }}/.github/issue_template_failed_ci.md
-      - uses: actions/upload-artifact@v4.4.3
-        with:
-          name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
-          path: ros_ws/log
