@@ -24,6 +24,11 @@ on:
         required: false
         default: ''
         type: string
+      install_boost:
+        description: 'Install boost for the build'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -47,6 +52,7 @@ jobs:
 
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
+        if: ${{ inputs.install_boost }}
         id: install-boost
         with:
             # REQUIRED: Specify the required boost version
