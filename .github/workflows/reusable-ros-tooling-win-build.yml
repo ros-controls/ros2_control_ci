@@ -37,11 +37,10 @@ jobs:
       - name: Set python version paths
         # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
         # * setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
-        # * whatever we do here, python 3.12 is selected by action-ros-ci
+        # * whatever we do here, python 3.12 is selected in the action-ros-ci step
         # https://github.com/ros2/ros2/issues/1430#issuecomment-1634580503
+        # https://github.com/ros-tooling/setup-ros/issues/552#issuecomment-1551872040
         # -> the only working solution I've found is to remove the other python versions
-        # action-ros-ci uses cmd.exe -> Git\bin\bash.exe, which gives the correct version here, but
-        # ament_cmake is always finding the newest python version -> dependencies are not installed
         run: |
           # Base path where Python versions are stored
           $basePath = "C:/hostedtoolcache/windows/Python/"
@@ -76,9 +75,10 @@ jobs:
               }
           }
 
-
       - name: Check python version
         # TODO(anyone): remove this step once the setup-ros/action-ros-ci is fixed
+        # action-ros-ci uses cmd.exe -> Git\bin\bash.exe, which gives the correct version here, but
+        # ament_cmake is always finding the newest python version -> dependencies are not installed
         run: |
           python3 --version || true
           python --version || true
