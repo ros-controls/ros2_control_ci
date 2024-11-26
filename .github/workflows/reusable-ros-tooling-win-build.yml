@@ -30,7 +30,12 @@ on:
         default: ''
         type: string
       install_boost:
-        description: 'Install boost for the build'
+        description: 'Install boost'
+        required: false
+        default: false
+        type: boolean
+      install_vcpkg:
+        description: 'Install vcpkg'
         required: false
         default: false
         type: boolean
@@ -71,6 +76,7 @@ jobs:
 
       - name: vcpkg build
         uses: johnwason/vcpkg-action@v6
+        if: ${{ inputs.install_vcpkg }}
         id: vcpkg
         with:
           pkgs: fmt
@@ -79,6 +85,7 @@ jobs:
           github-binarycache: true
 
       - name: Make json from vcpkg cmake
+        if: ${{ inputs.install_vcpkg }}
         id: vcpkg-json
         run: |
           # Split the string on spaces and assign to variables
