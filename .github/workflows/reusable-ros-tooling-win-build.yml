@@ -59,7 +59,19 @@ jobs:
           token: ${{ github.token }}
           github-binarycache: true
 
-      - run: Write-Output ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}  # just for debugging
+      - name: Make json from vcpkg cmake
+        id: vcpkg-json
+        run: |
+          # Replace forward slashes with backslashes (for Windows)
+          $singlePath = "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}" -replace "/", "\"
+          # Escape backlashes
+          $doublePath = $singlePath -replace "\\", "\\"
+          Write-Host "Transformed output: $doublePath"
+          # Split the string on spaces and assign to variables
+          $variables = $doublePath -split ' '
+          "toolchain-file=$variables[0]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "target-triplet=$variables[1]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "manifest-mode=$variables[2]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
 
       - uses: ros-tooling/setup-ros@0.7.9
         with:
@@ -122,7 +134,9 @@ jobs:
             {
               "build": {
                 "cmake-args": [
-                  ${{ steps.vcpkg.outputs.vcpkg-cmake-config }},
+                  "${{ steps.vcpkg-json.outputs.toolchain-file }}",
+                  "${{ steps.vcpkg-json.outputs.target-triplet }}",
+                  "${{ steps.vcpkg-json.outputs.manifest-mode }}"
                 ]
               },
               "test": {
