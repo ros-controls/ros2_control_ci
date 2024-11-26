@@ -50,6 +50,17 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: vcpkg build
+        uses: johnwason/vcpkg-action@v6
+        id: vcpkg
+        with:
+          pkgs: fmt
+          triplet: x64-windows-release
+          token: ${{ github.token }}
+          github-binarycache: true
+
+      - run: Write-Output ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}  # just for debugging
+
       - uses: ros-tooling/setup-ros@0.7.9
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
@@ -109,6 +120,11 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
+              "build": {
+                "cmake-args": [
+                  ${{ steps.vcpkg.outputs.vcpkg-cmake-config }},
+                ]
+              },
               "test": {
                 "executor": "sequential"
               }
