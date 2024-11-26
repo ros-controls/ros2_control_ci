@@ -55,25 +55,6 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: ros-tooling/setup-ros@0.7.9
-        with:
-          required-ros-distributions: ${{ inputs.ros_distro }}
-          use-ros2-testing: true
-
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.5
-        if: ${{ inputs.install_boost }}
-        id: install-boost
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: 1.86.0
-            # OPTIONAL: Specify a platform version
-            platform_version: 2019
-            # OPTIONAL: Specify a toolset
-            toolset: msvc
-
       - name: vcpkg build
         uses: johnwason/vcpkg-action@v6
         if: ${{ inputs.install_vcpkg }}
@@ -100,9 +81,24 @@ jobs:
           "target-triplet=$var2" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           "manifest-mode=$var3" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
 
-      - name: Install python dependencies
-        run: |
-          pip3 install empty
+      - uses: ros-tooling/setup-ros@0.7.9
+        with:
+          required-ros-distributions: ${{ inputs.ros_distro }}
+          use-ros2-testing: true
+
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.4.5
+        if: ${{ inputs.install_boost }}
+        id: install-boost
+        with:
+            # REQUIRED: Specify the required boost version
+            # A list of supported versions can be found here:
+            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+            boost_version: 1.86.0
+            # OPTIONAL: Specify a platform version
+            platform_version: 2019
+            # OPTIONAL: Specify a toolset
+            toolset: msvc
 
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
