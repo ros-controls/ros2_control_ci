@@ -62,16 +62,17 @@ jobs:
       - name: Make json from vcpkg cmake
         id: vcpkg-json
         run: |
-          # Replace forward slashes with backslashes (for Windows)
-          $singlePath = "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}" -replace "/", "\"
-          # Escape backlashes
+          # Split the string on spaces and assign to variables
+          $variables = "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}" -split ' '
+          # Replace forward slashes with backslashes (for Windows) and escape them for json
+          $singlePath = $variables[0] -replace "/", "\"
           $doublePath = $singlePath -replace "\\", "\\"
           Write-Host "Transformed output: $doublePath"
-          # Split the string on spaces and assign to variables
-          $variables = $doublePath -split ' '
-          "toolchain-file=$variables[0]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          "target-triplet=$variables[1]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          "manifest-mode=$variables[2]" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          $var2 = $variables[1]
+          $var3 = $variables[2]
+          "toolchain-file=$doublePath" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "target-triplet=$var2" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "manifest-mode=$var3" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
 
       - uses: ros-tooling/setup-ros@0.7.9
         with:
