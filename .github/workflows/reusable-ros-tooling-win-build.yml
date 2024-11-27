@@ -81,6 +81,9 @@ jobs:
           "target-triplet=$var2" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           "manifest-mode=$var3" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
 
+          # does this overwrite python setup?
+          cat "D:\a\control_toolbox\control_toolbox\vcpkg\ports\python3\portfile.cmake"
+
       - uses: ros-tooling/setup-ros@0.7.9
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
