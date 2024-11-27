@@ -55,39 +55,15 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: vcpkg build
-        # note: this changes the python version again
-        uses: johnwason/vcpkg-action@v6
-        if: ${{ inputs.install_vcpkg }}
-        id: vcpkg
-        with:
-          pkgs: fmt
-          triplet: x64-windows-release
-          token: ${{ github.token }}
-          github-binarycache: true
-
-      - name: Make json from vcpkg cmake
-        if: ${{ inputs.install_vcpkg }}
-        id: vcpkg-json
+      - name: Install fmt
         run: |
-          # Split the string on spaces and assign to variables
-          $variables = "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}" -split ' '
-          # Replace forward slashes with backslashes (for Windows) and escape them for json
-          $singlePath = $variables[0] -replace "/", "\"
-          $doublePath = $singlePath -replace "\\", "\\"
-          Write-Host "Transformed output: $doublePath"
-          $var2 = $variables[1]
-          $var3 = $variables[2]
-          "toolchain-file=$doublePath" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          "target-triplet=$var2" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          "manifest-mode=$var3" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          python3 --version
-
-      - uses: actions/setup-python@v5
-        # setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
-        # let's use the same version here for the later action-ros-ci step
-        with:
-          python-version: '3.8'
+          git clone https://github.com/fmtlib/fmt.git
+          cd fmt
+          mkdir build
+          cd build
+          cmake ..
+          ls
+          cmake --build . --target INSTALL --config Release
 
       - uses: ros-tooling/setup-ros@0.7.9
         with:
@@ -153,13 +129,6 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
-              "build": {
-                "cmake-args": [
-                  "${{ steps.vcpkg-json.outputs.toolchain-file }}",
-                  "${{ steps.vcpkg-json.outputs.target-triplet }}",
-                  "${{ steps.vcpkg-json.outputs.manifest-mode }}"
-                ]
-              },
               "test": {
                 "executor": "sequential"
               }
