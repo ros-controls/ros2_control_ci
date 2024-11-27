@@ -55,28 +55,31 @@ jobs:
         with:
           python-version: '3.8'
 
-      # install more dependencies here, we can't use vcpkg because it overrides the python version
-      # and colcon fails later
-      - name: Install Eigen
-        run: |
-            Invoke-WebRequest -Uri https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip -OutFile eigen-3.4.0.zip
-            Expand-Archive -Path eigen-3.4.0.zip -DestinationPath C:\Eigen
-            Move-Item -Path C:\Eigen\eigen-3.4.0\* -Destination C:\Eigen
-            Remove-Item -Path C:\Eigen\eigen-3.4.0 -Recurse
-            cd C:\Eigen
-            ls
-            cmake -B build -DCMAKE_INSTALL_PREFIX="C:\EigenInstall"
-            cmake --build build --target install
+      - name: vcpkg build
+        uses: johnwason/vcpkg-action@v6
+        if: ${{ inputs.install_vcpkg }}
+        id: vcpkg
+        with:
+          pkgs: fmt eigen3
+          triplet: x64-windows-release
+          token: ${{ github.token }}
+          github-binarycache: true
 
-      - name: Install fmt
+      - name: Make json from vcpkg cmake
+        if: ${{ inputs.install_vcpkg }}
+        id: vcpkg-json
         run: |
-          git clone https://github.com/fmtlib/fmt.git
-          cd fmt
-          mkdir build
-          cd build
-          cmake ..
-          ls
-          cmake --build . --target INSTALL --config Release
+          # Split the string on spaces and assign to variables
+          $variables = "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}" -split ' '
+          # Replace forward slashes with backslashes (for Windows) and escape them for json
+          $singlePath = $variables[0] -replace "/", "\"
+          $doublePath = $singlePath -replace "\\", "\\"
+          Write-Host "Transformed output: $doublePath"
+          $var2 = $variables[1]
+          $var3 = $variables[2]
+          "toolchain-file=$doublePath" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "target-triplet=$var2" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          "manifest-mode=$var3" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
 
       - uses: ros-tooling/setup-ros@0.7.9
         with:
@@ -142,6 +145,13 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
+              "build": {
+                "cmake-args": [
+                  "${{ steps.vcpkg-json.outputs.toolchain-file }}",
+                  "${{ steps.vcpkg-json.outputs.target-triplet }}",
+                  "${{ steps.vcpkg-json.outputs.manifest-mode }}"
+                ]
+              },
               "test": {
                 "executor": "sequential"
               }
