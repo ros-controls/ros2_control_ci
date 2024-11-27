@@ -50,6 +50,11 @@ jobs:
       repo_path: src/${{ github.repository }}
     steps:
 
+      - uses: actions/setup-python@v5
+        # let's use the same version here for the later action-ros-ci step
+        with:
+          python-version: '3.12'
+
       - uses: christophfroehlich/setup-ros@master
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
