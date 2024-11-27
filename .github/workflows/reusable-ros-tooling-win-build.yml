@@ -55,6 +55,19 @@ jobs:
         with:
           python-version: '3.8'
 
+      # install more dependencies here, we can't use vcpkg because it overrides the python version
+      # and colcon fails later
+      - name: Install Eigen
+        run: |
+            Invoke-WebRequest -Uri https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip -OutFile eigen-3.4.0.zip
+            Expand-Archive -Path eigen-3.4.0.zip -DestinationPath C:\Eigen
+            Move-Item -Path C:\Eigen\eigen-3.4.0\* -Destination C:\Eigen
+            Remove-Item -Path C:\Eigen\eigen-3.4.0 -Recurse
+            cd C:\Eigen
+            ls
+            cmake -B build -DCMAKE_INSTALL_PREFIX="C:\EigenInstall"
+            cmake --build build --target install
+
       - name: Install fmt
         run: |
           git clone https://github.com/fmtlib/fmt.git
