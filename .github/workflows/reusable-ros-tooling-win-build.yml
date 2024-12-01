@@ -65,6 +65,7 @@ jobs:
         if: ${{ inputs.install_vcpkg }}
         id: vcpkg
         with:
+          # eigen should be installed with setup-ros, but cmake can't find it in the action-ros-ci step
           pkgs: fmt eigen3
           triplet: x64-windows-release
           token: ${{ github.token }}
