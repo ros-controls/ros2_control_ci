@@ -100,13 +100,13 @@ jobs:
       - name: Set windows dependencies variable
         id: set_windows_dependencies
         run: |
-          if (Test-Path ${{ env.repo_path }}/${{ inputs.windows_dependencies }}) {
+            if (${{ inputs.windows_dependencies }} -ne '' -and Test-Path ${{ env.repo_path }}/${{ inputs.windows_dependencies }}) {
               Write-Output "Windows repos file found"
               "repo_file=${{ env.repo_path }}/${{ inputs.windows_dependencies }}" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          } else {
-            Write-Output "No local repos file found"
-            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          }
+            } else {
+              Write-Output "No windows dependencies provided or file not found"
+              "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+            }
 
       - uses: ros-tooling/action-ros-ci@0.3.15
         env:
