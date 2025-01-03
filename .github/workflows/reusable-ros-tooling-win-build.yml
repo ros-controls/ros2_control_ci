@@ -109,6 +109,7 @@ jobs:
           }
 
       - uses: ros-tooling/action-ros-ci@0.3.15
+        # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
         env:
             BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
         with:
