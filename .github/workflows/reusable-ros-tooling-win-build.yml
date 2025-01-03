@@ -24,6 +24,16 @@ on:
         required: false
         default: ''
         type: string
+      windows_dependencies:
+        description: 'Path to a repos file with additional windows dependencies'
+        required: false
+        default: ''
+        type: string
+      install_boost:
+        description: 'Install boost for the build'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -45,6 +55,22 @@ jobs:
           required-ros-distributions: ${{ inputs.ros_distro }}
           use-ros2-testing: true
 
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.4.5
+        if: ${{ inputs.install_boost }}
+        id: install-boost
+        with:
+            # REQUIRED: Specify the required boost version
+            # A list of supported versions can be found here:
+            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+            boost_version: 1.86.0
+            # OPTIONAL: Specify a platform version
+            platform_version: 2019
+            # OPTIONAL: Specify a toolset
+            toolset: msvc
+            # Whether the boost libraries will be supplied through static or shared libraries
+            link: shared
+
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v4
@@ -65,30 +91,42 @@ jobs:
       - name: Check for local repos file
         id: check_local_repos
         run: |
-          if (Test-Path ${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
+          if (Test-Path ${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
               Write-Output "Local repos file found"
-              "repo_file=${{ env.repo_path }}/${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+              "repo_file=${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           } else {
             Write-Output "No local repos file found"
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.8'
+      - name: Set windows dependencies variable
+        id: set_windows_dependencies
+        run: |
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") -and (Test-Path "${{ env.repo_path }}\${{ inputs.windows_dependencies }}")) {
+            Write-Output "Windows repos file found"
+            "repo_file=${{ env.repo_path }}\${{ inputs.windows_dependencies }}" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          } else {
+            Write-Output "No windows dependencies provided or file not found"
+            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          }
 
       - uses: ros-tooling/action-ros-ci@0.3.15
+        # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
+        env:
+            BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           vcs-repo-file-url: |
             ${{ steps.check_local_repos.outputs.repo_file }}
+            ${{ steps.set_windows_dependencies.outputs.repo_file }}
+
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
-                "test": {
-                    "executor": "sequential"
-                }
+              "test": {
+                "executor": "sequential"
+              }
             }
         id: action-ros
 
