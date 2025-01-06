@@ -56,7 +56,7 @@ jobs:
           use-ros2-testing: true
 
       - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.5
+        uses: MarkusJx/install-boost@v2.5.0
         if: ${{ inputs.install_boost }}
         id: install-boost
         with:
