@@ -82,7 +82,7 @@ jobs:
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
 
-      - uses: ros-tooling/action-ros-ci@0.3.15
+      - uses: ros-tooling/action-ros-ci@0.3.16
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
