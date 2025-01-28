@@ -18,10 +18,13 @@ jobs:
       - uses: ros-industrial/industrial_ci@master
         env:
           DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
-          ROS_REPO: main
+          ROS_DISTRO: ${{ inputs.ros_distro }}
+          ROS_REPO: testing
           ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
           NOT_TEST_BUILD: true
+          BASEDIR: ${{ github.workspace }}/.work
       - uses: actions/upload-artifact@v4.6.0
+        if: always()
         with:
-          name: abi-checker-logs
-          path: /root/abicheck/${{ github.base_ref }}
+          name: abi-checker-report-${{ inputs.ros_distro }}
+          path: ${{ github.workspace }}/.work/abicheck/${{ github.base_ref }}
