@@ -80,5 +80,5 @@ jobs:
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon test --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
