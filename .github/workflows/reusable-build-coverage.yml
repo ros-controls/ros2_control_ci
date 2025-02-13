@@ -76,8 +76,11 @@ jobs:
       - name: Check for local repos file
         id: check_local_repos
         run: |
-          if [ -f ${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
-            echo "Local repos file found"
+          if [ -f ${{ steps.package_list_action.outputs.repo_name }}-not-released.${{ inputs.ros_distro }}.repos ]; then
+            echo "Local repos file found for a semi-binary build"
+            echo "repo_file=${{ steps.package_list_action.outputs.repo_name }}-not-released.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
+          elif [ -f ${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos ]; then
+            echo "Local repos file for a binary build found"
             echo "repo_file=${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" >> $GITHUB_OUTPUT
           else
             echo "No local repos file found"
