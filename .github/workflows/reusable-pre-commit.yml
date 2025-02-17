@@ -39,7 +39,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.9
+      - uses: ros-tooling/setup-ros@0.7.10
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
