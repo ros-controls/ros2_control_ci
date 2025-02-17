@@ -50,7 +50,7 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: ros-tooling/setup-ros@0.7.9
+      - uses: ros-tooling/setup-ros@0.7.10
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
           use-ros2-testing: true
