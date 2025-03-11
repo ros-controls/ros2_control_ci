@@ -7,10 +7,8 @@ repositories:
     type: git
     url: https://github.com/ros-controls/control_toolbox.git
     version: ros2-master
-  ros-controls/gazebo_ros2_control:
-    type: git
-    url: https://github.com/ros-controls/gazebo_ros2_control.git
-    version: master
+  # Deactivate gz_ros2_control compatibility build
+  #  https://github.com/ros-controls/ros2_control_ci/pull/77
   # ros-controls/gz_ros2_control:
   #   type: git
   #   url: https://github.com/ros-controls/gz_ros2_control.git
@@ -27,6 +25,8 @@ repositories:
     type: git
     url: https://github.com/ros-controls/ros2_control.git
     version: master
+  # Deactivate gz_ros2_control compatibility build
+  #  https://github.com/ros-controls/ros2_control_ci/pull/77
   # ros-controls/ros2_control_demos:
   #   type: git
   #   url: https://github.com/ros-controls/ros2_control_demos.git
