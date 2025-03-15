@@ -61,7 +61,7 @@ jobs:
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
           fi
-          dnf check-update || true # update the cache but don't fail if there are updates available
+          dnf makecache --refresh # just updating cache, no packages are installed
           rosdep update --rosdistro ${{ inputs.ros_distro }}
           rosdep install -iyr --from-path src || true # ignore errors, as some packages might not be available
       - id: package_list_action
