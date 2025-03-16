@@ -2,11 +2,11 @@ repositories:
   ros-controls/control_msgs:
     type: git
     url: https://github.com/ros-controls/control_msgs.git
-    version: master
+    version: jazzy
   ros-controls/control_toolbox:
     type: git
     url: https://github.com/ros-controls/control_toolbox.git
-    version: ros2-master
+    version: jazzy
   ros-controls/gz_ros2_control:
     type: git
     url: https://github.com/ros-controls/gz_ros2_control.git
@@ -14,7 +14,7 @@ repositories:
   ros-controls/kinematics_interface:
     type: git
     url: https://github.com/ros-controls/kinematics_interface.git
-    version: master
+    version: jazzy
   ros-controls/realtime_tools:
     type: git
     url: https://github.com/ros-controls/realtime_tools.git
