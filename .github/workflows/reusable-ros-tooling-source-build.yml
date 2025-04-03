@@ -65,7 +65,6 @@ jobs:
         with:
           use-ros2-testing: true
       - name: Check CMake version
-        id: check_local_repos
         run: |
           cmake --version || true
 
