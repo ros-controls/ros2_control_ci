@@ -45,6 +45,8 @@ jobs:
           command -v sudo >/dev/null 2>&1 || (apt update && apt install -y sudo)
           DEBIAN_FRONTEND=noninteractive sudo apt update && sudo apt upgrade -y
           echo "need_node=$(command -v node >/dev/null 2>&1 && echo 0 || echo 1)" >> $GITHUB_OUTPUT
+          cmake --version || true
+          apt remove -y cmake || true
 
       # needed for github actions, and only if a bare ubuntu image is used
       - uses: actions/setup-node@v4
@@ -62,6 +64,11 @@ jobs:
       - uses: ros-tooling/setup-ros@0.7.10
         with:
           use-ros2-testing: true
+      - name: Check CMake version
+        id: check_local_repos
+        run: |
+          cmake --version || true
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
