@@ -60,13 +60,15 @@ jobs:
           curl -sS https://webi.sh/node | sh
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
+      - name: Install cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.31.6'
+
       # needed only if a non-ros image is used
       - uses: ros-tooling/setup-ros@0.7.10
         with:
           use-ros2-testing: true
-      - name: Check CMake version
-        run: |
-          cmake --version || true
 
       - uses: actions/checkout@v4
         with:
