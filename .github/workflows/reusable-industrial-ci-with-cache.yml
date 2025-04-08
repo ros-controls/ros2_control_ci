@@ -119,8 +119,8 @@ jobs:
           NOT_TEST_BUILD: ${{ inputs.not_test_build }}
           DOWNSTREAM_WORKSPACE: ${{ inputs.downstream_workspace }}
           NOT_TEST_DOWNSTREAM: ${{ inputs.not_test_downstream }}
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
-          ROS_REPO: ${{ steps.docker_image.outputs.DOCKER_IMAGE }}
+          DOCKER_IMAGE: ${{ steps.docker_image.outputs.DOCKER_IMAGE }}
+          ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
           ADDITIONAL_DEBS: ${{ inputs.additional_debs }}
