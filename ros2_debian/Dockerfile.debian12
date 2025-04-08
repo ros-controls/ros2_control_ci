@@ -125,7 +125,7 @@ RUN \
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-ADD ros-controls.$ROS_DISTRO.repos .
+COPY ros-controls.$ROS_DISTRO.repos .
 RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
   vcs import src < ros-controls.$ROS_DISTRO.repos
 # build source, ROS core
@@ -143,7 +143,7 @@ RUN \
   rm -rf log src build
 
 # add default.yaml to the image
-ADD defaults.yaml /root/.colcon/defaults.yaml
+COPY defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on debian12, so install it via pip
 RUN pip3 install --no-cache-dir graphviz --break-system-packages

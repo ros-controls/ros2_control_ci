@@ -9,8 +9,8 @@ RUN dnf install -y langpacks-en glibc-langpack-en \
   dnf install -y 'dnf-command(config-manager)' epel-release && \
   dnf config-manager --set-enabled crb
 
-# ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
-ADD http://packages.ros.org/ros2-testing/rhel/ros2-testing.repo /etc/yum.repos.d/ros2.repo
+# COPY http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+COPY http://packages.ros.org/ros2-testing/rhel/ros2-testing.repo /etc/yum.repos.d/ros2.repo
 RUN dnf makecache -y
 RUN dnf install -y \
   gcc-c++ \
@@ -65,7 +65,7 @@ RUN colcon mixin add default \
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-ADD ros-controls.rhel9.repos .
+COPY ros-controls.rhel9.repos .
 RUN vcs import src < ros-controls.rhel9.repos && \
   source /opt/ros/$ROS_DISTRO/setup.sh && \
   rosdep init && \

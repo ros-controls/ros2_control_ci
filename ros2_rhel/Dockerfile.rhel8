@@ -2,7 +2,7 @@ FROM almalinux:8
 ARG ROS_DISTRO=rolling
 
 # install ros
-ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+COPY http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
@@ -37,7 +37,7 @@ RUN colcon mixin add default \
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-ADD ros-controls.rhel8.repos .
+COPY ros-controls.rhel8.repos .
 RUN vcs import src < ros-controls.rhel8.repos && \
   source /opt/ros/$ROS_DISTRO/setup.bash && \
   rosdep update --rosdistro $ROS_DISTRO && \
@@ -49,7 +49,7 @@ RUN vcs import src < ros-controls.rhel8.repos && \
   rm -rf log src build
 
 # add default.yaml to the image
-ADD defaults.yaml /root/.colcon/defaults.yaml
+COPY defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on rhel8, so install it via pip
 RUN pip3 install --no-cache-dir graphviz
