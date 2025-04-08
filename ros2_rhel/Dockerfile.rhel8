@@ -1,0 +1,65 @@
+FROM almalinux:8
+ARG ROS_DISTRO=rolling
+
+# install ros
+ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+RUN dnf install \
+  'dnf-command(config-manager)' \
+  epel-release \
+  cmake \
+  gcc-c++ \
+  make \
+  langpacks-en \
+  git \
+  wget \
+  -y --refresh \
+  && dnf config-manager --set-enabled powertools \
+  && dnf clean all
+
+ENV ROS_DISTRO=${ROS_DISTRO}
+RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
+  python3-rosdep \
+  python3-colcon-common-extensions \
+  && dnf clean all \
+  && rosdep init
+# somehow a wrong version of empy is installed, so we have to uninstall it first
+RUN pip3 uninstall -y empy && pip3 install --no-cache-dir vcstool colcon-mixin colcon-coveragepy-result colcon-lcov-result lark empy==3.3.4
+
+# setup colcon mixin and metadata
+RUN colcon mixin add default \
+  https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml && \
+  colcon mixin update && \
+  colcon metadata add default \
+  https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
+  colcon metadata update
+
+# build generate_parameter_library and other deps from source
+ENV ROS2_WS=/opt/ros2_ws
+RUN mkdir -p $ROS2_WS/src
+WORKDIR $ROS2_WS
+COPY ros-controls.rhel8.repos .
+RUN vcs import src < ros-controls.rhel8.repos && \
+  . /opt/ros/$ROS_DISTRO/setup.bash && \
+  rosdep update --rosdistro $ROS_DISTRO && \
+  rosdep install -iyr --from-path src && \
+  colcon build \
+  --mixin release build-testing-off \
+  --cmake-args --no-warn-unused-cli \
+  --packages-up-to generate_parameter_library pal_statistics && \
+  rm -rf log src build
+
+# add default.yaml to the image
+COPY defaults.yaml /root/.colcon/defaults.yaml
+
+# there is no python3-graphviz on rhel8, so install it via pip
+RUN pip3 install --no-cache-dir graphviz
+
+# set up sourcing of ros
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+CMD ["bash"]
+
+# setup github labels
+LABEL org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
+LABEL org.opencontainers.image.description="RHEL 8 for ros-controls"
+LABEL org.opencontainers.image.licenses=Apache-2.0

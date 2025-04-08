@@ -1,0 +1,5 @@
+{
+    "build": {
+        "mixin": ["rel-with-deb-info"]
+    }
+}
