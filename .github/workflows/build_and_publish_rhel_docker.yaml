@@ -30,6 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
+          context: ros2_rhel
           push: true
           file: Dockerfile.rhel8
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-rhel
@@ -54,6 +55,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
+          context: ros2_rhel
           push: true
           file: Dockerfile.rhel9
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-rhel

@@ -30,6 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
+          context: ros2_debian
           push: true
           file: Dockerfile.debian11
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-debian
@@ -54,6 +55,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
+          context: ros2_debian
           push: true
           file: Dockerfile.debian12
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-debian
