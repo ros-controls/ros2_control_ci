@@ -152,3 +152,8 @@ RUN pip3 install graphviz --break-system-packages
 COPY ./ros_entrypoint.sh /
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 CMD ["bash"]
+
+# setup github labels
+LABEL org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
+LABEL org.opencontainers.image.description="Debian 12 for ros-controls"
+LABEL org.opencontainers.image.licenses=Apache-2.0
