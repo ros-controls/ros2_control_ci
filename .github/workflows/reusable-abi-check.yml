@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ros-industrial/industrial_ci@master
         env:
-          DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
+          DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing
           ROS_DISTRO: ${{ inputs.ros_distro }}
           ROS_REPO: testing
           ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
