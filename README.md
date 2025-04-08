@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This repository holds reusable workflows for CI of the ros2_control framework as well as docker images for building the ros2_control stack on different platforms.
+This repository holds reusable workflows for CI of the ros2_control framework as well as docker images for building the ros2_control stack on different platforms, supporting all current releases as by [REP-2000](https://ros.org/reps/rep-2000.html).
 
 It also builds the full ros2_control stack once per day.
 
@@ -25,8 +25,6 @@ We thrive to make the rolling development version of the ros2_control stack comp
 This is a sample Dockerfile that show ros2 installed on almalinux based on the [binary installation instructions at docs.ros.org](https://docs.ros.org/en/rolling/Installation/RHEL-Install-RPMs.html). The most recent public build can be found with the docker tag: `ghcr.io/ros-controls/ros:<ROS_DISTRO>-rhel` where `<ROS_DISTRO>` is replaced with the ros distribution you are targeting.
 
 The image tries to emulate the official ros2 images but on alma (downstream RHEL) linux. Therefore a few extra packages can be found within this repo that are not mentioned at the above link, i.e. colcon, etc.
-
-Only supports galactic and later releases as that is what the [ros2 buildfarm supports for RHEL](https://ros.org/reps/rep-2000.html#galactic-geochelone-may-2021-november-2022).
 
 ## ros2_debian
 
