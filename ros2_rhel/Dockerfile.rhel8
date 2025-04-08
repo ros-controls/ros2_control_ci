@@ -2,7 +2,7 @@ FROM almalinux:8
 ARG ROS_DISTRO=rolling
 
 # install ros
-COPY http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
@@ -39,7 +39,7 @@ RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
 COPY ros-controls.rhel8.repos .
 RUN vcs import src < ros-controls.rhel8.repos && \
-  source /opt/ros/$ROS_DISTRO/setup.bash && \
+  . /opt/ros/$ROS_DISTRO/setup.bash && \
   rosdep update --rosdistro $ROS_DISTRO && \
   rosdep install -iyr --from-path src && \
   colcon build \

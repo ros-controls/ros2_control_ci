@@ -148,7 +148,7 @@ RUN colcon \
 COPY defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on debian11, so install it via pip
-RUN pip3 install graphviz
+RUN pip3 install --no-cache-dir graphviz
 
 # set up sourcing of ros
 COPY ./ros_entrypoint.sh /
