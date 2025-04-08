@@ -1,5 +1,5 @@
 ---
-name: build and publish rhel docker images
+name: Build and publish RHEL docker images
 
 on:
   workflow_dispatch:
