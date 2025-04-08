@@ -45,10 +45,10 @@ RUN set -eux; \
 # Setup sources.list
 RUN echo "deb [ signed-by=/usr/share/keyrings/ros2-latest-archive-keyring.gpg ] http://packages.ros.org/ros2/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros2-latest.list
 # Setup environment
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
-ENV ROS_DISTRO ${ROS_DISTRO}
+ENV ROS_DISTRO=${ROS_DISTRO}
 
 # Install ROS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -60,3 +60,8 @@ COPY ./ros_entrypoint.sh /
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
+
+# setup github labels
+LABEL org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
+LABEL org.opencontainers.image.description="${FROM}/${ROS_DISTRO} for ros-controls"
+LABEL org.opencontainers.image.licenses=Apache-2.0
