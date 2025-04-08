@@ -126,7 +126,7 @@ RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
 ADD ros-controls.$ROS_DISTRO.repos .
 RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
-  vcs import src < ros-controls.$ROS_DISTRO.repos \
+  vcs import src < ros-controls.$ROS_DISTRO.repos && \
   # build source, ROS core
   rosdep init && \
   rosdep update --rosdistro $ROS_DISTRO && \
