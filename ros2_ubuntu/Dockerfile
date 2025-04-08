@@ -53,7 +53,7 @@ ENV ROS_DISTRO=${ROS_DISTRO}
 
 # Install ROS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-${ROS_DISTRO}-ros-core \
+    ros-${ROS_DISTRO}-ros-base \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup entrypoint
