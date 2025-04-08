@@ -3,10 +3,11 @@ ARG ROS_DISTRO=rolling
 
 # ROS prerequisites
 # see https://docs.ros.org/en/rolling/Installation/RHEL-Install-RPMs.html
-RUN dnf install -y langpacks-en glibc-langpack-en
-RUN export LANG=en_US.UTF-8
-RUN dnf install -y 'dnf-command(config-manager)' epel-release
-RUN dnf config-manager --set-enabled crb
+RUN dnf install -y langpacks-en glibc-langpack-en \
+  && dnf clean all && \
+  export LANG=en_US.UTF-8 && \
+  dnf install -y 'dnf-command(config-manager)' epel-release && \
+  dnf config-manager --set-enabled crb
 
 # ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
 ADD http://packages.ros.org/ros2-testing/rhel/ros2-testing.repo /etc/yum.repos.d/ros2.repo
@@ -26,12 +27,13 @@ RUN dnf install -y \
   python3-rosdep \
   python3-setuptools \
   python3-vcstool \
-  wget
+  wget \
+  && dnf clean all
 
 # install some pip packages needed for testing and
 # not available as RPMs
 # use the same versions as on Ubuntu Jammy
-RUN python3 -m pip install -U --user \
+RUN python3 -m pip install --no-cache-dir -U --user \
   flake8==4.0.1 \
   pyflakes==2.4.0 \
   flake8-blind-except==0.1.1 \
@@ -41,15 +43,15 @@ RUN python3 -m pip install -U --user \
 
 # install ros-base
 ENV ROS_DISTRO=${ROS_DISTRO}
-RUN dnf install -y ros-${ROS_DISTRO}-ros-base
+RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
+  && dnf clean all
 
 # install cmake 3.22.1 (the same version as Ubuntu Jammy default). Needed for RSL
+WORKDIR /usr
 RUN \
-  cd && \
-  wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
-  cd /usr && \
-  tar --strip-components=1 -xzf ~/cmake-3.22.1-linux-x86_64.tar.gz  && \
-  rm ~/cmake-3.22.1-linux-x86_64.tar.gz
+  wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
+  tar --strip-components=1 -xzf cmake-3.22.1-linux-x86_64.tar.gz  && \
+  rm cmake-3.22.1-linux-x86_64.tar.gz
 
 # setup colcon mixin and metadata
 RUN colcon mixin add default \
@@ -79,7 +81,7 @@ RUN vcs import src < ros-controls.rhel9.repos && \
 ADD defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on rhel9, so install it via pip
-RUN pip3 install graphviz
+RUN pip3 install --no-cache-dir graphviz
 
 # set up sourcing of ros
 COPY ./ros_entrypoint.sh /

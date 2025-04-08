@@ -9,7 +9,7 @@ ARG NUM_THREADS=8
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update all packages
-RUN apt-get update && apt-get -y dist-upgrade \
+RUN apt-get update && apt-get -y upgrade \
   && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get -y dist-upgrade \
 # install system dependencies
 RUN apt-get update -y -qq && \
   : "system dependencies" && \
-  apt-get install -y -qq \
+  apt-get install -y -qq --no-install-recommends \
   \
   acl \
   aptitude \
@@ -118,12 +118,11 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 # install cmake 3.22.1 (the same version as Ubuntu Jammy default). Needed for RSL
+WORKDIR /usr
 RUN \
-  cd && \
-  wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
-  cd /usr && \
-  tar --strip-components=1 -xzf ~/cmake-3.22.1-linux-x86_64.tar.gz  && \
-  rm ~/cmake-3.22.1-linux-x86_64.tar.gz
+  wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
+  tar --strip-components=1 -xzf cmake-3.22.1-linux-x86_64.tar.gz  && \
+  rm cmake-3.22.1-linux-x86_64.tar.gz
 
 # ---- ROS ----
 # clone source, ROS core

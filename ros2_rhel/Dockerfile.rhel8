@@ -12,16 +12,18 @@ RUN dnf install \
   langpacks-en \
   git \
   wget \
-  -y --refresh
-RUN dnf config-manager --set-enabled powertools
+  -y --refresh \
+  && dnf config-manager --set-enabled powertools \
+  && dnf clean all
 
 ENV ROS_DISTRO=${ROS_DISTRO}
 RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
   python3-rosdep \
-  python3-colcon-common-extensions
-RUN rosdep init
+  python3-colcon-common-extensions \
+  && dnf clean all \
+  && rosdep init
 # somehow a wrong version of empy is installed, so we have to uninstall it first
-RUN pip3 uninstall -y empy && pip3 install vcstool colcon-mixin colcon-coveragepy-result colcon-lcov-result lark empy==3.3.4
+RUN pip3 uninstall -y empy && pip3 install --no-cache-dir vcstool colcon-mixin colcon-coveragepy-result colcon-lcov-result lark empy==3.3.4
 
 # setup colcon mixin and metadata
 RUN colcon mixin add default \
@@ -50,7 +52,7 @@ RUN vcs import src < ros-controls.rhel8.repos && \
 ADD defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on rhel8, so install it via pip
-RUN pip3 install graphviz
+RUN pip3 install --no-cache-dir graphviz
 
 # set up sourcing of ros
 COPY ./ros_entrypoint.sh /

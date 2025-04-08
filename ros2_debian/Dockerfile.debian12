@@ -8,7 +8,7 @@ ARG NUM_THREADS=8
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update all packages
-RUN apt-get update && apt-get -y dist-upgrade \
+RUN apt-get update && apt-get -y upgrade \
   && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get -y dist-upgrade \
 # install system dependencies
 RUN apt-get update -y -qq && \
   : "system dependencies" && \
-  apt-get install -y -qq \
+  apt-get install -y -qq --no-install-recommends \
   \
   acl \
   aptitude \
@@ -91,7 +91,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # colcon-devtools>0.2.3 is not released for debian12, so override it with pip
   # typing_extensions needs to be >4.7.0, but is available on apt with 4.4.0 only
   apt-get remove -y python3-colcon-devtools && \
-  pip3 install colcon-devtools typing_extensions --break-system-package && \
+  pip3 install --no-cache-dir colcon-devtools typing_extensions --break-system-package && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
 
@@ -146,7 +146,7 @@ RUN \
 ADD defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on debian12, so install it via pip
-RUN pip3 install graphviz --break-system-packages
+RUN pip3 install --no-cache-dir graphviz --break-system-packages
 
 # set up sourcing of ros
 COPY ./ros_entrypoint.sh /
