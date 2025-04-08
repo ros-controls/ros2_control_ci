@@ -125,9 +125,11 @@ ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
 ADD ros-controls.$ROS_DISTRO.repos .
-RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
+RUN \
+  : "build ROS core from source" \
+  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
   vcs import src < ros-controls.$ROS_DISTRO.repos && \
-  # build source, ROS core
+  apt-get update -y -qq && \
   rosdep update --rosdistro $ROS_DISTRO && \
   rosdep install -iyr --from-path src || true && \
   colcon build \
@@ -140,6 +142,9 @@ RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/r
     ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs \
     sdformat_urdf && \
   rm -rf log src build
+  && \
+  : "remove cache" && \
+  rm -rf /var/lib/apt/lists/*
 
 # add default.yaml to the image
 ADD defaults.yaml /root/.colcon/defaults.yaml
