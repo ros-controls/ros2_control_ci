@@ -1,0 +1,58 @@
+FROM almalinux:8
+ARG ROS_DISTRO=rolling
+
+# install ros
+ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+RUN dnf install \
+  'dnf-command(config-manager)' \
+  epel-release \
+  cmake \
+  gcc-c++ \
+  make \
+  langpacks-en \
+  git \
+  wget \
+  -y --refresh
+RUN dnf config-manager --set-enabled powertools
+
+ENV ROS_DISTRO=${ROS_DISTRO}
+RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
+python3-rosdep \
+python3-colcon-common-extensions
+RUN rosdep init
+# somehow a wrong version of empty is installed, so we have to uninstall it first
+RUN pip3 uninstall -y empty && pip3 install vcstool colcon-mixin colcon-coveragepy-result colcon-lcov-result lark empty==3.3.4
+
+# setup colcon mixin and metadata
+RUN colcon mixin add default \
+  https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml && \
+  colcon mixin update && \
+  colcon metadata add default \
+  https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
+  colcon metadata update
+
+# build generate_parameter_library and other deps from source
+ENV ROS2_WS=/opt/ros2_ws
+RUN mkdir -p $ROS2_WS/src
+WORKDIR $ROS2_WS
+ADD ros-controls.rhel8.repos .
+RUN vcs import src < ros-controls.rhel8.repos && \
+  source /opt/ros/$ROS_DISTRO/setup.bash && \
+  rosdep update --rosdistro $ROS_DISTRO && \
+  rosdep install -iyr --from-path src && \
+  colcon build \
+    --mixin release build-testing-off \
+    --cmake-args --no-warn-unused-cli \
+    --packages-up-to generate_parameter_library pal_statistics && \
+    rm -rf log src build
+
+# add default.yaml to the image
+ADD defaults.yaml /root/.colcon/defaults.yaml
+
+# there is no python3-graphviz on rhel8, so install it via pip
+RUN pip3 install graphviz
+
+# set up sourcing of ros
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+CMD ["bash"]
