@@ -141,8 +141,7 @@ RUN \
     backward_ros pal_statistics \
     ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs \
     sdformat_urdf && \
-  rm -rf log src build
-  && \
+  rm -rf log src build && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
 
