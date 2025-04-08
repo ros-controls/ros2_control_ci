@@ -38,7 +38,7 @@ jobs:
         with:
           context: ros2_debian
           push: true
-          file: Dockerfile.${{ matrix.debian_version }}
+          file: ros2_debian/Dockerfile.${{ matrix.debian_version }}
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-debian
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
