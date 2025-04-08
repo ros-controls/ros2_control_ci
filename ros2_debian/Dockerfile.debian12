@@ -136,6 +136,7 @@ RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/r
 # build source, ROS core
 RUN \
   : "build ROS core from source" && \
+  . "$HOME/.cargo/env" && \
   colcon  build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized"  \
