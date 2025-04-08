@@ -23,7 +23,6 @@ RUN apt-get update -y -qq && \
   autoconf \
   automake \
   build-essential \
-  cargo \
   cmake \
   curl \
   dnsutils \
@@ -119,6 +118,12 @@ RUN \
   && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
+
+# rust, needed for zenoh
+RUN \
+  curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y && \
+  . "$HOME/.cargo/env" && \
+  rustc --version
 
 # ---- ROS ----
 # clone source, ROS core
