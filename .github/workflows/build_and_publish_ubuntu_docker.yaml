@@ -22,10 +22,22 @@ jobs:
         include:
           - ros_distro: 'humble'
             base_image: 'ubuntu:jammy'
+            ros-repo-packages: ""
           - ros_distro: 'jazzy'
             base_image: 'ubuntu:noble'
+            ros-repo-packages: ""
           - ros_distro: 'rolling'
             base_image: 'ubuntu:noble'
+            ros-repo-packages: ""
+          - ros_distro: 'humble'
+            base_image: 'ubuntu:jammy'
+            ros-repo-packages: "-testing"
+          - ros_distro: 'jazzy'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: "-testing"
+          - ros_distro: 'rolling'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: "-testing"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -39,7 +51,8 @@ jobs:
           context: ros2_ubuntu
           push: false
           file: ros2_ubuntu/Dockerfile
-          tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-ubuntu
+          tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-ubuntu${{ matrix.ros-repo-packages }}
           build-args: |
             FROM=${{ matrix.base_image }}
             ROS_DISTRO=${{ matrix.ros_distro }}
+            ROS_REPO_PACKAGES=${{ matrix.ros-repo-packages }}

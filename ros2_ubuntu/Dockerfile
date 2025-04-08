@@ -17,6 +17,7 @@ ARG FROM=ubuntu:noble
 FROM ${FROM}
 
 ARG ROS_DISTRO=rolling
+ARG ROS_REPO_PACKAGES=""
 
 # Setup timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
@@ -43,7 +44,7 @@ RUN set -eux; \
        rm -rf "$GNUPGHOME"
 
 # Setup sources.list
-RUN echo "deb [ signed-by=/usr/share/keyrings/ros2-latest-archive-keyring.gpg ] http://packages.ros.org/ros2/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros2-latest.list
+RUN echo "deb [ signed-by=/usr/share/keyrings/ros2-latest-archive-keyring.gpg ] http://packages.ros.org/ros2${ROS_REPO_PACKAGES}/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros2-latest.list
 # Setup environment
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
