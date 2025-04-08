@@ -70,10 +70,10 @@ RUN vcs import src < ros-controls.rhel9.repos && \
   rosdep update --rosdistro $ROS_DISTRO && \
   rosdep install -iyr --from-path src || true && \
   colcon build \
-    --mixin release build-testing-off \
-    --cmake-args --no-warn-unused-cli \
-    --packages-up-to generate_parameter_library pal_statistics && \
-    rm -rf log src build
+  --mixin release build-testing-off \
+  --cmake-args --no-warn-unused-cli \
+  --packages-up-to generate_parameter_library pal_statistics && \
+  rm -rf log src build
 
 # add default.yaml to the image
 ADD defaults.yaml /root/.colcon/defaults.yaml
