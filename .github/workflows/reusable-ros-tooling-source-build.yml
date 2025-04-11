@@ -87,7 +87,7 @@ jobs:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
-          rosdep-skip-keys: rti-connext-dds-7.3.0-ros
+          rosdep-skip-keys: rti-connext-dds-7.3.0
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
             ${{ steps.check_local_repos.outputs.repo_file }}
