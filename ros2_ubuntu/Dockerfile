@@ -50,6 +50,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 ENV ROS_DISTRO=${ROS_DISTRO}
+ENV FROM=${FROM}
 
 # Install ROS packages and dependencies, which ros-tooling/setup-ros would install, see
 # https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
