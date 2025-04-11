@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/rolling-binary-build.yml'
-      - './.github/workflows/reusable-industrial-ci-with-cache.yml'
+      - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.rolling.repos'
   schedule:
     # Run every morning to detect flakiness and broken dependencies

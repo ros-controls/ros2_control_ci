@@ -1,0 +1,58 @@
+---
+name: Build and publish Ubuntu docker images
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
+      - 'ros2_ubuntu/**'
+  schedule:
+    - cron: '1 2 * * MON'
+
+jobs:
+  build_images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ros_distro: 'humble'
+            base_image: 'ubuntu:jammy'
+            ros-repo-packages: ""
+          - ros_distro: 'jazzy'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: ""
+          - ros_distro: 'rolling'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: ""
+          - ros_distro: 'humble'
+            base_image: 'ubuntu:jammy'
+            ros-repo-packages: "-testing"
+          - ros_distro: 'jazzy'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: "-testing"
+          - ros_distro: 'rolling'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: "-testing"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ros2_ubuntu
+          push: true
+          file: ros2_ubuntu/Dockerfile
+          tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-ubuntu${{ matrix.ros-repo-packages }}
+          build-args: |
+            FROM=${{ matrix.base_image }}
+            ROS_DISTRO=${{ matrix.ros_distro }}
+            ROS_REPO_PACKAGES=${{ matrix.ros-repo-packages }}

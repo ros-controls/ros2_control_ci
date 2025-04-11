@@ -104,6 +104,14 @@ jobs:
           restore-keys: |
             ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
             ccache-${{ env.CACHE_PREFIX }}
+      - name: Get docker image name
+        id: docker_image
+        run: |
+          if [ "${{ inputs.ros_repo }}" = "main" ]; then
+            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu" >> $GITHUB_OUTPUT
+          else
+            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing" >> $GITHUB_OUTPUT
+          fi
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           UPSTREAM_WORKSPACE: ${{ inputs.upstream_workspace }}
@@ -111,7 +119,7 @@ jobs:
           NOT_TEST_BUILD: ${{ inputs.not_test_build }}
           DOWNSTREAM_WORKSPACE: ${{ inputs.downstream_workspace }}
           NOT_TEST_DOWNSTREAM: ${{ inputs.not_test_downstream }}
-          DOCKER_IMAGE: ghcr.io/sloretz/ros:${{ inputs.ros_distro }}-ros-base
+          DOCKER_IMAGE: ${{ steps.docker_image.outputs.DOCKER_IMAGE }}
           ROS_REPO: ${{ inputs.ros_repo }}
           OS_CODE_NAME: ${{ inputs.os_code_name }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
