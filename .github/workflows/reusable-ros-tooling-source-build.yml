@@ -82,6 +82,11 @@ jobs:
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
 
+      # Run the generator and output the results to a file.
+      - run: |
+          rosinstall_generator ${{ steps.package_list_action.outputs.package_list }} --rosdistro ${{ inputs.ros_distro }} \
+          --deps-only --deps --upstream-development > /tmp/deps.repos
+
       - uses: ros-tooling/action-ros-ci@0.4.1
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
@@ -89,9 +94,8 @@ jobs:
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           rosdep-skip-keys: rti-connext-dds-7.3.0
           vcs-repo-file-url: |
-            https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
             ${{ steps.check_local_repos.outputs.repo_file }}
-            https://raw.githubusercontent.com/ros-controls/ros2_control_ci/refs/heads/fix/source/ros_controls_source.${{ inputs.ros_distro }}.repos
+            /tmp/deps.repos
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
