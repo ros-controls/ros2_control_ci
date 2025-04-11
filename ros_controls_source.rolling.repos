@@ -21,7 +21,7 @@ repositories:
     version: latest
   sdformat_urdf:
     type: git
-    url: https://github.com/ros2/sdformat_urdf.git
+    url: https://github.com/ros/sdformat_urdf.git
     version: rolling
   cpp_polyfills:
     type: git
