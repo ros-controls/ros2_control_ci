@@ -90,6 +90,7 @@ jobs:
           vcs-repo-file-url: |
             https://raw.githubusercontent.com/ros2/ros2/${{ inputs.ros2_repo_branch }}/ros2.repos
             ${{ steps.check_local_repos.outputs.repo_file }}
+            https://raw.githubusercontent.com/ros-controls/ros2_control_ci/refs/heads/fix/source/ros_controls_source.${{ inputs.ros2_repo_branch }}.repos
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
