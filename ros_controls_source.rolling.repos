@@ -21,7 +21,11 @@ repositories:
     version: latest
   sdformat_urdf:
     type: git
-    url: https://github.com/ros/sdformat_urdf.git
+    url: https://github.com/gazebo-release/sdformat_urdf.git
+    version: rolling
+  sdformat_vendor:
+    type: git
+    url: https://github.com/ros/sdformat_vendor.git
     version: rolling
   cpp_polyfills:
     type: git
