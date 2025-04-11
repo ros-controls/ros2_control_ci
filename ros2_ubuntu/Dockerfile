@@ -50,7 +50,6 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 ENV ROS_DISTRO=${ROS_DISTRO}
-ENV FROM=${FROM}
 
 # Install ROS packages and dev dependencies, which ros-tooling/setup-ros would install see
 # https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
@@ -68,5 +67,5 @@ CMD ["bash"]
 
 # setup github labels
 LABEL org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
-LABEL org.opencontainers.image.description="${FROM}/${ROS_DISTRO} for ros-controls"
+LABEL org.opencontainers.image.description="Container with preinstalled ROS for ros-controls CI"
 LABEL org.opencontainers.image.licenses=Apache-2.0
