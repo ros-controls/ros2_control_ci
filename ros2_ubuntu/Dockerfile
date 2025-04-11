@@ -52,13 +52,15 @@ ENV LC_ALL=C.UTF-8
 ENV ROS_DISTRO=${ROS_DISTRO}
 ENV FROM=${FROM}
 
-# Install ROS packages and dependencies, which ros-tooling/setup-ros would install, see
-# https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
+# Install ROS packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-${ROS_DISTRO}-ros-base \
-    $(if [ "${FROM}" = "ubuntu:noble" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata libclang-rt-dev"; fi) \
-    $(if [ "${FROM}" = "ubuntu:jammy" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-flake8-docstrings python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-builtins python3-flake8-class-newline python3-flake8-comprehensions python3-flake8-deprecated python3-flake8-import-order python3-flake8-quotes python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin libasio-dev libtinyxml2-dev"; fi) \
-    && rm -rf /var/lib/apt/lists/*
+ros-${ROS_DISTRO}-ros-base \
+&& rm -rf /var/lib/apt/lists/*
+
+# install dependencies, which ros-tooling/setup-ros would install, see
+# https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
+COPY install-packages.sh /tmp/
+RUN /tmp/install-packages.sh ${FROM}
 
 # Setup entrypoint
 COPY ./ros_entrypoint.sh /
