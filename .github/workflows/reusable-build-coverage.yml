@@ -42,6 +42,7 @@ jobs:
 
       # overwrite ros distro with testing
       - uses: ros-tooling/setup-ros@0.7.10
+        if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
       - name: Install coverage tools
