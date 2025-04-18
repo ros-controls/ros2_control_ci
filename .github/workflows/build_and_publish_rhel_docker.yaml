@@ -24,6 +24,8 @@ jobs:
             rhel_version: 'rhel8'
           - ros_distro: 'jazzy'
             rhel_version: 'rhel9'
+          - ros_distro: 'kilted'
+            rhel_version: 'rhel9'
           - ros_distro: 'rolling'
             rhel_version: 'rhel9'
     steps:

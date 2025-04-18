@@ -26,6 +26,9 @@ jobs:
           - ros_distro: 'jazzy'
             base_image: 'ubuntu:noble'
             ros-repo-packages: ""
+          - ros_distro: 'kilted'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: ""
           - ros_distro: 'rolling'
             base_image: 'ubuntu:noble'
             ros-repo-packages: ""
@@ -33,6 +36,9 @@ jobs:
             base_image: 'ubuntu:jammy'
             ros-repo-packages: "-testing"
           - ros_distro: 'jazzy'
+            base_image: 'ubuntu:noble'
+            ros-repo-packages: "-testing"
+          - ros_distro: 'kilted'
             base_image: 'ubuntu:noble'
             ros-repo-packages: "-testing"
           - ros_distro: 'rolling'

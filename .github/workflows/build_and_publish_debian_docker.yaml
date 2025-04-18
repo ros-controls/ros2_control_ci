@@ -24,6 +24,8 @@ jobs:
             debian_version: 'debian11'
           - ros_distro: 'jazzy'
             debian_version: 'debian12'
+          - ros_distro: 'kilted'
+            debian_version: 'debian12'
           - ros_distro: 'rolling'
             debian_version: 'debian12'
     steps:

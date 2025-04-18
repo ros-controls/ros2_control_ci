@@ -14,11 +14,6 @@ on:
         description: 'Reference on which the repo should be checkout. Usually is this name of a branch or a tag.'
         required: true
         type: string
-      ros2_repo_branch:
-        description: 'Branch in the ros2/ros2 repository from which ".repos" should be used.'
-        default: 'master'
-        required: false
-        type: string
       os_name:
         description: 'On which OS to run the linter'
         required: false
