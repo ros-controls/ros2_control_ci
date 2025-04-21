@@ -110,7 +110,7 @@ jobs:
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
 
-      - uses: ros-tooling/action-ros-ci@0.4.1
+      - uses: ros-tooling/action-ros-ci@0.4.2
         # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
         env:
             BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
