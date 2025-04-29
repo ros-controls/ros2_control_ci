@@ -61,6 +61,12 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
         with:
           path: ${{ env.path }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          source /opt/ros/${{ inputs.ros_distro }}/setup.bash
+          rosdep update --rosdistro ${{ inputs.ros_distro }}
+          rosdep install -iyr --from-path src || true # ignore errors, as some packages might not be available
       - name: Build workspace
         shell: bash
         run: |
