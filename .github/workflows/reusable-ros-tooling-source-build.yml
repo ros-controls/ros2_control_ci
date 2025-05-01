@@ -54,7 +54,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      - uses: ros-tooling/setup-ros@0.7.10
+      - uses: ros-tooling/setup-ros@0.7.11
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v4
@@ -76,7 +76,7 @@ jobs:
             --deps-only --deps --upstream-development > /tmp/deps.repos && break || echo "retry #${i} .." && sleep 60;
           done
 
-      - uses: ros-tooling/action-ros-ci@0.4.1
+      - uses: ros-tooling/action-ros-ci@0.4.2
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
