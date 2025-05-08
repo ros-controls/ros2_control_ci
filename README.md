@@ -11,12 +11,16 @@ Within this repo the full ros2_control stack is built and tested once per day.
 
 [![Rolling Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml)
 
+[![Kilted Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml)
+
 [![Jazzy Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml)
 
 [![Humble Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml)
 
 ## Compatibility versions
-We thrive to make the rolling development version of the ros2_control stack compatible with earlier releases of ROS2. This is done by building the rolling version of the stack from source with the earlier releases of ROS2.
+We thrive to make the rolling development version of the ros2_control stack compatible with earlier releases of ROS 2. This is done by building the rolling version of the stack from source with the earlier releases of ROS 2.
+
+[![Check Rolling Compatibility on Kilted with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-kilted-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-kilted-binary-build.yml)
 
 [![Check Rolling Compatibility on Jazzy with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-jazzy-binary-build.yml)
 
