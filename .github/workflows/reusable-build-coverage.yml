@@ -41,7 +41,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # overwrite ros distro with testing
-      - uses: ros-tooling/setup-ros@0.7.11
+      - uses: ros-tooling/setup-ros@0.7.12
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
@@ -84,7 +84,7 @@ jobs:
             echo "No local repos file found"
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
-      - uses: ros-tooling/action-ros-ci@0.4.2
+      - uses: ros-tooling/action-ros-ci@0.4.3
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}

@@ -50,7 +50,7 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: ros-tooling/setup-ros@0.7.11
+      - uses: ros-tooling/setup-ros@0.7.12
         with:
           required-ros-distributions: ${{ inputs.ros_distro }}
           use-ros2-testing: true
@@ -110,7 +110,7 @@ jobs:
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
 
-      - uses: ros-tooling/action-ros-ci@0.4.2
+      - uses: ros-tooling/action-ros-ci@0.4.3
         # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
         env:
             BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
