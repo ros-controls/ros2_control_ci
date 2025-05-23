@@ -1,0 +1,13 @@
+repositories:
+  rsl:
+    type: git
+    url: https://github.com/ros2-gbp/RSL-release.git
+    version: rpm/humble/8/rsl
+  generate_parameter_library/generate_parameter_library_py:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/generate_parameter_library_py
+  generate_parameter_library/generate_parameter_library:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/generate_parameter_library
