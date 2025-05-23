@@ -3,51 +3,63 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/filters-release.git
     version: debian/rolling/bookworm/filters
-  ros2-gbp/xacro:
+  xacro:
     type: git
     url: https://github.com/ros2-gbp/xacro-release.git
     version: debian/rolling/bookworm/xacro
-  ros2-gbp/diagnostic_updater:
+  diagnostic_updater:
     type: git
     url: https://github.com/ros2-gbp/diagnostics-release.git
     version: debian/rolling/bookworm/diagnostic_updater
   backward_ros:
     type: git
     url: https://github.com/ros2-gbp/backward_ros-release.git
-    version:  debian/rolling/bookworm/backward_ros
-  cpp_polyfills:
+    version: debian/rolling/bookworm/backward_ros
+  cpp_polyfills/tcb_span:
     type: git
-    url: https://github.com/PickNikRobotics/cpp_polyfills.git
-    version:  main
+    url: https://github.com/ros2-gbp/cpp_polyfills-release.git
+    version: debian/rolling/bookworm/tcb_span
+  cpp_polyfills/tl_expected:
+    type: git
+    url: https://github.com/ros2-gbp/cpp_polyfills-release.git
+    version: debian/rolling/bookworm/tl_expected
   rsl:
     type: git
-    url: https://github.com/PickNikRobotics/RSL.git
-    version:  main
-  generate_parameter_library:
+    url: https://github.com/ros2-gbp/RSL-release.git
+    version: debian/rolling/bookworm/rsl
+  generate_parameter_library/generate_parameter_library_py:
     type: git
-    url: https://github.com/PickNikRobotics/generate_parameter_library.git
-    version:  main
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: debian/rolling/bookworm/generate_parameter_library_py
+  generate_parameter_library/generate_parameter_library:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: debian/rolling/bookworm/generate_parameter_library
   angles:
     type: git
-    url: https://github.com/ros/angles.git
-    version: ros2
+    url: https://github.com/ros2-gbp/angles-release.git
+    version: debian/rolling/bookworm/angles
   ackermann_msgs:
     type: git
-    url: https://github.com/ros-drivers/ackermann_msgs.git
-    version: ros2
+    url: https://github.com/ros2-gbp/ackermann_msgs-release.git
+    version: debian/rolling/bookworm/ackermann_msgs
   sdformat_urdf:
     type: git
-    url: https://github.com/ros/sdformat_urdf.git
-    version: rolling
-  gazebo-release/sdformat_vendor:
+    url: https://github.com/ros2-gbp/sdformat_urdf-release.git
+    version: debian/rolling/bookworm/sdformat_urdf
+  sdformat_vendor:
     type: git
     url: https://github.com/gazebo-release/sdformat_vendor.git
     version: rolling
-  gazebo-release/gz_tools_vendor:
+  gz_tools_vendor:
     type: git
     url: https://github.com/gazebo-release/gz_tools_vendor.git
     version: rolling
-  pal_statistics:
+  pal_statistics/pal_statistics:
     type: git
-    url: https://github.com/pal-robotics/pal_statistics.git
-    version: humble-devel
+    url: https://github.com/ros2-gbp/pal_statistics-release.git
+    version: debian/rolling/bookworm/pal_statistics
+  pal_statistics/pal_statistics_msgs:
+    type: git
+    url: https://github.com/ros2-gbp/pal_statistics-release.git
+    version: debian/rolling/bookworm/pal_statistics_msgs
