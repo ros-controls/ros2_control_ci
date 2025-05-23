@@ -11,3 +11,7 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/generate_parameter_library-release.git
     version: rpm/humble/8/generate_parameter_library
+  generate_parameter_library/parameter_traits:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/parameter_traits
