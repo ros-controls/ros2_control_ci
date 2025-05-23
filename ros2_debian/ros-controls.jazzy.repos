@@ -2,19 +2,19 @@ repositories:
   ros/filters:
     type: git
     url: https://github.com/ros2-gbp/filters-release.git
-    version: debian/jazzy/bullseye/filters
+    version: debian/jazzy/bookworm/filters
   ros2-gbp/xacro:
     type: git
     url: https://github.com/ros2-gbp/xacro-release.git
-    version: debian/jazzy/bullseye/xacro
+    version: debian/jazzy/bookworm/xacro
   ros2-gbp/diagnostic_updater:
     type: git
     url: https://github.com/ros2-gbp/diagnostics-release.git
-    version: debian/jazzy/bullseye/diagnostic_updater
+    version: debian/jazzy/bookworm/diagnostic_updater
   backward_ros:
     type: git
     url: https://github.com/ros2-gbp/backward_ros-release.git
-    version:  debian/jazzy/bullseye/backward_ros
+    version:  debian/jazzy/bookworm/backward_ros
   cpp_polyfills:
     type: git
     url: https://github.com/PickNikRobotics/cpp_polyfills.git
