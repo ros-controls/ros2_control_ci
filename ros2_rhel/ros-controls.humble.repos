@@ -1,0 +1,20 @@
+repositories:
+  rsl:
+    type: git
+    # url: https://github.com/ros2-gbp/RSL-release.git
+    # version: rpm/humble/8/rsl
+    # unless https://github.com/PickNikRobotics/RSL/pull/126 is released
+    url: https://github.com/PickNikRobotics/RSL.git
+    version:  main
+  generate_parameter_library/generate_parameter_library_py:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/generate_parameter_library_py
+  generate_parameter_library/generate_parameter_library:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/generate_parameter_library
+  generate_parameter_library/parameter_traits:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: rpm/humble/8/parameter_traits
