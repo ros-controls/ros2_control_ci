@@ -37,15 +37,14 @@ RUN colcon mixin add default \
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-COPY ros-controls.rhel8.repos .
-RUN vcs import src < ros-controls.rhel8.repos && \
+COPY ros-controls.$ROS_DISTRO.repos .
+RUN vcs import src < ros-controls.$ROS_DISTRO.repos && \
   . /opt/ros/$ROS_DISTRO/setup.bash && \
   rosdep update --rosdistro $ROS_DISTRO && \
   rosdep install -iyr --from-path src && \
   colcon build \
   --mixin release build-testing-off \
-  --cmake-args --no-warn-unused-cli \
-  --packages-up-to generate_parameter_library pal_statistics && \
+  --cmake-args --no-warn-unused-cli && \
   rm -rf log src build
 
 # add default.yaml to the image
