@@ -35,6 +35,10 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/generate_parameter_library-release.git
     version: debian/jazzy/bookworm/generate_parameter_library
+  generate_parameter_library/parameter_traits:
+    type: git
+    url: https://github.com/ros2-gbp/generate_parameter_library-release.git
+    version: debian/jazzy/bookworm/parameter_traits
   angles:
     type: git
     url: https://github.com/ros2-gbp/angles-release.git
