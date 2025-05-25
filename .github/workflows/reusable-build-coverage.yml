@@ -97,7 +97,8 @@ jobs:
                 "mixin": ["coverage-gcc", "coverage-pytest"]
               },
               "test": {
-                "mixin": ["coverage-pytest"]
+                "mixin": ["coverage-pytest"],
+                "executor": "sequential"
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
