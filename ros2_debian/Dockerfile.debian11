@@ -60,8 +60,6 @@ RUN apt-get update -y -qq && \
   tar \
   unzip \
   wget \
-  && \
-  add-apt-repository universe \
   &&\
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
