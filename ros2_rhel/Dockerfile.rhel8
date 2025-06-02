@@ -1,8 +1,9 @@
 FROM almalinux:8
 ARG ROS_DISTRO=rolling
 
-# install ros
-ADD http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
+
+# ROS prerequisites
+# see https://docs.ros.org/en/humble/Installation/RHEL-Install-RPMs.html
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
@@ -16,6 +17,11 @@ RUN dnf install \
   && dnf config-manager --set-enabled powertools \
   && dnf clean all
 
+# Setup Sources
+RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') && \
+  dnf install -y "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-release-${ROS_APT_SOURCE_VERSION}-1.noarch.rpm"
+
+# install ros
 ENV ROS_DISTRO=${ROS_DISTRO}
 RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
   python3-rosdep \

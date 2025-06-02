@@ -3,14 +3,17 @@ ARG ROS_DISTRO=rolling
 
 # ROS prerequisites
 # see https://docs.ros.org/en/rolling/Installation/RHEL-Install-RPMs.html
-RUN dnf install -y langpacks-en glibc-langpack-en \
-  && dnf clean all && \
+RUN dnf install -y langpacks-en glibc-langpack-en && \
   export LANG=en_US.UTF-8 && \
   dnf install -y 'dnf-command(config-manager)' epel-release && \
-  dnf config-manager --set-enabled crb
+  dnf config-manager --set-enabled crb && \
+  dnf clean all
 
-# COPY http://packages.ros.org/ros2/rhel/ros2.repo /etc/yum.repos.d/ros2.repo
-ADD http://packages.ros.org/ros2-testing/rhel/ros2-testing.repo /etc/yum.repos.d/ros2.repo
+# Setup Sources
+RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') && \
+  dnf install -y "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-release-${ROS_APT_SOURCE_VERSION}-1.noarch.rpm"
+
+# install ros
 RUN dnf makecache -y
 RUN dnf install -y \
   gcc-c++ \
