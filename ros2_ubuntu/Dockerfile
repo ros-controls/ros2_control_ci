@@ -28,27 +28,23 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 
 # Install packages
 RUN apt-get update && apt-get install -q -y --no-install-recommends \
+    software-properties-common \
     dirmngr \
     gnupg2 \
     lsb-release \
+    curl \
+    && add-apt-repository universe \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup keys
 RUN set -eux; \
-       key='C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654'; \
-       export GNUPGHOME="$(mktemp -d)"; \
-       gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; \
-       mkdir -p /usr/share/keyrings; \
-       gpg --batch --export "$key" > /usr/share/keyrings/ros2-latest-archive-keyring.gpg; \
-       gpgconf --kill all; \
-       rm -rf "$GNUPGHOME"
+    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') \
+    && curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2${ROS_REPO_PACKAGES}-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $UBUNTU_CODENAME)_all.deb" \
+    && apt install /tmp/ros2-apt-source.deb
 
-# Setup sources.list
-RUN echo "deb [ signed-by=/usr/share/keyrings/ros2-latest-archive-keyring.gpg ] http://packages.ros.org/ros2${ROS_REPO_PACKAGES}/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros2-latest.list
 # Setup environment
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-
 ENV ROS_DISTRO=${ROS_DISTRO}
 
 # Install ROS packages and dev dependencies, which ros-tooling/setup-ros would install see
