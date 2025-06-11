@@ -76,6 +76,8 @@ jobs:
           Expand-Archive -Path $output -DestinationPath C:\dev\ros2_rolling
           # test if pixi and ros can be sourced
           pixi shell
+          exit
+          pixi shell
           & ros2_rolling\local_setup.bat
 
       - name: Checkout default ref when build is not scheduled
