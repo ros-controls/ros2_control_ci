@@ -120,7 +120,6 @@ jobs:
           }
 
       - name: Install dependencies
-        shell: bash
         run: |
           cd C:\dev
           pixi shell
@@ -133,7 +132,6 @@ jobs:
           fi
 
       - name: Build workspace
-        shell: bash
         # source also underlay workspace with generate_parameter_library on rhel9
         run: |
           cd C:\dev
@@ -142,7 +140,6 @@ jobs:
           source /opt/ros2_ws/install/local_setup.bash
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
       - name: Test workspace
-        shell: bash
         run: |
           cd C:\dev
           pixi shell
