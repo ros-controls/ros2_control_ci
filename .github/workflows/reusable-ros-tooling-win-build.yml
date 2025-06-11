@@ -107,10 +107,6 @@ jobs:
             Write-Output "No local repos file found"
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
-
-      - name: Set windows dependencies variable
-        id: set_windows_dependencies
-        run: |
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") -and (Test-Path "${{ env.repo_path }}\${{ inputs.windows_dependencies }}")) {
             Write-Output "Windows repos file found"
             "repo_file=${{ env.repo_path }}\${{ inputs.windows_dependencies }}" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
@@ -124,12 +120,12 @@ jobs:
           cd C:\dev
           pixi shell
           & ros2_rolling\local_setup.bat
-          if [[ -n "${{ steps.check_local_repos.outputs.repo_file }}" ]]; then
+          if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_files }}")) {
             vcs import src < ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }}
-          fi
-          if [[ -n "${{ steps.set_windows_dependencies.outputs.repo_file }}" ]]; then
-            vcs import src < ${{ env.repo_path }}/${{ steps.set_windows_dependencies.outputs.repo_file }}
-          fi
+          }
+          if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_file }}")) {
+            vcs import src < ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }}
+          }
 
       - name: Build workspace
         # source also underlay workspace with generate_parameter_library on rhel9
