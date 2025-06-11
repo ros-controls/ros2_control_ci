@@ -17,7 +17,7 @@ on:
       os_name:
         description: 'On which OS to run the build job'
         required: false
-        default: 'windows-2019'
+        default: 'windows-2025'
         type: string
       container:
         description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
@@ -50,10 +50,19 @@ jobs:
         with:
           python-version: '3.8'
 
-      - uses: ros-tooling/setup-ros@0.7.13
-        with:
-          required-ros-distributions: ${{ inputs.ros_distro }}
-          use-ros2-testing: true
+      - name: Install Pixi and ROS
+        # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
+        run: |
+          md C:\dev
+          powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
+          cd C:\dev
+          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
+          pixi install
+          # Download and extract ROS 2 package using PowerShell
+          $url = "https://ci.ros2.org/view/packaging/job/packaging_windows-2025/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
+          $output = "C:\dev\ros2-package-windows-AMD64.zip"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Expand-Archive -Path $output -DestinationPath C:\dev\ros2_rolling
 
       - name: Install boost
         uses: MarkusJx/install-boost@v2.5.0
@@ -65,7 +74,7 @@ jobs:
             # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
             boost_version: 1.86.0
             # OPTIONAL: Specify a platform version
-            platform_version: 2019
+            platform_version: 2022
             # OPTIONAL: Specify a toolset
             toolset: msvc
             # Whether the boost libraries will be supplied through static or shared libraries
