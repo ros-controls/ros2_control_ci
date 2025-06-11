@@ -50,10 +50,11 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Install Pixi
-        # https://pixi.sh/latest/installation/
-        run: |
-          powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
+      - uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          cache: true
+      - run: pixi run test
+
       - name: Install ROS
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
