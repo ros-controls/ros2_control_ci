@@ -119,10 +119,10 @@ jobs:
         run: |
           pixi shell
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_files }}")) {
-            vcs import src < ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }}
+            vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
           }
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_file }}")) {
-            vcs import src < ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }}
+            vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
           }
 
       - name: Build workspace
