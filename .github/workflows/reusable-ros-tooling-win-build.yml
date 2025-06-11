@@ -34,6 +34,16 @@ on:
         required: false
         default: false
         type: boolean
+      skip_packages:
+        description: 'Packages to skip from build and test'
+        default: ''
+        required: false
+        type: string
+      skip_packages_test:
+        description: 'Packages to skip from test additionally to skip_packages'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -65,8 +75,6 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath C:\dev\ros2_rolling
           # test if pixi and ros can be sourced
-          pixi shell
-          exit
           pixi shell
           & ros2_rolling\local_setup.bat
 
@@ -109,25 +117,37 @@ jobs:
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           }
 
-      - uses: ros-tooling/action-ros-ci@0.4.4
-        # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
-        env:
-            BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
-        with:
-          target-ros2-distro: ${{ inputs.ros_distro }}
-          package-name: ${{ steps.package_list_action.outputs.package_list }}
-          vcs-repo-file-url: |
-            ${{ steps.check_local_repos.outputs.repo_file }}
-            ${{ steps.set_windows_dependencies.outputs.repo_file }}
+      - name: Install dependencies
+        shell: bash
+        run: |
+          cd C:\dev
+          pixi shell
+          & ros2_rolling\local_setup.bat
+          if [[ -n "${{ steps.check_local_repos.outputs.repo_file }}" ]]; then
+            vcs import src < ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }}
+          fi
+          if [[ -n "${{ steps.set_windows_dependencies.outputs.repo_file }}" ]]; then
+            vcs import src < ${{ env.repo_path }}/${{ steps.set_windows_dependencies.outputs.repo_file }}
+          fi
 
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-          colcon-defaults: |
-            {
-              "test": {
-                "executor": "sequential"
-              }
-            }
-        id: action-ros
+      - name: Build workspace
+        shell: bash
+        # source also underlay workspace with generate_parameter_library on rhel9
+        run: |
+          cd C:\dev
+          pixi shell
+          & ros2_rolling\local_setup.bat
+          source /opt/ros2_ws/install/local_setup.bash
+          colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
+      - name: Test workspace
+        shell: bash
+        run: |
+          cd C:\dev
+          pixi shell
+          & ros2_rolling\local_setup.bat
+          source /opt/ros2_ws/install/local_setup.bash
+          colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test-result --verbose
 
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
