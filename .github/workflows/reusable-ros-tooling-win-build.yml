@@ -64,6 +64,9 @@ jobs:
           $output = "C:\dev\ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath C:\dev\ros2_rolling
+          # test if pixi and ros can be sourced
+          pixi shell
+          call ros2_rolling\local_setup.bat
 
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
