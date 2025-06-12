@@ -124,8 +124,11 @@ jobs:
       - name: Build workspace
         shell: bash
         run: |
+          set -xeu
           eval "$(pixi shell-hook)"
           ls
+          ls ros2_rolling
+          sleep 5
           echo $PIXI_ENV_ACTIVATED
           . ros2_rolling/local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
