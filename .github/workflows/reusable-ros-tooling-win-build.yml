@@ -61,6 +61,7 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.8.8
         with:
           manifest-path: pixi.toml
+          cache: true
 
       - name: Install ROS
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
