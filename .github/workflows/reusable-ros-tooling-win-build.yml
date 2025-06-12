@@ -16,7 +16,7 @@ on:
       os_name:
         description: 'On which OS to run the build job'
         required: false
-        default: 'windows-2025'
+        default: 'windows-2022'
         type: string
       container:
         description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
@@ -78,7 +78,7 @@ jobs:
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
           # Download and extract ROS 2 package
-          $url = "https://ci.ros2.org/view/packaging/job/packaging_windows-2025/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
+          $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
