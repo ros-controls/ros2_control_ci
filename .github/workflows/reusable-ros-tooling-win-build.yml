@@ -53,6 +53,18 @@ jobs:
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
+      - name: Checkout default ref when build is not scheduled
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.repo_path }}
+      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref_for_scheduled_build }}
+          path: ${{ env.repo_path }}
+
       - name: Bootstrap pixi
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
@@ -71,18 +83,6 @@ jobs:
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
-
-      - name: Checkout default ref when build is not scheduled
-        if: ${{ github.event_name != 'schedule' }}
-        uses: actions/checkout@v4
-        with:
-          path: ${{ env.repo_path }}
-      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
-        if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref_for_scheduled_build }}
-          path: ${{ env.repo_path }}
 
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
