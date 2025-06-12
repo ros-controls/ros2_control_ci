@@ -121,6 +121,7 @@ jobs:
         run: |
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
+          echo "Build succeeded"
 
       - name: Test workspace
         shell: pixi run pwsh -Command {0}
@@ -128,6 +129,7 @@ jobs:
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
+          echo "Tests succeeded"
 
       - name: Download issue template for target failure  # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
