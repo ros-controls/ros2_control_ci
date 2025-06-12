@@ -119,7 +119,8 @@ jobs:
       - name: Build workspace
         shell: pixi run bash -e {0}
         run: |
-          source ros2_${{ inputs.ros_distro }}\local_setup.bat
+          ls ros2_${{ inputs.ros_distro }}
+          source ros2_${{ inputs.ros_distro }}/local_setup.bat
           up_to_arg=""
           if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
           up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
@@ -135,7 +136,7 @@ jobs:
       - name: Test workspace
         shell: pixi run bash -e {0}
         run: |
-          source ros2_${{ inputs.ros_distro }}\local_setup.bat
+          source ros2_${{ inputs.ros_distro }}/local_setup.bat
           up_to_arg=""
           if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
           up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
