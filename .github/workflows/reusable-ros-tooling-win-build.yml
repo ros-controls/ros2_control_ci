@@ -51,30 +51,26 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
-      # this will be C:\dev\src\{repo-owner}/{repo-name}
-      repo_path: C:\dev\src\${{ github.repository }}
+      # this will be src\{repo-owner}/{repo-name}
+      repo_path: src\${{ github.repository }}
     steps:
       - name: Bootstrap pixi
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          md C:\dev
-          cd C:\dev
-          md src
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
 
       - uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          manifest-path: C:\dev\pixi.toml
+          manifest-path: pixi.toml
 
       - name: Install ROS
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          cd C:\dev
-          # Download and extract ROS 2 package using PowerShell
+          # Download and extract ROS 2 package
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows-2025/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
-          $output = "C:\dev\ros2-package-windows-AMD64.zip"
+          $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
-          Expand-Archive -Path $output -DestinationPath C:\dev\ros2_rolling
+          Expand-Archive -Path $output -DestinationPath ros2_rolling
           # test if pixi and ros can be sourced
           pixi shell
           exit
@@ -118,7 +114,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd C:\dev
           pixi shell
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_files }}")) {
             vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
@@ -130,16 +125,14 @@ jobs:
       - name: Build workspace
         # source also underlay workspace with generate_parameter_library on rhel9
         run: |
-          cd C:\dev
           pixi shell
-          & C:\dev\ros2_rolling\local_setup.bat
+          & ros2_rolling\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
 
       - name: Test workspace
         run: |
-          cd C:\dev
           pixi shell
-          & C:\dev\ros2_rolling\local_setup.bat
+          & ros2_rolling\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
 
