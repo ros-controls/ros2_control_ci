@@ -90,7 +90,7 @@ jobs:
           path: ${{ env.repo_path }}
 
       - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
         with:
           path: ${{ env.repo_path }}
 
@@ -122,16 +122,15 @@ jobs:
           }
 
       - name: Build workspace
-        shell: pixi run pwsh -Command {0} # pwsh works on all platforms
+        shell: pixi run pwsh -Command {0}
         run: |
           & ros2_rolling\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
 
       - name: Test workspace
-        shell: bash
+        shell: pixi run pwsh -Command {0}
         run: |
-          eval "$(pixi shell-hook)"
-          . ros2_rolling/local_setup.bat
+          & ros2_rolling\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
 
