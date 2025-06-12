@@ -117,21 +117,34 @@ jobs:
           }
 
       - name: Build workspace
-        shell: pixi run pwsh -Command {0}
+        shell: pixi run bash -e {0}
         run: |
-          & ros2_${{ inputs.ros_distro }}\local_setup.bat
-          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
-          $skip_arg = if (![string]::IsNullOrWhiteSpace(${{ inputs.skip_packages }})) { "--packages-skip ${{ inputs.skip_packages }}" } else { "" }
+          source ros2_${{ inputs.ros_distro }}\local_setup.bat
+          up_to_arg=""
+          if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
+          up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
+          fi
+          skip_arg=""
+          if [ -n "${{ inputs.skip_packages }}" ]; then
+          skip_arg="--packages-skip ${{ inputs.skip_packages }}"
+          fi
           colcon build $up_to_arg $skip_arg
+          echo "colcon build $up_to_arg $skip_arg"
           echo "Build succeeded"
 
       - name: Test workspace
-        shell: pixi run pwsh -Command {0}
+        shell: pixi run bash -e {0}
         run: |
-          & ros2_${{ inputs.ros_distro }}\local_setup.bat
-          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
-          $skip_packages = "${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}"
-          $skip_arg = if (![string]::IsNullOrWhiteSpace($skip_packages)) { "--packages-skip $skip_packages" } else { "" }
+          source ros2_${{ inputs.ros_distro }}\local_setup.bat
+          up_to_arg=""
+          if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
+          up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
+          fi
+          skip_packages="${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}"
+          skip_arg=""
+          if [ -n "$skip_packages" ]; then
+          skip_arg="--packages-skip $skip_packages"
+          fi
           colcon test --executor sequential $up_to_arg $skip_arg
           colcon test-result --verbose
           echo "Tests succeeded"
