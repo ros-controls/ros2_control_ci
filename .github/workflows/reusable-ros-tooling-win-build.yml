@@ -107,6 +107,7 @@ jobs:
           }
 
       - name: Install dependencies
+        shell: pixi run pwsh -Command {0}
         run: |
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_files }}")) {
             vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
