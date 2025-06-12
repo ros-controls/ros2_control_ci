@@ -113,7 +113,6 @@ jobs:
           }
 
       - name: Install dependencies
-        shell: bash
         run: |
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_files }}")) {
             vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
@@ -124,21 +123,16 @@ jobs:
 
       - name: Build workspace
         shell: bash
-        # source also underlay workspace with generate_parameter_library on rhel9
         run: |
-          pixi shell
-          exit
-          pixi shell
-          & ros2_rolling\local_setup.bat
+          eval "$(pixi shell-hook)"
+          . ros2_rolling\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
 
       - name: Test workspace
         shell: bash
         run: |
-          pixi shell
-          exit
-          pixi shell
-          & ros2_rolling\local_setup.bat
+          eval "$(pixi shell-hook)"
+          . ros2_rolling\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
 
