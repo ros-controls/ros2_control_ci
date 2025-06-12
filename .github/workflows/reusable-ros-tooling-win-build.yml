@@ -51,8 +51,8 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
-      # this will be src\{repo-owner}/{repo-name}
-      repo_path: src\${{ github.repository }}
+      # this will be src/{repo-owner}/{repo-name}
+      repo_path: src/${{ github.repository }}
     steps:
       - name: Bootstrap pixi
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
