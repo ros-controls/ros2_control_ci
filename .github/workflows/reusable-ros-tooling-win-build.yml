@@ -5,8 +5,7 @@ on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS 2 distribution name. One of
-          https://github.com/ros-tooling/setup-ros/blob/master/src/setup-ros-windows.ts'
+        description: 'ROS 2 distribution name, e.g. rolling'
         required: true
         type: string
       ref_for_scheduled_build:
@@ -71,12 +70,7 @@ jobs:
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows-2025/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
-          Expand-Archive -Path $output -DestinationPath ros2_rolling
-          # test if pixi and ros can be sourced
-          pixi shell
-          exit
-          pixi shell
-          & ros2_rolling\local_setup.bat
+          Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
 
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -124,12 +118,12 @@ jobs:
 
       - name: Build workspace
         run: |
-          & ros2_rolling\local_setup.bat
+          & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
 
       - name: Test workspace
         run: |
-          & ros2_rolling\local_setup.bat
+          & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
 
