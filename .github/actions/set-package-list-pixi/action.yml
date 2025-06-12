@@ -23,7 +23,6 @@ runs:
       # if a path is given, list the packages in the given path and its subdirectories from the path
       # if no path is given, list all packages in the workspace
       run: |
-        ls ${{ inputs.path }}
         if [[ -n "${{ inputs.path }}" ]]; then
           echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
           echo "package_path_list=$(colcon list --paths ${{ inputs.path }} --paths-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --paths-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
