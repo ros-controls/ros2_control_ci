@@ -61,7 +61,6 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.8.8
         with:
           manifest-path: pixi.toml
-          activate-environment: true
 
       - name: Install ROS
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
@@ -117,11 +116,13 @@ jobs:
           }
 
       - name: Build workspace
+        shell: pixi run pwsh -Command {0}
         run: |
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
 
       - name: Test workspace
+        shell: pixi run pwsh -Command {0}
         run: |
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
           colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
