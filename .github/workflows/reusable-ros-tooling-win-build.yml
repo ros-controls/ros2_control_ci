@@ -120,14 +120,19 @@ jobs:
         shell: pixi run pwsh -Command {0}
         run: |
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
-          colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
+          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
+          $skip_arg = if (![string]::IsNullOrWhiteSpace(${{ inputs.skip_packages }})) { "--packages-skip ${{ inputs.skip_packages }}" } else { "" }
+          colcon build $up_to_arg $skip_arg
           echo "Build succeeded"
 
       - name: Test workspace
         shell: pixi run pwsh -Command {0}
         run: |
           & ros2_${{ inputs.ros_distro }}\local_setup.bat
-          colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
+          $skip_packages = "${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}"
+          $skip_arg = if (![string]::IsNullOrWhiteSpace($skip_packages)) { "--packages-skip $skip_packages" } else { "" }
+          colcon test --executor sequential $up_to_arg $skip_arg
           colcon test-result --verbose
           echo "Tests succeeded"
 
