@@ -98,9 +98,9 @@ jobs:
       - name: Check for local repos file
         id: check_local_repos
         run: |
-          if (Test-Path ${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
+          if (Test-Path ${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos) {
               Write-Output "Local repos file found"
-              "repo_file=${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+              "repo_file=${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
           } else {
             Write-Output "No local repos file found"
             "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
