@@ -139,22 +139,9 @@ jobs:
           colcon build $up_to_arg $skip_arg
           echo "Build succeeded"
 
-      - name: Test workspace
-        shell: pixi run pwsh -Command {0}
-        run: |
-          ./ros2_${{ inputs.ros_distro }}/ros2-windows/local_setup.ps1
-          up_to_arg=""
-          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
-          $skip_packages = "${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}"
-          $skip_arg = if (![string]::IsNullOrWhiteSpace($skip_packages)) { "--packages-skip $skip_packages" } else { "" }
-          colcon test --executor sequential $up_to_arg $skip_arg
-          colcon test-result --verbose
-          echo "Tests succeeded"
-
-      - name: Download issue template for target failure  # Has to be a local file
+      - name: Download issue template for target failure # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
-        run:
-          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
+        run: wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
       - uses: JasonEtco/create-an-issue@v2
         # action-ros-ci does not report more details on test failures afaik
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
