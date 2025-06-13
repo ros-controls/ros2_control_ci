@@ -5,42 +5,37 @@ on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS 2 distribution name, e.g. rolling'
+        description: "ROS 2 distribution name, e.g. rolling"
         required: true
         type: string
       ref_for_scheduled_build:
-        description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
-        default: ''
+        description: "Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag."
+        default: ""
         required: false
         type: string
       os_name:
-        description: 'On which OS to run the build job'
+        description: "On which OS to run the build job"
         required: false
-        default: 'windows-2022'
+        default: "windows-2022"
         type: string
       container:
-        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        description: "(optional) Docker container to run the job in, e.g. ubuntu:noble"
         required: false
-        default: ''
+        default: ""
+        type: string
+      pixi_dependencies:
+        description: "Whitespace separated list of additional pixi dependencies"
+        required: false
+        default: ""
         type: string
       windows_dependencies:
-        description: 'Path to a repos file with additional windows dependencies'
+        description: "Path to a repos file with additional windows dependencies"
         required: false
-        default: ''
+        default: ""
         type: string
-      install_boost:
-        description: 'Install boost for the build'
-        required: false
-        default: false
-        type: boolean
       skip_packages:
-        description: 'Packages to skip from build and test'
-        default: ''
-        required: false
-        type: string
-      skip_packages_test:
-        description: 'Packages to skip from test additionally to skip_packages'
-        default: ''
+        description: "Packages to skip from build and test"
+        default: ""
         required: false
         type: string
 
@@ -52,6 +47,7 @@ jobs:
     env:
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
+      pixi_path: C:\dev
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -68,13 +64,22 @@ jobs:
       - name: Bootstrap pixi
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
+          mkdir -p ${{ env.pixi_path }}
+          Set-Location -Path ${{ env.pixi_path }}
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
 
-      - uses: prefix-dev/setup-pixi@v0.8.8
+      - name: Install pixi
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          manifest-path: pixi.toml
+          manifest-path: ${{ env.pixi_path }}\pixi.toml
+
+      - name: Install additional pixi dependencies
+        working-directory: ${{ env.pixi_path }}
+        run: |
+          pixi add ${{ inputs.pixi_dependencies }}
 
       - name: Install ROS
+        working-directory: ${{ env.pixi_path }}
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
           # Download and extract ROS 2 package
@@ -115,29 +120,46 @@ jobs:
           if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_file }}")) {
             vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
           }
+
       - name: Debug Build workspace 1
-        shell: pixi run pwsh -Command {0}
+        shell: cmd
         run: |
-          ls ros2_${{ inputs.ros_distro }}/ros2-windows
-      - name: Debug Build workspace 2
-        shell: pixi run pwsh -Command {0}
+          pixi shell --manifest-path ${{ env.pixi_path }}
+          ls ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows
+
+      - name: Debug Build workspace 1.5
+        shell: cmd
         run: |
-          ls ros2_${{ inputs.ros_distro }}/ros2-windows
-          ./ros2_${{ inputs.ros_distro }}/ros2-windows/local_setup.ps1
-          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
-          $skip_arg = if (![string]::IsNullOrWhiteSpace(${{ inputs.skip_packages }})) { "--packages-skip ${{ inputs.skip_packages }}" } else { "" }
+          pixi shell --manifest-path ${{ env.pixi_path }}
+          ls ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows
+          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat
+          echo "sourced ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat"
+          up_to_arg=""
+          if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
+          up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
+          fi
+          skip_arg=""
+          if [ -n "${{ inputs.skip_packages }}" ]; then
+          skip_arg="--packages-skip ${{ inputs.skip_packages }}"
+          fi
           echo "colcon build $up_to_arg $skip_arg"
 
-      - name: Build workspace
-        shell: pixi run pwsh -Command {0}
+      - name: Debug Build workspace 2
+        shell: cmd
         run: |
-          ls ros2_${{ inputs.ros_distro }}/ros2-windows
-          ./ros2_${{ inputs.ros_distro }}/ros2-windows/local_setup.ps1
-          $up_to_arg = if (![string]::IsNullOrWhiteSpace(${{ steps.package_list_action.outputs.package_list }})) { "--packages-up-to ${{ steps.package_list_action.outputs.package_list }}" } else { "" }
-          $skip_arg = if (![string]::IsNullOrWhiteSpace(${{ inputs.skip_packages }})) { "--packages-skip ${{ inputs.skip_packages }}" } else { "" }
+          pixi shell --manifest-path ${{ env.pixi_path }}
+          ls ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows
+          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat
+          echo "sourced ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat"
+          up_to_arg=""
+          if [ -n "${{ steps.package_list_action.outputs.package_list }}" ]; then
+          up_to_arg="--packages-up-to ${{ steps.package_list_action.outputs.package_list }}"
+          fi
+          skip_arg=""
+          if [ -n "${{ inputs.skip_packages }}" ]; then
+          skip_arg="--packages-skip ${{ inputs.skip_packages }}"
+          fi
           echo "colcon build $up_to_arg $skip_arg"
-          colcon build $up_to_arg $skip_arg
-          echo "Build succeeded"
 
       - name: Download issue template for target failure # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
