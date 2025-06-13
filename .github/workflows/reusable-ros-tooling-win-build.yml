@@ -134,18 +134,11 @@ jobs:
         shell: cmd
         run: |
           pixi shell --manifest-path ${{ env.pixi_path }}
-          ls ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows
+          colcon --version
           call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          echo "sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat"
-          set up_to_arg=
-          if not "realtime_tools"=="" (
-          set up_to_arg=--packages-up-to realtime_tools
-          )
-          set skip_arg=
-          if not "${{ inputs.skip_packages }}"=="" (
-          set skip_arg=--packages-skip ${{ inputs.skip_packages }}
-          )
-          echo colcon build %up_to_arg% %skip_arg%
+          echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          echo colcon --version
+          colcon --version
 
       - name: Build workspace
         # TODO: use Ninja generator for RSL, but doesn't work for msg packages
@@ -154,8 +147,8 @@ jobs:
         shell: cmd
         run: |
           pixi shell --manifest-path ${{ env.pixi_path }}
-          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat
-          echo "sourced ros2_${{ inputs.ros_distro }}/ros2-windows/setup.bat"
+          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           set up_to_arg=
           if not "realtime_tools"=="" (
           set up_to_arg=--packages-up-to realtime_tools
