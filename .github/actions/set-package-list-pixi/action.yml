@@ -1,9 +1,11 @@
-name: 'Get package list'
+name: "Get package list"
 # pixi and ROS 2 have to be installed in the current path
-description: 'Get a list of packages in the given path'
+description: "Get a list of packages in the given path"
 inputs:
   path:
-    description: 'Path to the repository after checkout'
+    description: "Path to the repository after checkout"
+  mainfest-path:
+    description: "Path to the pixi.toml file or workspace directory"
 outputs:
   package_list:
     description: "A white-space separated list of packages"
@@ -15,14 +17,14 @@ outputs:
     description: "The name of the repo, last part of github.repository"
     value: ${{ steps.split_repo.outputs.repo_name }}
 
-
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - id: colcon
       # if a path is given, list the packages in the given path and its subdirectories from the path
       # if no path is given, list all packages in the workspace
       run: |
+        pixi shell --manifest-path ${{ inputs.mainfest-path }}
         if [[ -n "${{ inputs.path }}" ]]; then
           echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
           echo "package_path_list=$(colcon list --paths ${{ inputs.path }} --paths-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --paths-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
@@ -30,11 +32,11 @@ runs:
           echo "package_list=$(colcon list --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
           echo "package_path_list=$(colcon list --paths-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
         fi
-      shell: pixi run bash -e {0}
+      shell: bash
     - id: split_repo
       run: |
         echo "repo_name=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
-      shell: pixi run bash -e {0}
+      shell: bash
     - run: |
         echo "repo ${{ steps.split_repo.outputs.repo_name }} contains the packages: ${{ steps.colcon.outputs.package_list }}"
-      shell: pixi run bash -e {0}
+      shell: bash
