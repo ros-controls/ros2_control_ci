@@ -24,6 +24,8 @@ runs:
       # if a path is given, list the packages in the given path and its subdirectories from the path
       # if no path is given, list all packages in the workspace
       run: |
+        echo $PWD
+        ls ${{ inputs.manifest-path }} || true
         pixi shell --manifest-path ${{ inputs.manifest-path }}
         if [[ -n "${{ inputs.path }}" ]]; then
           echo "package_list=$(colcon list --paths ${{ inputs.path }} --names-only | tr '\n' ' ') $(colcon list --paths ${{ inputs.path }}/* --names-only | tr '\n' ' ')" >> $GITHUB_OUTPUT
