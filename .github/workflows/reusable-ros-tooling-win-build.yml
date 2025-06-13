@@ -88,12 +88,12 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
 
-      - name: Get package list
-        id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
-        with:
-          path: ${{ env.repo_path }}
-          manifest-path: ${{ env.pixi_path }}
+      # - name: Get package list
+      #   id: package_list_action
+      #   uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
+      #   with:
+      #     path: ${{ env.repo_path }}
+      #     manifest-path: ${{ env.pixi_path }}
 
       - name: Check for local repos file
         id: check_local_repos
