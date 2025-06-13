@@ -147,7 +147,7 @@ jobs:
           echo "colcon build $up_to_arg $skip_arg"
 
       - name: Build workspace
-        # use Ninja generator for faster builds, needed for RSL
+        # TODO: use Ninja generator for RSL, but doesn't work for msg packages
         # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
@@ -164,8 +164,8 @@ jobs:
           if [ -n "${{ inputs.skip_packages }}" ]; then
           skip_arg="--packages-skip ${{ inputs.skip_packages }}"
           fi
-          echo "colcon build $up_to_arg $skip_arg  --cmake-args -G Ninja"
-          colcon build $up_to_arg $skip_arg  --cmake-args -G Ninja
+          echo "colcon build $up_to_arg $skip_arg --cmake-args -G Ninja --event-handler console_cohesion+"
+          colcon build $up_to_arg $skip_arg --cmake-args --event-handler console_cohesion+
 
       - name: Download issue template for target failure # Has to be a local file
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
