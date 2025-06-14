@@ -112,6 +112,8 @@ jobs:
             $repo_file_win = ""
           }
           pixi shell --manifest-path ${{ env.pixi_path }}
+          pixi run --manifest-path ${{ env.pixi_path }} vcs --version
+          pixi run --manifest-path ${{ env.pixi_path }} colcon --version
           vcs --version
           colcon --version
           if (![string]::IsNullOrWhiteSpace($repo_file)) {
