@@ -95,33 +95,28 @@ jobs:
       #     path: ${{ env.repo_path }}
       #     manifest-path: ${{ env.pixi_path }}
 
-      - name: Check for local repos file
-        id: check_local_repos
+      - name: Install dependencies
         run: |
           if (Test-Path ${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos) {
             Write-Output "Local repos file found"
-            "repo_file=${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT
+            $repo_file = "${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos"
           } else {
             Write-Output "No local repos file found"
-            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT
+            $repo_file=""
           }
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") -and (Test-Path "${{ env.repo_path }}\${{ inputs.windows_dependencies }}")) {
             Write-Output "Windows repos file found"
-            "repo_file_win=${{ env.repo_path }}\${{ inputs.windows_dependencies }}" | Out-File -FilePath $Env:GITHUB_OUTPUT
+            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
           } else {
             Write-Output "No windows dependencies provided or file not found"
-            "repo_file_win=" | Out-File -FilePath $Env:GITHUB_OUTPUT
+            $repo_file_win = ""
           }
-
-      - name: Install dependencies
-        shell: pwsh
-        run: |
           pixi shell --manifest-path ${{ env.pixi_path }}
-          if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_file }}")) {
-            vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file }} src
+          if (![string]::IsNullOrWhiteSpace($repo_file)) {
+            vcs import --input ${{ env.repo_path }}/$repo_file src
           }
-          if (![string]::IsNullOrWhiteSpace("${{ steps.check_local_repos.outputs.repo_file_win }}")) {
-            vcs import --input ${{ env.repo_path }}/${{ steps.check_local_repos.outputs.repo_file_win }} src
+          if (![string]::IsNullOrWhiteSpace($repo_file_win)) {
+            vcs import --input ${{ env.repo_path }}/$repo_file_win src
           }
 
       - name: Debug Build workspace 1
