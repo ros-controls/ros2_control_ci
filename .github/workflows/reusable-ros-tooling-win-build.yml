@@ -19,7 +19,7 @@ on:
         default: "windows-2022"
         type: string
       container:
-        description: "(optional) Docker container to run the job in, e.g. ubuntu:noble"
+        description: "Docker container to run the job in, e.g. ubuntu:noble"
         required: false
         default: ""
         type: string
@@ -34,7 +34,7 @@ on:
         default: ""
         type: string
       skip_packages:
-        description: "Packages to skip from build and test"
+        description: "Packages to skip from build"
         default: ""
         required: false
         type: string
@@ -45,9 +45,9 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
+      pixi_path: C:\dev
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
-      pixi_path: C:\dev
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -96,27 +96,20 @@ jobs:
           manifest-path: ${{ env.pixi_path }}
 
       - name: Install dependencies
+        # check for repos files, and pass them to vcstool
         run: |
-          if (Test-Path ${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
-            Write-Output "Local repos file found"
-            $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
-          } else {
-            Write-Output "No local repos file found"
-            $repo_file=""
-          }
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") -and (Test-Path "${{ env.repo_path }}\${{ inputs.windows_dependencies }}")) {
-            Write-Output "Windows repos file found"
-            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
-          } else {
-            Write-Output "No windows dependencies provided or file not found"
-            $repo_file_win = ""
-          }
           Invoke-Expression ((& pixi shell-hook -s powershell --manifest-path ${{ env.pixi_path }}) -join "`n")
-          if (![string]::IsNullOrWhiteSpace($repo_file)) {
+          $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
+          if (Test-Path "$repo_file") {
+            Write-Output "Local repos file found"
             vcs import --input $repo_file src
           }
-          if (![string]::IsNullOrWhiteSpace($repo_file_win)) {
-            vcs import --input $repo_file_win src
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") {
+            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
+            if (Test-Path "$repo_file_win") {
+              Write-Output "Windows repos file found"
+              vcs import --input $repo_file_win src
+            }
           }
 
       - name: Build workspace
@@ -132,10 +125,10 @@ jobs:
           
           set up_to_arg=
           if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
-          set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
+            set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
           )
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
-          set skip_arg=--packages-skip ${{ inputs.skip_packages }}
+            set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
           colcon build %up_to_arg% %skip_arg%

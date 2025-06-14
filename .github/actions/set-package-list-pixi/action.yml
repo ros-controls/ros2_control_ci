@@ -1,11 +1,14 @@
 name: "Get package list"
-# pixi and ROS 2 have to be installed in the current path
+# pixi has to be installed and available in the PATH
 description: "Get a list of packages in the given path"
 inputs:
   path:
-    description: "Path to the repository after checkout"
+    description: "Path to the repository after checkout action, e.g. src/repo-name"
+    required: false
+    default: ""
   manifest-path:
     description: "Path to the pixi.toml file or workspace directory"
+    required: true
 outputs:
   package_list:
     description: "A white-space separated list of packages"
