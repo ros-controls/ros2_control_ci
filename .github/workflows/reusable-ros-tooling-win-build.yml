@@ -127,9 +127,9 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
-          call pixi.bat shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
+          call pixi shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
           call pixi_env.bat
-          
+
           call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           
