@@ -104,7 +104,7 @@ jobs:
             Write-Output "Local repos file found"
             vcs import --input $repo_file src
           }
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") {
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
             $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
             if (Test-Path "$repo_file_win") {
               Write-Output "Windows repos file found"
@@ -122,7 +122,7 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          
+
           set up_to_arg=
           if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
             set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
