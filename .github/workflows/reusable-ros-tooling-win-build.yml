@@ -80,26 +80,26 @@ jobs:
 
       - name: Install ROS
         working-directory: ${{ env.pixi_path }}
+        # Download and extract ROS 2 package
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          # Download and extract ROS 2 package
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
 
-      # - name: Get package list
-      #   id: package_list_action
-      #   uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
-      #   with:
-      #     path: ${{ env.repo_path }}
-      #     manifest-path: ${{ env.pixi_path }}
+      - name: Get package list
+        id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
+        with:
+          path: ${{ env.repo_path }}
+          manifest-path: ${{ env.pixi_path }}
 
       - name: Install dependencies
         run: |
-          if (Test-Path ${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos) {
+          if (Test-Path ${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
             Write-Output "Local repos file found"
-            $repo_file = "${{ env.repo_path }}\realtime_tools.${{ inputs.ros_distro }}.repos"
+            $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           } else {
             Write-Output "No local repos file found"
             $repo_file=""
@@ -112,8 +112,6 @@ jobs:
             $repo_file_win = ""
           }
           Invoke-Expression ((& pixi shell-hook -s powershell --manifest-path ${{ env.pixi_path }}) -join "`n")
-          vcs --version
-          colcon --help
           if (![string]::IsNullOrWhiteSpace($repo_file)) {
             vcs import --input $repo_file src
           }
@@ -131,15 +129,13 @@ jobs:
           call pixi_env.bat
 
           call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           
           set up_to_arg=
-          if not "realtime_tools"=="" (
-          set up_to_arg=--packages-up-to realtime_tools
+          if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
+          set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
           )
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
           set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          echo colcon build %up_to_arg% %skip_arg%
-          colcon build %up_to_arg% %skip_arg% --cmake-args --event-handler console_cohesion+
+          colcon build %up_to_arg% %skip_arg%
