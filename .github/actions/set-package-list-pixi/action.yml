@@ -26,17 +26,33 @@ runs:
       run: |
         call pixi shell-hook -s cmd --manifest-path ${{ inputs.manifest-path }} > pixi_env.bat
         call pixi_env.bat
+        setlocal enabledelayedexpansion
+        set "package_list="
+        set "package_path_list="
         if not "${{ inputs.path }}"=="" (
-          for /f "delims=" %%a in ('colcon list --paths ${{ inputs.path }} --names-only') do set "package_list=!package_list! %%a"
-          for /f "delims=" %%a in ('colcon list --paths ${{ inputs.path }}\* --names-only') do set "package_list=!package_list! %%a"
-          for /f "delims=" %%a in ('colcon list --paths ${{ inputs.path }} --paths-only') do set "package_path_list=!package_path_list! %%a"
-          for /f "delims=" %%a in ('colcon list --paths ${{ inputs.path }}\* --paths-only') do set "package_path_list=!package_path_list! %%a"
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}" --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}\*" --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}" --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}\*" --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
         ) else (
-          for /f "delims=" %%a in ('colcon list --names-only') do set "package_list=!package_list! %%a"
-          for /f "delims=" %%a in ('colcon list --paths-only') do set "package_path_list=!package_path_list! %%a"
+          for /f "delims=" %%a in ('colcon list --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
         )
-        echo package_list=%package_list%>> %GITHUB_OUTPUT%
-        echo package_path_list=%package_path_list%>> %GITHUB_OUTPUT%
+        echo package_list=!package_list!>> %GITHUB_OUTPUT%
+        echo package_path_list=!package_path_list!>> %GITHUB_OUTPUT%
+        endlocal
       shell: cmd
     - id: split_repo
       run: |
