@@ -112,6 +112,8 @@ jobs:
             $repo_file_win = ""
           }
           pixi shell --manifest-path ${{ env.pixi_path }}
+          vcs --version
+          colcon --version
           if (![string]::IsNullOrWhiteSpace($repo_file)) {
             vcs import --input ${{ env.repo_path }}/$repo_file src
           }
