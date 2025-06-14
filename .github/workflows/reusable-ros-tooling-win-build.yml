@@ -115,27 +115,11 @@ jobs:
           vcs --version
           colcon --help
           if (![string]::IsNullOrWhiteSpace($repo_file)) {
-            vcs import --input ${{ env.repo_path }}/$repo_file src
+            vcs import --input $repo_file src
           }
           if (![string]::IsNullOrWhiteSpace($repo_file_win)) {
-            vcs import --input ${{ env.repo_path }}/$repo_file_win src
+            vcs import --input $repo_file_win src
           }
-
-      - name: Debug Build workspace 1
-        shell: cmd
-        run: |
-          pixi shell --manifest-path ${{ env.pixi_path }}
-          ls ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows
-
-      - name: Debug Build workspace 1.5
-        shell: cmd
-        run: |
-          pixi shell --manifest-path ${{ env.pixi_path }}
-          colcon --version
-          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          echo colcon --version
-          colcon --version
 
       - name: Build workspace
         # TODO: use Ninja generator for RSL, but doesn't work for msg packages
@@ -143,9 +127,12 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
-          pixi shell --manifest-path ${{ env.pixi_path }}
+          call pixi.bat shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
+          call pixi_env.bat
+          
           call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           echo sourced ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          
           set up_to_arg=
           if not "realtime_tools"=="" (
           set up_to_arg=--packages-up-to realtime_tools
