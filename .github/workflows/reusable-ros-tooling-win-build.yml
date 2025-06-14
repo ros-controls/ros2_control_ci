@@ -131,4 +131,4 @@ jobs:
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          colcon build %up_to_arg% %skip_arg%
+          colcon build %up_to_arg% %skip_arg% --event-handler console_cohesion+
