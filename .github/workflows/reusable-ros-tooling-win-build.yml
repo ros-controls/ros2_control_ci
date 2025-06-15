@@ -38,6 +38,11 @@ on:
         default: ""
         required: false
         type: string
+      ninja_packages:
+        description: "Packages to be built with Ninja generator (default is MSVC otherwise)"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -113,7 +118,8 @@ jobs:
           }
 
       - name: Build workspace
-        # TODO: use Ninja generator for RSL, but doesn't work for msg packages
+        # use Ninja generator optionally for selected packages. 
+        # This is needed for RSL, but doesn't work for msg packages
         # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
@@ -131,4 +137,9 @@ jobs:
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          colcon build %up_to_arg% %skip_arg% --event-handler console_cohesion+
+          set skip_ninja_arg=
+          if not "${{ inputs.ninja_packages }}"=="" (
+            colcon build --packages-select ${{ inputs.ninja_packages }} --event-handler console_cohesion+
+            set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}            
+          )
+          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+
