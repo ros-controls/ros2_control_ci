@@ -118,7 +118,7 @@ jobs:
           }
 
       - name: Build workspace
-        # use Ninja generator optionally for selected packages. 
+        # use Ninja generator optionally for selected packages.
         # This is needed for RSL, but doesn't work for msg packages
         # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
@@ -140,6 +140,6 @@ jobs:
           set skip_ninja_arg=
           if not "${{ inputs.ninja_packages }}"=="" (
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
-            set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}            
+            set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
           )
           colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+
