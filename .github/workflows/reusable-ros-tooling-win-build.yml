@@ -139,7 +139,7 @@ jobs:
           )
           set skip_ninja_arg=
           if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --event-handler console_cohesion+
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
             set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}            
           )
           colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+
