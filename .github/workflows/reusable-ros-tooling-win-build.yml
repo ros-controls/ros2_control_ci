@@ -65,6 +65,10 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
+      - uses: actions/cache@v4
+        with:
+          path: pixi.lock
+          key: pixi|${{ inputs.ros_distro }}|${{ hashFiles('pixi.lock') }}
 
       - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
@@ -109,14 +113,6 @@ jobs:
             $contentList | Set-Content $manifest
           } else {
               Write-Host "No additional dependencies specified."
-          }
-
-          # is there a pixi.lock file in the repo?
-          if (Test-Path "${{ env.repo_path }}\pixi.${{ inputs.ros_distro }}.lock") {
-            Move-Item -Path "${{ env.repo_path }}\pixi.${{ inputs.ros_distro }}.lock" -Destination ".\pixi.lock" -Force
-            Write-Host "Found local pixi.lock file (pixi.${{ inputs.ros_distro }}.lock), using it."
-          } else {
-              Write-Host "No local pixi.lock file found."
           }
 
       - name: Install pixi
