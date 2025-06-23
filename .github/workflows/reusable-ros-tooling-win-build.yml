@@ -95,7 +95,7 @@ jobs:
 
       - name: Get package list
         id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@windows/pixi
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@master
         with:
           path: ${{ env.repo_path }}
           manifest-path: ${{ env.pixi_path }}
