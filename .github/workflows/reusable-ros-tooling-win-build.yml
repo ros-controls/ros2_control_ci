@@ -86,7 +86,7 @@ jobs:
       - uses: actions/upload-artifact@v4.6.2
         with:
           name: pixi.lock
-          path: pixi.lock
+          path: ${{ env.pixi_path }}\pixi.lock
 
       - name: Install ROS
         working-directory: ${{ env.pixi_path }}
