@@ -72,36 +72,44 @@ jobs:
           $manifest = "pixi.toml"
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
-          # Read file into a string array
-          [string[]]$content = Get-Content $manifest
+          # patch pixi.toml to add extra dependencies
+          $deps = ${{ inputs.pixi_dependencies }}
+          if (-not [string]::IsNullOrWhiteSpace($deps)) {
+            Write-Host "Extra dependencies specified: $deps"
 
-          # Find [dependencies] section
-          $depIndex = $content.IndexOf("[dependencies]")
+            # Read file into a string array
+            [string[]]$content = Get-Content $manifest
 
-          # If section not found, append it
-          if ($depIndex -eq -1) {
-              Add-Content $manifest "`n[dependencies]"
-              $content = Get-Content $manifest
-              $depIndex = $content.IndexOf("[dependencies]")
+            # Find [dependencies] section
+            $depIndex = $content.IndexOf("[dependencies]")
+
+            # If section not found, append it
+            if ($depIndex -eq -1) {
+                Add-Content $manifest "`n[dependencies]"
+                $content = Get-Content $manifest
+                $depIndex = $content.IndexOf("[dependencies]")
+            }
+
+            # Convert array to a List[string] explicitly
+            $contentList = New-Object 'System.Collections.Generic.List[string]'
+            $contentList.AddRange([string[]]$content)
+
+            # Insert each dependency after the [dependencies] section
+            $insertIndex = $depIndex + 1
+
+            foreach ($dep in $deps.Split(" ")) {
+                # Only insert if not already present
+                if (-not ($contentList -match "^\s*$dep\s*=")) {
+                    $contentList.Insert($insertIndex, "$dep = `"*`"")
+                    $insertIndex++
+                }
+            }
+
+            # Save updated manifest
+            $contentList | Set-Content $manifest
+          } else {
+              Write-Host "No extra dependencies specified."
           }
-
-          # Convert array to a List[string] explicitly
-          $contentList = New-Object 'System.Collections.Generic.List[string]'
-          $contentList.AddRange([string[]]$content)
-
-          # Insert each dependency after the [dependencies] section
-          $insertIndex = $depIndex + 1
-
-          foreach ($dep in $deps.Split(" ")) {
-              # Only insert if not already present
-              if (-not ($contentList -match "^\s*$dep\s*=")) {
-                  $contentList.Insert($insertIndex, "$dep = `"*`"")
-                  $insertIndex++
-              }
-          }
-
-          # Save updated manifest
-          $contentList | Set-Content $manifest
 
           # is there a pixi.lock file in the repo?
           if (Test-Path "${{ env.repo_path }}\pixi.lock") {
