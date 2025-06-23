@@ -67,9 +67,12 @@ jobs:
           path: ${{ env.repo_path }}
       - name: Hash pixi dependencies
         id: hash
+        shell: pwsh
         run: |
-          hash=$(echo -n "${{ inputs.pixi_dependencies }}" | sha256sum | cut -d ' ' -f1)
-          echo "hash=$hash" >> $GITHUB_OUTPUT
+          $input = "${{ inputs.pixi_dependencies }}"
+          $bytes = [System.Text.Encoding]::UTF8.GetBytes($input)
+          $hash = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)) -replace "-", ""
+          echo "hash=$hash" >> $env:GITHUB_OUTPUT
       - name: Cache pixi.lock
 
         uses: actions/cache@v4
