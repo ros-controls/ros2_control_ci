@@ -129,10 +129,11 @@ jobs:
           path: pixi.lock
 
       - name: Install ROS
-        working-directory: ${{ env.ros_underlay_path }}
         # Download and extract ROS 2 package
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
+          mkdir -p ${{ env.ros_underlay_path }}
+          Set-Location -Path ${{ env.ros_underlay_path }}
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
