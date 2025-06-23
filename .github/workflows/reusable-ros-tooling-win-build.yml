@@ -71,25 +71,37 @@ jobs:
         run: |
           $manifest = "pixi.toml"
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
+
           # Read file
           $content = Get-Content $manifest
-          # Find line index for [dependencies]
-          $index = $content.IndexOf("[dependencies]")
-          # If not found, add the section
-          if ($index -eq -1) {
+
+          # Look for [dependencies] section
+          $depIndex = $content.IndexOf("[dependencies]")
+
+          # If not found, add it at the end
+          if ($depIndex -eq -1) {
               Add-Content $manifest "`n[dependencies]"
-              $index = ($content = Get-Content $manifest).Count - 1
+              $content = Get-Content $manifest
+              $depIndex = $content.IndexOf("[dependencies]")
           }
-          # Inject each dependency if not already present
-          $deps = ${{ inputs.pixi_dependencies }}
+
+          # Convert to list so we can insert lines
+          $contentList = [System.Collections.Generic.List[string]]::new()
+          $contentList.AddRange($content)
+
+          # Track where to insert new deps
+          $insertIndex = $depIndex + 1
+
           foreach ($dep in $deps.Split(" ")) {
-              if (-not ($content -match "^\s*$dep\s*=")) {
-                  $content = $content[0..$index] + "$dep = \"*\"" + $content[($index + 1)..($content.Count - 1)]
-                  $index++
+              # Only add if not already present
+              if (-not ($contentList -match "^\s*$dep\s*=")) {
+                  $contentList.Insert($insertIndex, "$dep = `"*`"")
+                  $insertIndex++
               }
           }
-          # Write back
-          Set-Content $manifest $content
+
+          # Write back to file
+          Set-Content $manifest $contentList
 
           # is there a pixi.lock file in the repo?
           if (Test-Path "${{ env.repo_path }}\pixi.lock") {
