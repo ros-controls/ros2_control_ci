@@ -77,12 +77,16 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.8
         with:
           manifest-path: ${{ env.pixi_path }}\pixi.toml
-          cache: true
 
       - name: Install additional pixi dependencies
         working-directory: ${{ env.pixi_path }}
         run: |
           pixi add ${{ inputs.pixi_dependencies }}
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: pixi.lock
+          path: pixi.lock
 
       - name: Install ROS
         working-directory: ${{ env.pixi_path }}
