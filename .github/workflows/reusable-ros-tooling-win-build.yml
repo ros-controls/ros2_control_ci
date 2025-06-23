@@ -112,9 +112,9 @@ jobs:
           }
 
           # is there a pixi.lock file in the repo?
-          if (Test-Path "${{ env.repo_path }}\pixi.lock") {
-            Move-Item -Path "${{ env.repo_path }}\pixi.lock" -Destination ".\pixi.lock" -Force
-            Write-Host "Found local pixi.lock file, using it."
+          if (Test-Path "${{ env.repo_path }}\pixi.${{ inputs.ros_distro }}.lock") {
+            Move-Item -Path "${{ env.repo_path }}\pixi.${{ inputs.ros_distro }}.lock" -Destination ".\pixi.lock" -Force
+            Write-Host "Found local pixi.lock file (pixi.${{ inputs.ros_distro }}.lock), using it."
           } else {
               Write-Host "No local pixi.lock file found."
           }
