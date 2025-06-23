@@ -65,10 +65,17 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
-      - uses: actions/cache@v4
+      - name: Hash pixi dependencies
+        id: hash
+        run: |
+          hash=$(echo -n "${{ inputs.pixi_dependencies }}" | sha256sum | cut -d ' ' -f1)
+          echo "hash=$hash" >> $GITHUB_OUTPUT
+      - name: Cache pixi.lock
+
+        uses: actions/cache@v4
         with:
           path: pixi.lock
-          key: pixi|${{ inputs.ros_distro }}|${{ inputs.pixi_dependencies }}
+          key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
 
       - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
