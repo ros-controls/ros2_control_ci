@@ -5,35 +5,44 @@ on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS 2 distribution name. One of
-          https://github.com/ros-tooling/setup-ros/blob/master/src/setup-ros-windows.ts'
+        description: "ROS 2 distribution name, e.g. rolling"
         required: true
         type: string
       ref_for_scheduled_build:
-        description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
-        default: ''
+        description: "Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag."
+        default: ""
         required: false
         type: string
       os_name:
-        description: 'On which OS to run the build job'
+        description: "On which OS to run the build job"
         required: false
-        default: 'windows-2019'
+        default: "windows-2022"
         type: string
       container:
-        description: '(optional) Docker container to run the job in, e.g. ubuntu:noble'
+        description: "Docker container to run the job in, e.g. ubuntu:noble"
         required: false
-        default: ''
+        default: ""
+        type: string
+      pixi_dependencies:
+        description: "Whitespace separated list of additional pixi dependencies"
+        required: false
+        default: ""
         type: string
       windows_dependencies:
-        description: 'Path to a repos file with additional windows dependencies'
+        description: "Path to a repos file with additional windows dependencies"
         required: false
-        default: ''
+        default: ""
         type: string
-      install_boost:
-        description: 'Install boost for the build'
+      skip_packages:
+        description: "Packages to skip from build"
+        default: ""
         required: false
-        default: false
-        type: boolean
+        type: string
+      ninja_packages:
+        description: "Packages to be built with Ninja generator (default is MSVC otherwise)"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -41,36 +50,10 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
+      pixi_path: C:\dev
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
-      - uses: actions/setup-python@v5
-        # setup-ros has hardcoded python 3.8, as it is the default version acc. to REP-2000 for jazzy
-        # let's use the same version here for the later action-ros-ci step
-        with:
-          python-version: '3.8'
-
-      - uses: ros-tooling/setup-ros@0.7.14
-        with:
-          required-ros-distributions: ${{ inputs.ros_distro }}
-          use-ros2-testing: true
-
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.5.0
-        if: ${{ inputs.install_boost }}
-        id: install-boost
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: 1.86.0
-            # OPTIONAL: Specify a platform version
-            platform_version: 2019
-            # OPTIONAL: Specify a toolset
-            toolset: msvc
-            # Whether the boost libraries will be supplied through static or shared libraries
-            link: shared
-
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v4
@@ -83,65 +66,80 @@ jobs:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
 
-      - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
+      - name: Bootstrap pixi
+        # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
+        run: |
+          mkdir -p ${{ env.pixi_path }}
+          Set-Location -Path ${{ env.pixi_path }}
+          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
+
+      - name: Install pixi
+        uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          manifest-path: ${{ env.pixi_path }}\pixi.toml
+
+      - name: Install additional pixi dependencies
+        working-directory: ${{ env.pixi_path }}
+        run: |
+          pixi add ${{ inputs.pixi_dependencies }}
+
+      - name: Install ROS
+        working-directory: ${{ env.pixi_path }}
+        # Download and extract ROS 2 package
+        # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
+        run: |
+          $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
+          $output = "ros2-package-windows-AMD64.zip"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
+
+      - name: Get package list
+        id: package_list_action
+        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@master
         with:
           path: ${{ env.repo_path }}
+          manifest-path: ${{ env.pixi_path }}
 
-      - name: Check for local repos file
-        id: check_local_repos
+      - name: Install dependencies
+        # check for repos files, and pass them to vcstool
         run: |
-          if (Test-Path ${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos) {
-              Write-Output "Local repos file found"
-              "repo_file=${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          } else {
-            Write-Output "No local repos file found"
-            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
+          Invoke-Expression ((& pixi shell-hook -s powershell --manifest-path ${{ env.pixi_path }}) -join "`n")
+          $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
+          if (Test-Path "$repo_file") {
+            Write-Output "Local repos file found"
+            vcs import --input $repo_file src
           }
-
-      - name: Set windows dependencies variable
-        id: set_windows_dependencies
-        run: |
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}") -and (Test-Path "${{ env.repo_path }}\${{ inputs.windows_dependencies }}")) {
-            Write-Output "Windows repos file found"
-            "repo_file=${{ env.repo_path }}\${{ inputs.windows_dependencies }}" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          } else {
-            Write-Output "No windows dependencies provided or file not found"
-            "repo_file=" | Out-File -FilePath $Env:GITHUB_OUTPUT -Append
-          }
-
-      - uses: ros-tooling/action-ros-ci@0.4.4
-        # tests are disabled https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
-        env:
-            BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
-        with:
-          target-ros2-distro: ${{ inputs.ros_distro }}
-          package-name: ${{ steps.package_list_action.outputs.package_list }}
-          vcs-repo-file-url: |
-            ${{ steps.check_local_repos.outputs.repo_file }}
-            ${{ steps.set_windows_dependencies.outputs.repo_file }}
-
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-          colcon-defaults: |
-            {
-              "test": {
-                "executor": "sequential"
-              }
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
+            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
+            if (Test-Path "$repo_file_win") {
+              Write-Output "Windows repos file found"
+              vcs import --input $repo_file_win src
             }
-        id: action-ros
+          }
 
-      - name: Download issue template for target failure  # Has to be a local file
-        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
-        run:
-          wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
-      - uses: JasonEtco/create-an-issue@v2
-        # action-ros-ci does not report more details on test failures afaik
-        if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTION_NAME: ${{ inputs.ros_distro }}/source
-          REF: ${{ inputs.ref_for_scheduled_build }}
-          URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          update_existing: true
-          filename: ${{ env.repo_path }}/.github/issue_template_failed_ci.md
+      - name: Build workspace
+        # use Ninja generator optionally for selected packages.
+        # This is needed for RSL, but doesn't work for msg packages
+        # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
+        # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+
+          set up_to_arg=
+          if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
+            set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
+          )
+          set skip_arg=
+          if not "${{ inputs.skip_packages }}"=="" (
+            set skip_arg=--packages-skip ${{ inputs.skip_packages }}
+          )
+          set skip_ninja_arg=
+          if not "${{ inputs.ninja_packages }}"=="" (
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
+            set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
+          )
+          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+

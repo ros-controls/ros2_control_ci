@@ -1,0 +1,66 @@
+name: "Get package list"
+# pixi has to be installed and available in the PATH
+description: "Get a list of packages in the given path"
+inputs:
+  path:
+    description: "Path to the repository after checkout action, e.g. src/repo-name"
+    required: false
+    default: ""
+  manifest-path:
+    description: "Path to the pixi.toml file or workspace directory"
+    required: true
+outputs:
+  package_list:
+    description: "A white-space separated list of packages"
+    value: ${{ steps.colcon.outputs.package_list }}
+  package_path_list:
+    description: "A white-space separated list of package paths"
+    value: ${{ steps.colcon.outputs.package_path_list }}
+  repo_name:
+    description: "The name of the repo, last part of github.repository"
+    value: ${{ steps.split_repo.outputs.repo_name }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: colcon
+      # if a path is given, list the packages in the given path and its subdirectories from the path
+      # if no path is given, list all packages in the workspace
+      run: |
+        call pixi shell-hook -s cmd --manifest-path ${{ inputs.manifest-path }} > pixi_env.bat
+        call pixi_env.bat
+        setlocal enabledelayedexpansion
+        set "package_list="
+        set "package_path_list="
+        if not "${{ inputs.path }}"=="" (
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}" --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}\*" --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}" --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths "${{ inputs.path }}\*" --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
+        ) else (
+          for /f "delims=" %%a in ('colcon list --names-only') do (
+            set "package_list=!package_list! %%a"
+          )
+          for /f "delims=" %%a in ('colcon list --paths-only') do (
+            set "package_path_list=!package_path_list! %%a"
+          )
+        )
+        echo package_list=!package_list!>> %GITHUB_OUTPUT%
+        echo package_path_list=!package_path_list!>> %GITHUB_OUTPUT%
+        endlocal
+      shell: cmd
+    - id: split_repo
+      run: |
+        echo "repo_name=$(echo ${{ github.repository }} | cut -d '/' -f 2)" >> $GITHUB_OUTPUT
+      shell: bash
+    - run: |
+        echo "repo ${{ steps.split_repo.outputs.repo_name }} contains the packages: ${{ steps.colcon.outputs.package_list }}"
+      shell: bash
