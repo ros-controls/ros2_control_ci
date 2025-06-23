@@ -68,7 +68,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: pixi.lock
-          key: pixi|${{ inputs.ros_distro }}|${{ hashFiles('pixi.lock') }}
+          key: pixi|${{ inputs.ros_distro }}|${{ inputs.pixi_dependencies }}
 
       - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
