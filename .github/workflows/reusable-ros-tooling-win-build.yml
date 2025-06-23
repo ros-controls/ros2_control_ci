@@ -50,7 +50,7 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
-      pixi_path: C:\dev
+      ros_underlay_path: C:\dev
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
@@ -66,30 +66,47 @@ jobs:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
 
-      - name: Bootstrap pixi
+      - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          mkdir -p ${{ env.pixi_path }}
-          Set-Location -Path ${{ env.pixi_path }}
-          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
+          $manifest = "pixi.toml"
+          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
+          # Read file
+          $content = Get-Content $manifest
+          # Find line index for [dependencies]
+          $index = $content.IndexOf("[dependencies]")
+          # If not found, add the section
+          if ($index -eq -1) {
+              Add-Content $manifest "`n[dependencies]"
+              $index = ($content = Get-Content $manifest).Count - 1
+          }
+          # Inject each dependency if not already present
+          $deps = ${{ inputs.pixi_dependencies }}
+          foreach ($dep in $deps.Split(" ")) {
+              if (-not ($content -match "^\s*$dep\s*=")) {
+                  $content = $content[0..$index] + "$dep = \"*\"" + $content[($index + 1)..($content.Count - 1)]
+                  $index++
+              }
+          }
+          # Write back
+          Set-Content $manifest $content
+
+          # is there a pixi.lock file in the repo?
+          if (Test-Path "${{ env.repo_path }}\pixi.lock") {
+            Move-Item -Path "${{ env.repo_path }}\pixi.lock" -Destination ".\pixi.lock" -Force
+          }
 
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.8.8
-        with:
-          manifest-path: ${{ env.pixi_path }}\pixi.toml
 
-      - name: Install additional pixi dependencies
-        working-directory: ${{ env.pixi_path }}
-        run: |
-          pixi add ${{ inputs.pixi_dependencies }}
-
-      - uses: actions/upload-artifact@v4.6.2
+      - name: Upload pixi lock file
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: pixi.lock
-          path: ${{ env.pixi_path }}\pixi.lock
+          path: pixi.lock
 
       - name: Install ROS
-        working-directory: ${{ env.pixi_path }}
+        working-directory: ${{ env.ros_underlay_path }}
         # Download and extract ROS 2 package
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
@@ -103,12 +120,12 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@master
         with:
           path: ${{ env.repo_path }}
-          manifest-path: ${{ env.pixi_path }}
+          manifest-path: pixi.toml
 
       - name: Install dependencies
         # check for repos files, and pass them to vcstool
         run: |
-          Invoke-Expression ((& pixi shell-hook -s powershell --manifest-path ${{ env.pixi_path }}) -join "`n")
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
@@ -129,10 +146,10 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
-          call pixi shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
+          call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
 
           set up_to_arg=
           if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
