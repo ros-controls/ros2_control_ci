@@ -50,7 +50,7 @@ jobs:
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
     env:
-      pixi_path: C:\dev
+      ros_underlay_path: C:\dev
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
@@ -65,29 +65,81 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
+      - name: Hash pixi dependencies
+        id: hash
+        shell: pwsh
+        run: |
+          $input = "${{ inputs.pixi_dependencies }}"
+          $bytes = [System.Text.Encoding]::UTF8.GetBytes($input)
+          $hash = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)) -replace "-", ""
+          echo "hash=$hash" >> $env:GITHUB_OUTPUT
+      - name: Cache pixi.lock
 
-      - name: Bootstrap pixi
+        uses: actions/cache@v4
+        with:
+          path: pixi.lock
+          key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
+
+      - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          mkdir -p ${{ env.pixi_path }}
-          Set-Location -Path ${{ env.pixi_path }}
-          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
+          $manifest = "pixi.toml"
+          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
+
+          # patch pixi.toml to add extra dependencies
+          $deps = "${{ inputs.pixi_dependencies }}"
+          if (-not [string]::IsNullOrWhiteSpace($deps)) {
+            Write-Host "Extra dependencies specified: $deps"
+
+            # Read file into a string array
+            [string[]]$content = Get-Content $manifest
+
+            # Find [dependencies] section
+            $depIndex = $content.IndexOf("[dependencies]")
+
+            # If section not found, append it
+            if ($depIndex -eq -1) {
+                Add-Content $manifest "`n[dependencies]"
+                $content = Get-Content $manifest
+                $depIndex = $content.IndexOf("[dependencies]")
+            }
+
+            # Convert array to a List[string] explicitly
+            $contentList = New-Object 'System.Collections.Generic.List[string]'
+            $contentList.AddRange([string[]]$content)
+
+            # Insert each dependency after the [dependencies] section
+            $insertIndex = $depIndex + 1
+
+            foreach ($dep in $deps.Split(" ")) {
+                # Only insert if not already present
+                if (-not ($contentList -match "^\s*$dep\s*=")) {
+                    $contentList.Insert($insertIndex, "$dep = `"*`"")
+                    $insertIndex++
+                }
+            }
+
+            # Save updated manifest
+            $contentList | Set-Content $manifest
+          } else {
+              Write-Host "No additional dependencies specified."
+          }
 
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.8.10
-        with:
-          manifest-path: ${{ env.pixi_path }}\pixi.toml
 
-      - name: Install additional pixi dependencies
-        working-directory: ${{ env.pixi_path }}
-        run: |
-          pixi add ${{ inputs.pixi_dependencies }}
+      - name: Upload pixi lock file
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: pixi.lock
+          path: pixi.lock
 
       - name: Install ROS
-        working-directory: ${{ env.pixi_path }}
         # Download and extract ROS 2 package
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
+          mkdir -p ${{ env.ros_underlay_path }}
+          Set-Location -Path ${{ env.ros_underlay_path }}
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
@@ -98,12 +150,12 @@ jobs:
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@master
         with:
           path: ${{ env.repo_path }}
-          manifest-path: ${{ env.pixi_path }}
+          manifest-path: pixi.toml
 
       - name: Install dependencies
         # check for repos files, and pass them to vcstool
         run: |
-          Invoke-Expression ((& pixi shell-hook -s powershell --manifest-path ${{ env.pixi_path }}) -join "`n")
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
@@ -124,10 +176,10 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
-          call pixi shell-hook -s cmd --manifest-path ${{ env.pixi_path }} > pixi_env.bat
+          call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          call ${{ env.pixi_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
 
           set up_to_arg=
           if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
@@ -142,4 +194,4 @@ jobs:
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
             set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
           )
-          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+
+          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args -DBUILD_TESTING=OFF
