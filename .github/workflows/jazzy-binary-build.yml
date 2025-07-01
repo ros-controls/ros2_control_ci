@@ -9,6 +9,13 @@ on:
       - '.github/workflows/jazzy-binary-build.yml'
       - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.jazzy.repos'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/jazzy-binary-build.yml'
+      - '.github/workflows/reusable-industrial-ci-with-cache.yml'
+      - 'ros_controls.jazzy.repos'
   schedule:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'
