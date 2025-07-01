@@ -131,7 +131,7 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.8.10
         # Cache pixi environment only on default branch to save disk space
         with:
-          cache: true # default, only uses cache if pixi.lock is present
+          cache: ${{ steps.cache.outputs.cache-hit == 'true' }} # only use cache if pixi.lock is present
           cache-write: ${{ steps.cache.outputs.cache-hit == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }} # only write cache on push to default branch to save disk space, caches from PRs can't be accessed anyways; only allowed if pixi.lock is present
 
       - name: Cache pixi.lock
