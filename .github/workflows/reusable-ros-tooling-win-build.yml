@@ -65,6 +65,7 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
+
       - name: Hash pixi dependencies
         id: hash
         shell: pwsh
@@ -73,9 +74,9 @@ jobs:
           $bytes = [System.Text.Encoding]::UTF8.GetBytes($input)
           $hash = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)) -replace "-", ""
           echo "hash=$hash" >> $env:GITHUB_OUTPUT
-      - name: Cache pixi.lock
 
-        uses: actions/cache@v4
+      - name: Restore pixi.lock
+        uses: actions/cache/restore@v4
         with:
           path: pixi.lock
           key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
@@ -125,8 +126,20 @@ jobs:
               Write-Host "No additional dependencies specified."
           }
 
+      - name: Cache pixi.lock
+        uses: actions/cache/save@v4
+        # independent of the success of the following steps, but only on default branch
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        with:
+          path: pixi.lock
+          key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
+
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.8.10
+        # Cache pixi environment only on default branch to save disk space
+        with:
+          cache: true # default, only uses cache if pixi.lock is present
+          cache-write: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }} # only write cache on push to default branch to save disk space, caches from PRs can't be accessed anyways
 
       - name: Upload pixi lock file
         uses: actions/upload-artifact@v4.6.2

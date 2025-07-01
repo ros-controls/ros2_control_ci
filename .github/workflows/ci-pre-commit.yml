@@ -3,6 +3,9 @@ name: Pre-commit
 on:
   workflow_dispatch:
   pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   pre-commit:
