@@ -133,11 +133,12 @@ jobs:
         with:
           cache: ${{ steps.cache.outputs.cache-hit == 'true' }} # only use cache if pixi.lock is present
           cache-write: ${{ steps.cache.outputs.cache-hit == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }} # only write cache on push to default branch to save disk space, caches from PRs can't be accessed anyways; only allowed if pixi.lock is present
+          locked: false
 
       - name: Cache pixi.lock
         uses: actions/cache/save@v4
-        # independent of the success of the following steps, but only on default branch
-        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        # independent of the success of the following steps, but only on default branch and only if pixi.lock was not restored from cache
+        if: ${{ steps.cache.outputs.cache-hit == 'false' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         with:
           path: pixi.lock
           key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
