@@ -71,7 +71,7 @@ RUN set -eux; \
       echo "Failed to fetch ROS_APT_SOURCE_VERSION" >&2; \
       exit 1; \
     fi ; \
-    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2${ROS_REPO_PACKAGES}-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" ; \
+    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" ; \
     echo "Downloading and installing ROS apt source package: ${ROS_APT_PACKAGE}" ; \
     curl -fL -o /tmp/ros2-apt-source.deb "${ROS_APT_PACKAGE}" ; \
     if [ ! -s /tmp/ros2-apt-source.deb ]; then \
