@@ -85,8 +85,9 @@ COPY defaults.yaml /root/.colcon/defaults.yaml
 # there is no python3-graphviz on rhel9, so install it via pip
 RUN pip3 install --no-cache-dir graphviz
 
-# set up sourcing of ros
+# Setup entrypoint (sourcing of ROS)
 COPY ./ros_entrypoint.sh /
+RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 CMD ["bash"]
 

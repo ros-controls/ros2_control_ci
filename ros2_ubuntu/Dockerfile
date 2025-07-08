@@ -59,9 +59,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN rosdep init && \
     rosdep update --rosdistro $ROS_DISTRO
 
-# Setup entrypoint
+# Setup entrypoint (sourcing of ROS)
 COPY ./ros_entrypoint.sh /
-
+RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
 
