@@ -38,9 +38,21 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 # Setup keys
 RUN set -eux; \
-    export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') \
-    && curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2${ROS_REPO_PACKAGES}-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $UBUNTU_CODENAME)_all.deb" \
-    && apt install /tmp/ros2-apt-source.deb
+    ROS_APT_SOURCE_VERSION="$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}')" ; \
+    if [ -z "$ROS_APT_SOURCE_VERSION" ]; then \
+      echo "Failed to fetch ROS_APT_SOURCE_VERSION" >&2; \
+      exit 1; \
+    fi ; \
+    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2${ROS_REPO_PACKAGES}-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $UBUNTU_CODENAME)_all.deb" ; \
+    echo "Downloading and installing ROS apt source package: ${ROS_APT_PACKAGE}" ; \
+    curl -fL -o /tmp/ros2-apt-source.deb "${ROS_APT_PACKAGE}" ; \
+    if [ ! -s /tmp/ros2-apt-source.deb ]; then \
+      echo "Downloaded .deb file is missing or empty" >&2; \
+      exit 1; \
+    fi ; \
+    dpkg-deb -I /tmp/ros2-apt-source.deb > /dev/null || { echo "Invalid .deb file"; exit 1; } ; \
+    apt-get install -y /tmp/ros2-apt-source.deb ; \
+    rm /tmp/ros2-apt-source.deb
 
 # Setup environment
 ENV LANG=C.UTF-8
