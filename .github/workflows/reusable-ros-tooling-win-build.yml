@@ -66,21 +66,12 @@ jobs:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
 
-      - name: Hash pixi dependencies
-        id: hash
-        shell: pwsh
-        run: |
-          $input = "${{ inputs.pixi_dependencies }}"
-          $bytes = [System.Text.Encoding]::UTF8.GetBytes($input)
-          $hash = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)) -replace "-", ""
-          echo "hash=$hash" >> $env:GITHUB_OUTPUT
-
       - name: Restore pixi.lock
         uses: actions/cache/restore@v4
         id: cache
         with:
           path: pixi.lock
-          key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
+          key: pixi|${{ inputs.ros_distro }}
 
       - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
@@ -142,7 +133,7 @@ jobs:
         if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         with:
           path: pixi.lock
-          key: pixi|${{ inputs.ros_distro }}|${{ steps.hash.outputs.hash }}
+          key: pixi|${{ inputs.ros_distro }}
 
       - name: Upload pixi lock file
         uses: actions/upload-artifact@v4.6.2
