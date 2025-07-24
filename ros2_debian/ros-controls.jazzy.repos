@@ -3,6 +3,14 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/filters-release.git
     version: debian/jazzy/bookworm/filters
+  ros2/ros2test:
+    type: git
+    url: https://github.com/ros2-gbp/ros_testing-release.git
+    version: debian/jazzy/bookworm/ros2test
+  ros2/ros_testing:
+    type: git
+    url: https://github.com/ros2-gbp/ros_testing-release.git
+    version: debian/jazzy/bookworm/ros_testing
   xacro:
     type: git
     url: https://github.com/ros2-gbp/xacro-release.git
