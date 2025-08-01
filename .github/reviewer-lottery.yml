@@ -15,27 +15,26 @@ groups:
   - name: reviewers
     reviewers: 5
     usernames:
+      - anfemosa
+      - aprotyas
+      - ARK3r
+      - arne48
+      - bijoua29
+      - DasRoteSkelett
+      - erickisos
+      - fmauch
+      - harderthan
+      - homalozoa
+      - livanov93
+      - LukasMacha97
+      - mamueluth
+      - Maverobot
+      - mcbed
+      - mhubii
       - moriarty
       - olivier-stasse
-      - fmauch
-      - rosterloh
       - progtologist
-      - arne48
-      - Maverobot
-      - DasRoteSkelett
-      - harderthan
-      - Raivias
-      - erickisos
-      - mamueluth
       - qiayuanl
-      - homalozoa
-      - ARK3r
-      - anfemosa
+      - Raivias
+      - rosterloh
       - VX792
-      - mhubii
-      - livanov93
-      - aprotyas
-      - peterdavidfagan
-      - mcbed
-      - bijoua29
-      - LukasMacha97
