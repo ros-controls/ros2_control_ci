@@ -76,7 +76,7 @@ jobs:
             --deps-only --deps --upstream-development > /tmp/deps.repos && break || echo "retry #${i} .." && sleep 60;
           done
 
-      - uses: ros-tooling/action-ros-ci@0.4.4
+      - uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
