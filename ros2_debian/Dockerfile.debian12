@@ -102,6 +102,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   python3-ament-pep257 \
   python3-flake8 \
   python3-coverage \
+  python3-mypy \
   && \
   # colcon-devtools>0.2.3 is not released for debian12, so override it with pip
   # typing_extensions needs to be >4.7.0, but is available on apt with 4.4.0 only
