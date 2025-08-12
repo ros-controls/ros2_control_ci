@@ -71,7 +71,7 @@ jobs:
           coverage --version || true
           which coverage || true
           ls ~/.venv/bin || true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       - name: Check for local repos file

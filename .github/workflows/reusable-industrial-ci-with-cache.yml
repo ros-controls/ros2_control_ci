@@ -90,10 +90,10 @@ jobs:
     steps:
       - name: Checkout ${{ github.ref }} when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
         if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
       - name: Restore ccache folder

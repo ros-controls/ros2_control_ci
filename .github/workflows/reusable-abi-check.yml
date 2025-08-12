@@ -14,7 +14,7 @@ jobs:
   reusable_abi-compatibility-ici:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ros-industrial/industrial_ci@master
         env:
           DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing

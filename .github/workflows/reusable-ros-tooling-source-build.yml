@@ -57,7 +57,7 @@ jobs:
       - uses: ros-tooling/setup-ros@0.7.15
         with:
           use-ros2-testing: true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.repo_path }}
