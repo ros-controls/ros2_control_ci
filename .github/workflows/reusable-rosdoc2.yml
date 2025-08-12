@@ -46,7 +46,7 @@ jobs:
           pip install Sphinx
           git clone https://github.com/ros-infrastructure/rosdoc2.git
           pip install --upgrade rosdoc2/
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           path: ${{ env.path }}
