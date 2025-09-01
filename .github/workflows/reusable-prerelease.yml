@@ -16,8 +16,8 @@ on:
       prerelease_downstream_depth:
         description: 'The depth of the depends-on tree to be included in the overlay workspace (-1 implies unlimited, default: 0)'
         required: false
-        default: 0
-        type: number
+        default: '0'
+        type: string
 
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
         env:
           PRERELEASE: true
           # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow_dispatch (unset for pull_request event, which is properly handled as 0 by ICI)
-          PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && 1 || inputs.prerelease_downstream_depth}}
+          PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && '1' || inputs.prerelease_downstream_depth}}
           BASEDIR: ${{ github.workspace }}/.work
           ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
           DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ROS_DISTRO }}-ubuntu-testing
