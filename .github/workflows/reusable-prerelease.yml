@@ -4,7 +4,7 @@ name: Reusable pre-release workflow
 #
 # Can be activated by
 # - workflow dispatch manual action
-# - adding labels: `check-prerelease `o `check-prerelease-downstream`. Once one of the label is added, it will be triggered by subsequent updates of the PR.
+# - adding labels: `check-prerelease` or `check-prerelease-downstream`. Once one of the label is added, it will be triggered by subsequent updates of the PR.
 #
 # This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
