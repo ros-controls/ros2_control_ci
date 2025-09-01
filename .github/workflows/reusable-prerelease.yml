@@ -1,10 +1,13 @@
 name: Reusable pre-release workflow
 # Reusable workflow to simplify pre-release testing
 # author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
-
+#
 # Can be activated by
 # - workflow dispatch manual action
 # - adding labels: `check-prerelease `o `check-prerelease-downstream`. Once one of the label is added, it will be triggered by subsequent updates of the PR.
+#
+# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
+# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
 
 on:
   workflow_call:
