@@ -1,0 +1,39 @@
+name: Reusable pre-release workflow
+# Reusable workflow to simplify pre-release testing
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+
+# Can be activated by
+# - workflow dispatch manual action
+# - adding labels: `check-prerelease `o `check-prerelease-downstream`. Once one of the label is added, it will be triggered by subsequent updates of the PR.
+
+on:
+  workflow_call:
+    inputs:
+      ros_distro:
+        description: 'ROS_DISTRO variable for industrial_ci'
+        required: true
+        type: string
+      prerelease_downstream_depth:
+        description: 'The depth of the depends-on tree to be included in the overlay workspace (-1 implies unlimited, default: 0)'
+        required: false
+        default: 0
+        type: number
+
+
+jobs:
+  default:
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: industrial_ci
+        env:
+          PRERELEASE: true
+          # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow_dispatch (unset for pull_request event, which is properly handled as 0 by ICI)
+          PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && 1 || inputs.prerelease_downstream_depth}}
+          BASEDIR: ${{ github.workspace }}/.work
+          ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
+          DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ROS_DISTRO }}-ubuntu-testing
+        uses: ros-industrial/industrial_ci@master
