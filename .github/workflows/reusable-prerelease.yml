@@ -22,7 +22,6 @@ on:
         default: '0'
         type: string
 
-
 jobs:
   default:
     if: |
@@ -34,7 +33,7 @@ jobs:
       - name: industrial_ci
         env:
           PRERELEASE: true
-          # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow_dispatch (unset for pull_request event, which is properly handled as 0 by ICI)
+          # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow
           PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && '1' || inputs.prerelease_downstream_depth}}
           BASEDIR: ${{ github.workspace }}/.work
           ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
