@@ -43,6 +43,11 @@ on:
         default: ""
         required: false
         type: string
+      cmake_args:
+        description: "Additional arguments to pass to CMake, e.g. -DBUILD_TESTING=OFF"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -201,4 +206,4 @@ jobs:
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
             set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
           )
-          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args -DBUILD_TESTING=OFF
+          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.cmake_args }}
