@@ -199,7 +199,7 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          cd ${{ env.upstream_workspace }}
+          pushd ${{ env.upstream_workspace }}
 
           set skip_ninja_arg=
           if not "${{ inputs.ninja_packages }}"=="" (
