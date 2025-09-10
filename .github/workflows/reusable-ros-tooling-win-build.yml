@@ -212,6 +212,8 @@ jobs:
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
             set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
           )
+
+          colcon list %skip_arg% %skip_ninja_arg%
           colcon build %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }}
 
       - name: Build target workspace
