@@ -195,12 +195,13 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
-          @echo on
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           pushd ${{ env.upstream_workspace }}
+
+          @echo on
 
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
@@ -219,13 +220,14 @@ jobs:
       - name: Build target workspace
         shell: cmd
         run: |
-          @echo on
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           dir ${{ env.upstream_workspace }}
           call ${{ env.upstream_workspace }}\install\setup.bat
+
+          @echo on
 
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
