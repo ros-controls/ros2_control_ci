@@ -213,7 +213,6 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          colcon list --packages-skip %skip_arg%
           colcon build --packages-skip %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }} --merge-install
 
       - name: Build target workspace
@@ -223,7 +222,6 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-          dir ${{ env.upstream_workspace }}
           call ${{ env.upstream_workspace }}\install\setup.bat
 
           @echo on
