@@ -209,12 +209,12 @@ jobs:
           )
 
           if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+ --merge-install
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
           colcon list --packages-skip %skip_arg%
-          colcon build --packages-skip %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }}
+          colcon build --packages-skip %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }} --merge-install
 
       - name: Build target workspace
         shell: cmd
@@ -232,4 +232,4 @@ jobs:
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          colcon build %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }}
+          colcon build %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }} --merge-install
