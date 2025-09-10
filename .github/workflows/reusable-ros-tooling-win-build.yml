@@ -195,6 +195,7 @@ jobs:
         # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
+          @echo on
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
@@ -216,6 +217,7 @@ jobs:
       - name: Build target workspace
         shell: cmd
         run: |
+          @echo on
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
