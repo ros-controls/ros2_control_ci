@@ -199,15 +199,14 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
-
-          Set-Location -Path ${{ env.upstream_workspace }}
+          cd ${{ env.upstream_workspace }}
 
           set skip_ninja_arg=
           if not "${{ inputs.ninja_packages }}"=="" (
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
             set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
           )
-          colcon build %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }}
+          colcon build %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }}
 
       - name: Build target workspace
         shell: cmd
