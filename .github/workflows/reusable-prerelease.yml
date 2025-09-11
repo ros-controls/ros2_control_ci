@@ -44,4 +44,4 @@ jobs:
           BASEDIR: ${{ github.workspace }}/.work
           ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
           DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ROS_DISTRO }}-ubuntu-testing
-        uses: christophfroehlich/industrial_ci@prerelease_exclude_pkg
+        uses: ros-industrial/industrial_ci@master
