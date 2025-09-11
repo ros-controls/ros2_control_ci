@@ -43,6 +43,16 @@ on:
         default: ""
         required: false
         type: string
+      upstream_cmake_args:
+        description: "Additional arguments to pass to CMake for upstream workspace, e.g. -DBUILD_TESTING=OFF"
+        default: "-DBUILD_TESTING=OFF"
+        required: false
+        type: string
+      target_cmake_args:
+        description: "Additional arguments to pass to CMake for target workspace, e.g. -DBUILD_TESTING=OFF"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -51,6 +61,7 @@ jobs:
     container: ${{ inputs.container }}
     env:
       ros_underlay_path: C:\dev
+      upstream_workspace: C:\upstream_ws
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
     steps:
@@ -159,24 +170,25 @@ jobs:
           path: ${{ env.repo_path }}
           manifest-path: pixi.toml
 
-      - name: Install dependencies
+      - name: Clone dependencies
         # check for repos files, and pass them to vcstool
         run: |
+          mkdir -p ${{ env.upstream_workspace }}/src
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
-            vcs import --input $repo_file src
+            vcs import --input $repo_file ${{ env.upstream_workspace }}/src
           }
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
             $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
             if (Test-Path "$repo_file_win") {
               Write-Output "Windows repos file found"
-              vcs import --input $repo_file_win src
+              vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
             }
           }
 
-      - name: Build workspace
+      - name: Build upstream workspace
         # use Ninja generator optionally for selected packages.
         # This is needed for RSL, but doesn't work for msg packages
         # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
@@ -187,18 +199,35 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          pushd ${{ env.upstream_workspace }}
 
-          set up_to_arg=
-          if not "${{ steps.package_list_action.outputs.package_list }}"=="" (
-            set up_to_arg=--packages-up-to ${{ steps.package_list_action.outputs.package_list }}
+          @echo on
+
+          set skip_arg=
+          if not "${{ inputs.skip_packages }}"=="" (
+            set skip_arg=${{ inputs.skip_packages }}
           )
+
+          if not "${{ inputs.ninja_packages }}"=="" (
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+ --merge-install
+            set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
+          )
+
+          colcon build --packages-skip %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }} --merge-install
+
+      - name: Build target workspace
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
+          call ${{ env.upstream_workspace }}\install\setup.bat
+
+          @echo on
+
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          set skip_ninja_arg=
-          if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+
-            set skip_ninja_arg=--packages-skip ${{ inputs.ninja_packages }}
-          )
-          colcon build %up_to_arg% %skip_arg% %skip_ninja_arg% --event-handler console_cohesion+ --cmake-args -DBUILD_TESTING=OFF
+          colcon build %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }} --merge-install
