@@ -21,6 +21,11 @@ on:
         required: false
         default: '0'
         type: string
+      prerelease_exclude_pkg:
+        description: 'List of packages to be excluded from overlay workspace (space-separated)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   default:
@@ -35,6 +40,7 @@ jobs:
           PRERELEASE: true
           # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow
           PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && '1' || inputs.prerelease_downstream_depth}}
+          PRERELEASE_EXCLUDE_PKG: ${{ inputs.prerelease_exclude_pkg }}
           BASEDIR: ${{ github.workspace }}/.work
           ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
           DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ROS_DISTRO }}-ubuntu-testing
