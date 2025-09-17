@@ -163,6 +163,12 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
 
+          # python packages are broken: https://github.com/ros2/ros2/issues/1675
+          # TODO(christophfroehlich) remove once https://github.com/ros2/ci/pull/817 is released
+          cd ros2_${{ inputs.ros_distro }}
+          irm https://gist.githubusercontent.com/knmcguire/fd5326de442289712539182f6257191c/raw/bcb4bf2a460af3a1d71bcfcdcefa065ebd5060d7/preinstall_setup_windows.py -OutFile preinstall_setup_windows.py
+          python preinstall_setup_windows.py
+
       - name: Get package list
         id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list-pixi@master
