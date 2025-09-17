@@ -165,6 +165,7 @@ jobs:
 
           # python packages are broken: https://github.com/ros2/ros2/issues/1675
           # TODO(christophfroehlich) remove once https://github.com/ros2/ci/pull/817 is released
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           cd ros2_${{ inputs.ros_distro }}
           irm https://gist.githubusercontent.com/knmcguire/fd5326de442289712539182f6257191c/raw/bcb4bf2a460af3a1d71bcfcdcefa065ebd5060d7/preinstall_setup_windows.py -OutFile preinstall_setup_windows.py
           python preinstall_setup_windows.py
@@ -177,19 +178,22 @@ jobs:
           manifest-path: pixi.toml
 
       - name: Clone dependencies
-        # check for repos files, and pass them to vcstool
         run: |
-          mkdir -p ${{ env.upstream_workspace }}/src
+          Set-PSDebug -Trace 1 # Enabling verbose output (equivalent to @echo on)
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
+          ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+
+          # check for repos files, and pass them to vcstool
+          mkdir -p ${{ env.upstream_workspace }}/src
           $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
             vcs import --input $repo_file ${{ env.upstream_workspace }}/src
           }
 
-          ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+          # use rosinstall_generator to get all dependencies which are not yet installed
           $pkg_list=$(ros2 pkg list)
-          echo "Packages in ROS installation: $pkg_list"
+          Write-Host "Packages in ROS installation: $pkg_list"
           rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $pkg_list ${{ steps.package_list_action.outputs.package_list }} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
           cat deps.repos
           vcs import --input deps.repos ${{ env.upstream_workspace }}/src
