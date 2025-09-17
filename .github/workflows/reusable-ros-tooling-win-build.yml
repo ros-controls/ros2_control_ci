@@ -91,7 +91,7 @@ jobs:
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
           # patch pixi.toml to add extra dependencies
-          $deps = "${{ inputs.pixi_dependencies }}"
+          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
           if (-not [string]::IsNullOrWhiteSpace($deps)) {
             Write-Host "Extra dependencies specified: $deps"
 
@@ -180,13 +180,12 @@ jobs:
             Write-Output "Local repos file found"
             vcs import --input $repo_file ${{ env.upstream_workspace }}/src
           }
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
-            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
-            if (Test-Path "$repo_file_win") {
-              Write-Output "Windows repos file found"
-              vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
-            }
-          }
+
+          ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+          $pkg_list=$(ros2 pkg list)
+          echo "Packages in ROS installation: $pkg_list"
+          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $pkg_list ${{ steps.package_list_action.outputs.repo_name }} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          vcs import --input deps.repos ${{ env.upstream_workspace }}/src
 
       - name: Build upstream workspace
         # use Ninja generator optionally for selected packages.
