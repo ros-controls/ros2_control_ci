@@ -80,7 +80,7 @@ jobs:
             echo "vcs_file_path=/tmp/deps.repos" >> $GITHUB_OUTPUT
           else
             echo "vcs_file_path=" >> $GITHUB_OUTPUT
-          fi          
+          fi
 
       - uses: ros-tooling/action-ros-ci@0.4.5
         with:
