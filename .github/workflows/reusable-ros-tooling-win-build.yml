@@ -191,6 +191,7 @@ jobs:
           $pkg_list=$(ros2 pkg list)
           echo "Packages in ROS installation: $pkg_list"
           rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $pkg_list ${{ steps.package_list_action.outputs.package_list }} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          cat deps.repos
           vcs import --input deps.repos ${{ env.upstream_workspace }}/src
 
       - name: Build upstream workspace
