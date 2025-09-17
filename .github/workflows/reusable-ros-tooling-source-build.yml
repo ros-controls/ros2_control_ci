@@ -76,14 +76,22 @@ jobs:
             --deps-only --deps --upstream-development > /tmp/deps.repos && break || echo "retry #${i} .." && sleep 60;
           done
 
+      - name: Check if dependency file is empty
+        id: check_deps_file
+        run: |
+          if [ -s /tmp/deps.repos ]; then
+            echo "vcs_file_path=/tmp/deps.repos" >> $GITHUB_OUTPUT
+          else
+            echo "vcs_file_path=" >> $GITHUB_OUTPUT
+          fi
+
       - uses: ros-tooling/action-ros-ci@0.4.5
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           rosdep-skip-keys: rti-connext-dds-7.3.0
-          vcs-repo-file-url: |
-            /tmp/deps.repos
+          vcs-repo-file-url: ${{ steps.check_deps_file.outputs.vcs_file_path }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           colcon-defaults: |
             {
