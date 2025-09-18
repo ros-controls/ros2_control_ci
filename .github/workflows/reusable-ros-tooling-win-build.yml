@@ -196,6 +196,13 @@ jobs:
             Write-Output "Local repos file found"
             vcs import --input $repo_file ${{ env.upstream_workspace }}/src
           }
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
+            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
+            if (Test-Path "$repo_file_win") {
+              Write-Output "Windows repos file found"
+              vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
+            }
+          }
 
           # use rosinstall_generator to get all dependencies which are not yet installed
           $underlay_ws_pkgs=$(ros2 pkg list)
