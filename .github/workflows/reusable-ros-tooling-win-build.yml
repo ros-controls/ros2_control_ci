@@ -194,9 +194,11 @@ jobs:
           }
 
           # use rosinstall_generator to get all dependencies which are not yet installed
-          $pkg_list=$(ros2 pkg list)
-          Write-Host "Packages in ROS installation: $pkg_list"
-          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $pkg_list ${{ steps.package_list_action.outputs.package_list }} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          $underlay_ws_pkgs=$(ros2 pkg list)
+          Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
+          $upstream_ws_pkgs=($(colcon list --names-only --paths ${{ env.upstream_workspace }}/src/*/**) -join " ")
+          Write-Host "Packages in underlay workspace: $upstream_ws_pkgs"
+          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $underlay_ws_pkgs ${{ steps.package_list_action.outputs.package_list }} $upstream_ws_pkgs --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
           cat deps.repos
           vcs import --input deps.repos ${{ env.upstream_workspace }}/src
 
