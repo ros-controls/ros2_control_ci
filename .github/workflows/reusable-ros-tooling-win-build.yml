@@ -24,7 +24,7 @@ on:
         default: ""
         type: string
       pixi_dependencies:
-        description: "Whitespace separated list of additional pixi dependencies"
+        description: "Space-separated list of additional pixi dependencies"
         required: false
         default: ""
         type: string
@@ -33,13 +33,18 @@ on:
         required: false
         default: ""
         type: string
+      skip_dependencies:
+        description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
+        default: "sdformat_urdf"
+        required: false
+        type: string
       skip_packages:
-        description: "Packages to skip from build"
+        description: "Space-separated list of packages to skip from build"
         default: ""
         required: false
         type: string
       ninja_packages:
-        description: "Packages to be built with Ninja generator (default is MSVC otherwise)"
+        description: "Space-separated list of packages to be built with Ninja generator (default is MSVC otherwise)"
         default: ""
         required: false
         type: string
@@ -198,7 +203,7 @@ jobs:
           Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
           $upstream_ws_pkgs=($(colcon list --names-only --paths ${{ env.upstream_workspace }}/src/*/**) -join " ")
           Write-Host "Packages in upstream workspace: $upstream_ws_pkgs"
-          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $underlay_ws_pkgs ${{ steps.package_list_action.outputs.package_list }} $upstream_ws_pkgs --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $underlay_ws_pkgs ${{ steps.package_list_action.outputs.package_list }} $upstream_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
           cat deps.repos
           # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
