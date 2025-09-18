@@ -24,7 +24,7 @@ on:
         default: ""
         type: string
       pixi_dependencies:
-        description: "Whitespace separated list of additional pixi dependencies"
+        description: "Space-separated list of additional pixi dependencies"
         required: false
         default: ""
         type: string
@@ -33,13 +33,18 @@ on:
         required: false
         default: ""
         type: string
+      skip_dependencies:
+        description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
+        default: "sdformat_urdf"
+        required: false
+        type: string
       skip_packages:
-        description: "Packages to skip from build"
+        description: "Space-separated list of packages to skip from build"
         default: ""
         required: false
         type: string
       ninja_packages:
-        description: "Packages to be built with Ninja generator (default is MSVC otherwise)"
+        description: "Space-separated list of packages to be built with Ninja generator (default is MSVC otherwise)"
         default: ""
         required: false
         type: string
@@ -91,7 +96,7 @@ jobs:
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
           # patch pixi.toml to add extra dependencies
-          $deps = "${{ inputs.pixi_dependencies }}"
+          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
           if (-not [string]::IsNullOrWhiteSpace($deps)) {
             Write-Host "Extra dependencies specified: $deps"
 
@@ -156,12 +161,21 @@ jobs:
         # Download and extract ROS 2 package
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
+          # TODO(christophfroehlich) remove with fix below
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
+
           mkdir -p ${{ env.ros_underlay_path }}
           Set-Location -Path ${{ env.ros_underlay_path }}
           $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
+
+          # python packages are broken: https://github.com/ros2/ros2/issues/1675
+          # TODO(christophfroehlich) remove once https://github.com/ros2/ci/pull/817 is released
+          cd ros2_${{ inputs.ros_distro }}
+          irm https://gist.githubusercontent.com/knmcguire/fd5326de442289712539182f6257191c/raw/bcb4bf2a460af3a1d71bcfcdcefa065ebd5060d7/preinstall_setup_windows.py -OutFile preinstall_setup_windows.py
+          python preinstall_setup_windows.py
 
       - name: Get package list
         id: package_list_action
@@ -171,10 +185,12 @@ jobs:
           manifest-path: pixi.toml
 
       - name: Clone dependencies
-        # check for repos files, and pass them to vcstool
         run: |
-          mkdir -p ${{ env.upstream_workspace }}/src
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
+          ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+
+          # check for repos files, and pass them to vcstool
+          mkdir -p ${{ env.upstream_workspace }}/src
           $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
@@ -187,6 +203,15 @@ jobs:
               vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
             }
           }
+
+          # use rosinstall_generator to get all dependencies which are not yet installed
+          $underlay_ws_pkgs=$(ros2 pkg list)
+          # Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
+          $upstream_ws_pkgs=($(colcon list --names-only --paths ${{ env.upstream_workspace }}/src/*/**) -join " ")
+          # Write-Host "Packages in upstream workspace: $upstream_ws_pkgs"
+          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --format repos --exclude $underlay_ws_pkgs ${{ steps.package_list_action.outputs.package_list }} $upstream_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
+          vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
 
       - name: Build upstream workspace
         # use Ninja generator optionally for selected packages.
