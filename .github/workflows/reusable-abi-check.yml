@@ -12,6 +12,7 @@ on:
 
 jobs:
   reusable_abi-compatibility-ici:
+    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

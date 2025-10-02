@@ -61,6 +61,7 @@ on:
 
 jobs:
   reusable_ros_tooling_source_build:
+    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     name: ${{ inputs.ros_distro }} ${{ inputs.os_name }}
     runs-on: ${{ inputs.os_name }}
     container: ${{ inputs.container }}
