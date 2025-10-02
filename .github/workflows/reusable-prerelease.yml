@@ -31,7 +31,9 @@ jobs:
   default:
     if: |
       (github.event_name == 'workflow_dispatch') ||
-      (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease'))
+      (github.event_name == 'pull_request'
+        && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease')
+        && !contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
