@@ -33,8 +33,8 @@ on:
 
 jobs:
   debian_source:
-    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     name: ${{ inputs.ros_distro }} debian build
+    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     env:
       # this will be src/{repo-owner}/{repo-name}

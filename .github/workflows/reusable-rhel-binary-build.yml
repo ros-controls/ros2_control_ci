@@ -35,8 +35,8 @@ on:
 
 jobs:
   rhel_binary:
-    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     name: ${{ inputs.ros_distro }} RHEL binary build
+    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-rhel
     env:

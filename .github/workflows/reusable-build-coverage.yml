@@ -13,8 +13,8 @@ on:
 
 jobs:
   coverage:
-    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     name: coverage build ${{ inputs.ros_distro }}
+    if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing
     defaults:
