@@ -38,6 +38,7 @@ RUN apt-get update -y -qq && \
   libeigen3-dev \
   libfmt-dev \
   liblttng-ust-dev lttng-tools python3-lttng \
+  liborocos-kdl1.4 \
   libssl-dev \
   libtinyxml-dev \
   libtinyxml2-dev \
