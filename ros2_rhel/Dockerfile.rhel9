@@ -85,7 +85,6 @@ RUN vcs import src < ros-controls.$ROS_DISTRO.repos && \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli --packages-skip pinocchio &&
   # build pinocchio from source
-  . install/setup.sh && \
   colcon build \
     --mixin release build-testing-off \
     --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
