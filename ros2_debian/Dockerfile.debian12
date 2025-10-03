@@ -39,6 +39,7 @@ RUN apt-get update -y -qq && \
   libfmt-dev \
   liblttng-ust-dev lttng-tools python3-lttng \
   liborocos-kdl1.5 \
+  liborocos-kdl-dev \
   libssl-dev \
   libtinyxml-dev \
   libtinyxml2-dev \
@@ -155,7 +156,7 @@ RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/r
 RUN \
   : "build ROS core from source" && \
   . "$HOME/.cargo/env" && \
-  colcon  build \
+  colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized"  \
   --packages-up-to robot_state_publisher tf2_ros tf2_eigen tf2_kdl tf2_eigen_kdl yaml_cpp_vendor filters \
@@ -164,7 +165,7 @@ RUN \
   backward_ros pal_statistics \
   ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs \
   sdformat_urdf && \
-  # build pinocchio from source
+  # build pinocchio from source with different cmake args
   . install/setup.sh && \
   colcon build \
     --mixin release build-testing-off \
