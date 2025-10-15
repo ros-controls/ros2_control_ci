@@ -67,3 +67,7 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/pal_statistics-release.git
     version: debian/jazzy/bookworm/pal_statistics_msgs
+  topic_tools:
+    type: git
+    url: https://github.com/ros2-gbp/topic_tools-release.git
+    version: debian/jazzy/bookworm/topic_tools
