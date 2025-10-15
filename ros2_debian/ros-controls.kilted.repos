@@ -71,3 +71,7 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/topic_tools-release.git
     version: debian/kilted/bookworm/topic_tools
+  topic_tools_interfaces:
+    type: git
+    url: https://github.com/ros2-gbp/topic_tools-release.git
+    version: debian/kilted/bookworm/topic_tools_interfaces
