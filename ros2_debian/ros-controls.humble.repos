@@ -60,3 +60,11 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/pal_statistics-release.git
     version: debian/humble/bullseye/pal_statistics_msgs
+  topic_tools:
+    type: git
+    url: https://github.com/ros2-gbp/topic_tools-release.git
+    version: debian/humble/bullseye/topic_tools
+  topic_tools_interfaces:
+    type: git
+    url: https://github.com/ros2-gbp/topic_tools-release.git
+    version: debian/humble/bullseye/topic_tools_interfaces
