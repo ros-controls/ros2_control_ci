@@ -59,7 +59,6 @@ RUN \
     done && \
     mkdir -p src && \
     vcs import src < deps.repos && \
-    rosdep init && \
     rosdep update --rosdistro $ROS_DISTRO && \
     rosdep install -iyr --from-path src ; \
   fi && \
