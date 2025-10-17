@@ -74,7 +74,6 @@ RUN colcon mixin add default \
 
 # build generate_parameter_library and other deps from source
 ENV ROS2_WS=/opt/ros2_ws
-RUN mkdir -p $ROS2_WS/src
 ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
 RUN \
@@ -84,6 +83,7 @@ RUN \
       rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO \
         > deps.repos && break || echo "retry #${i} .." && sleep 60; \
     done && \
+    mkdir -p src && \
     vcs import src < deps.repos && \
     rosdep init && \
     rosdep update --rosdistro $ROS_DISTRO && \
