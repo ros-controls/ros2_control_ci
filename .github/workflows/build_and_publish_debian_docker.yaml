@@ -22,16 +22,16 @@ jobs:
         include:
           - ros_distro: 'humble'
             debian_version: 'debian11'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs pal_statistics pal_statistics_msgs topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs pal_statistics topic_tools
           - ros_distro: 'jazzy'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
           - ros_distro: 'kilted'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
           - ros_distro: 'rolling'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
 
     steps:
       - uses: actions/checkout@v5

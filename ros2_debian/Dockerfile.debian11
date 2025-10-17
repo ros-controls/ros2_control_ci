@@ -149,8 +149,10 @@ RUN \
   mkdir -p src && \
   vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
   if [ -n "$SOURCE_PACKAGES" ]; then \
+    # get the release repos from gpb and its dependencies not included in ros2.repos
+    export package_list=$(colcon list --paths src/*/** --names-only)
     for i in {1..5}; do \
-      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO \
+      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO --exclude $package_list --deps \
         > deps.repos && break || echo "retry #${i} .." && sleep 60; \
     done && \
     mkdir -p src/addition && \
@@ -167,7 +169,7 @@ RUN \
   xacro diagnostic_updater generate_parameter_library angles example_interfaces \
   backward_ros pal_statistics topic_tools \
   ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs && \
-  rm -rf log src build
+  rm -rf log src build *.repos
 
 # add default.yaml to the image
 COPY defaults.yaml /root/.colcon/defaults.yaml
