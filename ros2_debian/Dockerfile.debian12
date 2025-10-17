@@ -154,21 +154,21 @@ ARG SOURCE_PACKAGES=""
 RUN \
   : "build ROS core from source" && \
   . "$HOME/.cargo/env" && \
-  mkdir -p src && \
-  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src && \
+  mkdir -p src/ros2 && \
+  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src/ros2 && \
   if [ -n "$SOURCE_PACKAGES" ]; then \
     # get the release repos from gpb and its dependencies not included in ros2.repos
-    export package_list=$(colcon list --paths src/*/** --names-only) && \
     for i in {1..5}; do \
-      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO --exclude $package_list --deps \
+      rosinstall_generator $SOURCE_PACKAGES --exclude-path src/ros2 --rosdistro $ROS_DISTRO --deps \
         > deps.repos && break || echo "retry #${i} .." && sleep 60; \
     done && \
-    mkdir -p src/addition && \
-    vcs import src/addition < deps.repos && \
+    mkdir -p src/additional_pkgs && \
+    vcs import src/additional_pkgs < deps.repos && \
     apt-get update -y -qq && \
-    ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/addition || true ; \
+    # install only dependencies for additional_pkgs, not for ros2.repos
+    ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/additional_pkgs || true ; \
   fi && \
-# build source, ROS core
+  # build source, ROS core
   colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized"  \
