@@ -35,6 +35,7 @@ RUN dnf install -y \
   python3-pytest-repeat \
   python3-pytest-rerunfailures \
   python3-rosdep \
+  python3-rosinstall_generator \
   python3-setuptools \
   python3-vcstool \
   wget \
@@ -74,13 +75,20 @@ RUN colcon mixin add default \
 # build generate_parameter_library and other deps from source
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
+ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
-COPY ros-controls.$ROS_DISTRO.repos .
-RUN vcs import src < ros-controls.$ROS_DISTRO.repos && \
+RUN \
   . /opt/ros/$ROS_DISTRO/setup.sh && \
-  rosdep init && \
-  rosdep update --rosdistro $ROS_DISTRO && \
-  rosdep install -iyr --from-path src && \
+  if [ -n "$SOURCE_PACKAGES" ]; then \
+    for i in {1..5}; do \
+      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO \
+        > deps.repos && break || echo "retry #${i} .." && sleep 60; \
+    done && \
+    vcs import src < deps.repos && \
+    rosdep init && \
+    rosdep update --rosdistro $ROS_DISTRO && \
+    rosdep install -iyr --from-path src ; \
+  fi && \
   colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli --packages-skip pinocchio && \

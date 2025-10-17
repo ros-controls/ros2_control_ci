@@ -1,5 +1,0 @@
-repositories:
-  pinocchio:
-    type: git
-    url: https://github.com/ros2-gbp/pinocchio-release.git
-    version: rpm/kilted/9/pinocchio

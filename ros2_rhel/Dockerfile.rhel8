@@ -50,11 +50,20 @@ RUN colcon mixin add default \
 ENV ROS2_WS=/opt/ros2_ws
 RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-COPY ros-controls.$ROS_DISTRO.repos .
-RUN vcs import src < ros-controls.$ROS_DISTRO.repos && \
-  . /opt/ros/$ROS_DISTRO/setup.bash && \
-  rosdep update --rosdistro $ROS_DISTRO && \
-  rosdep install -iyr --from-path src && \
+ARG SOURCE_PACKAGES=""
+WORKDIR $ROS2_WS
+RUN \
+  . /opt/ros/$ROS_DISTRO/setup.sh && \
+  if [ -n "$SOURCE_PACKAGES" ]; then \
+    for i in {1..5}; do \
+      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO \
+        > deps.repos && break || echo "retry #${i} .." && sleep 60; \
+    done && \
+    vcs import src < deps.repos && \
+    rosdep init && \
+    rosdep update --rosdistro $ROS_DISTRO && \
+    rosdep install -iyr --from-path src ; \
+  fi && \
   colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli && \
