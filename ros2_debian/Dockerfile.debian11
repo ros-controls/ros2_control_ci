@@ -98,6 +98,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   python3-colcon-common-extensions \
   python3-colcon-mixin \
   python3-rosdep \
+  python3-rosinstall-generator \
   python3-vcstool \
   python3-pydocstyle \
   python3-flake8 \
@@ -141,14 +142,25 @@ RUN \
 # ---- ROS ----
 # clone source, ROS core
 ENV ROS2_WS=/opt/ros2_ws
-RUN mkdir -p $ROS2_WS/src
+ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
-COPY ros-controls.$ROS_DISTRO.repos .
-RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
-  vcs import src < ros-controls.$ROS_DISTRO.repos
+RUN \
+  : "build ROS core from source" && \
+  . "$HOME/.cargo/env" && \
+  mkdir -p src && \
+  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
+  if [ -n "$SOURCE_PACKAGES" ]; then \
+    for i in {1..5}; do \
+      rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO \
+        > deps.repos && break || echo "retry #${i} .." && sleep 60; \
+    done && \
+    mkdir -p src/addition && \
+    vcs import src/addition < deps.repos && \
+    apt-get update -y -qq && \
+    rosdep install -iyr --from-path src/addition || true ; \
+  fi && \
 # build source, ROS core
-RUN colcon \
-  build \
+  colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli \
   --packages-up-to robot_state_publisher tf2_ros tf2_eigen tf2_kdl tf2_eigen_kdl yaml_cpp_vendor filters \
