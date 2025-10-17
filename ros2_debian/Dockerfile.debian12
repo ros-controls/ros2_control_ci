@@ -151,7 +151,6 @@ RUN \
 ENV ROS2_WS=/opt/ros2_ws
 WORKDIR $ROS2_WS
 ARG SOURCE_PACKAGES=""
-WORKDIR $ROS2_WS
 RUN \
   : "build ROS core from source" && \
   . "$HOME/.cargo/env" && \
