@@ -71,6 +71,10 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/pinocchio-release.git
     version: debian/kilted/bookworm/pinocchio
+  coal:
+    type: git
+    url: https://github.com/ros2-gbp/coal-release.git
+    version: debian/kilted/bookworm/coal
   topic_tools:
     type: git
     url: https://github.com/ros2-gbp/topic_tools-release.git
