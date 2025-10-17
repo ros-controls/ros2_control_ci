@@ -67,6 +67,14 @@ repositories:
     type: git
     url: https://github.com/ros2-gbp/pal_statistics-release.git
     version: debian/rolling/bookworm/pal_statistics_msgs
+  pinocchio:
+    type: git
+    url: https://github.com/christophfroehlich/pinocchio.git
+    version: patch-1
+  coal:
+    type: git
+    url: https://github.com/ros2-gbp/coal-release.git
+    version: debian/rolling/bookworm/coal
   topic_tools:
     type: git
     url: https://github.com/ros2-gbp/topic_tools-release.git

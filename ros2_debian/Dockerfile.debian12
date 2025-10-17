@@ -24,6 +24,7 @@ RUN apt-get update -y -qq && \
   automake \
   build-essential \
   cmake \
+  clang \
   curl \
   dnsutils \
   git \
@@ -31,6 +32,7 @@ RUN apt-get update -y -qq && \
   intltool \
   libacl1-dev \
   libasio-dev \
+  libassimp-dev \
   libblosc1 \
   libbondcpp-dev \
   libcap-dev \
@@ -38,6 +40,7 @@ RUN apt-get update -y -qq && \
   libeigen3-dev \
   libfmt-dev \
   liblttng-ust-dev lttng-tools python3-lttng \
+  liboctomap-dev \
   libssl-dev \
   libtinyxml-dev \
   libtinyxml2-dev \
@@ -154,15 +157,23 @@ RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/r
 RUN \
   : "build ROS core from source" && \
   . "$HOME/.cargo/env" && \
-  colcon  build \
+  colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized"  \
   --packages-up-to robot_state_publisher tf2_ros tf2_eigen tf2_kdl tf2_eigen_kdl yaml_cpp_vendor filters \
   ros2param ros2interface ros2topic ros2action ros2lifecycle ros2launch ros2run ros_testing \
   xacro diagnostic_updater generate_parameter_library angles example_interfaces \
-  backward_ros pal_statistics topic_tools \
+  backward_ros pal_statistics topic_tools ros_environment \
   ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs \
   sdformat_urdf && \
+  # build pinocchio from source with different cmake args
+  . install/setup.sh && \
+  colcon build \
+    --mixin release build-testing-off \
+    --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
+      -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=TRUE \
+    --packages-select coal pinocchio && \
+  # cleanup
   rm -rf log src build
 
 # add default.yaml to the image
