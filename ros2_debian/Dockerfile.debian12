@@ -24,6 +24,7 @@ RUN apt-get update -y -qq && \
   automake \
   build-essential \
   cmake \
+  clang \
   curl \
   dnsutils \
   git \
