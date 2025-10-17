@@ -168,6 +168,10 @@ RUN \
     # install only dependencies for additional_pkgs, not for ros2.repos
     ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/additional_pkgs || true ; \
   fi && \
+  if [ $ROS_DISTRO = "rolling" ]; then \
+    apt-get update -y -qq && \
+    apt-get -y install --no-install-recommends liborocos-kdl-dev liborocos-kdl1.5 ;\
+  fi && \
   # build source, ROS core
   colcon build \
   --mixin release build-testing-off \
@@ -187,6 +191,9 @@ RUN \
     --packages-select pinocchio && \
   # cleanup
   rm -rf log src build *.repos
+  && \
+  : "remove cache" && \
+  rm -rf /var/lib/apt/lists/*
 
 # add default.yaml to the image
 COPY defaults.yaml /root/.colcon/defaults.yaml
