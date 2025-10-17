@@ -157,8 +157,8 @@ RUN \
   mkdir -p src && \
   vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src && \
   if [ -n "$SOURCE_PACKAGES" ]; then \
-  # get the release repos from gpb and its dependencies not included in ros2.repos
-    export package_list=$(colcon list --paths src/*/** --names-only) \
+    # get the release repos from gpb and its dependencies not included in ros2.repos
+    export package_list=$(colcon list --paths src/*/** --names-only) && \
     for i in {1..5}; do \
       rosinstall_generator $SOURCE_PACKAGES --rosdistro $ROS_DISTRO --exclude $package_list --deps \
         > deps.repos && break || echo "retry #${i} .." && sleep 60; \
