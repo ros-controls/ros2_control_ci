@@ -49,4 +49,4 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-debian
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
-            SOURCE_PACKAGES="${{ matrix.source_packages }}"
+            SOURCE_PACKAGES=${{ matrix.source_packages }}
