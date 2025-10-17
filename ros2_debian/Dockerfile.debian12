@@ -181,8 +181,8 @@ RUN \
   colcon build \
     --mixin release build-testing-off \
     --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
-      -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=TRUE \
-    --packages-select coal pinocchio && \
+      -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
+    --packages-select pinocchio && \
   # cleanup
   rm -rf log src build
 

@@ -25,13 +25,13 @@ jobs:
             source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs pal_statistics pal_statistics_msgs topic_tools topic_tools_interfaces
           - ros_distro: 'jazzy'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio coal topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
           - ros_distro: 'kilted'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio coal topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
           - ros_distro: 'rolling'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio coal topic_tools topic_tools_interfaces
+            source_packages: filters xacro diagnostic_updater backward_ros tcb_span tl_expected rsl generate_parameter_library_py generate_parameter_library parameter_traits angles ackermann_msgs sdformat_urdf sdformat_vendor gz_tools_vendor pal_statistics pal_statistics_msgs pinocchio topic_tools topic_tools_interfaces
 
     steps:
       - uses: actions/checkout@v5
