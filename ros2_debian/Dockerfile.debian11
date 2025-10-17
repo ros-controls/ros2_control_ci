@@ -146,12 +146,12 @@ ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
 RUN \
   : "build ROS core from source" && \
-  mkdir -p src && \
-  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
+  mkdir -p src/ros2 && \
+  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src/ros2 && \
   if [ -n "$SOURCE_PACKAGES" ]; then \
     # get the release repos from gpb and its dependencies not included in ros2.repos
     for i in {1..5}; do \
-      rosinstall_generator $SOURCE_PACKAGES --exclude-path src/ros2 --rosdistro $ROS_DISTRO --deps --deps-only \
+      rosinstall_generator $SOURCE_PACKAGES --exclude-path src/ros2 --rosdistro $ROS_DISTRO --deps \
         > deps.repos && break || echo "retry #${i} .." && sleep 60; \
     done && \
     mkdir -p src/additional_pkgs && \
