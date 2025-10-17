@@ -168,7 +168,8 @@ RUN \
   . install/setup.sh && \
   colcon build \
     --mixin release build-testing-off \
-    --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL \
+    --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
+      -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=TRUE \
     --packages-select coal pinocchio && \
   # cleanup
   rm -rf log src build
