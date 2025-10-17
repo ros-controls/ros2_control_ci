@@ -146,7 +146,6 @@ ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
 RUN \
   : "build ROS core from source" && \
-  . "$HOME/.cargo/env" && \
   mkdir -p src && \
   vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
   if [ -n "$SOURCE_PACKAGES" ]; then \
