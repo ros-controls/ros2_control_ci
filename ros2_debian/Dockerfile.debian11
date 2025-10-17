@@ -156,7 +156,7 @@ RUN \
     mkdir -p src/addition && \
     vcs import src/addition < deps.repos && \
     apt-get update -y -qq && \
-    rosdep install -iyr --from-path src/addition || true ; \
+    ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/addition || true ; \
   fi && \
 # build source, ROS core
   colcon build \
