@@ -190,7 +190,7 @@ RUN \
       -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
     --packages-select pinocchio && \
   # cleanup
-  rm -rf log src build *.repos
+  rm -rf log src build *.repos \
   && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
