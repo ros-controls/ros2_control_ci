@@ -170,7 +170,10 @@ RUN \
   fi && \
   if [ $ROS_DISTRO = "rolling" ]; then \
     apt-get update -y -qq && \
-    apt-get -y install --no-install-recommends liborocos-kdl-dev liborocos-kdl1.5 ;\
+    # we don't want to install all system dependencies for ros2.repos
+    # https://github.com/ros2/geometry2/pull/826
+    # https://github.com/ros2/launch/pull/817
+    apt-get -y install --no-install-recommends liborocos-kdl-dev liborocos-kdl1.5 python3-osrf-pycommon ;\
   fi && \
   # build source, ROS core
   colcon build \
