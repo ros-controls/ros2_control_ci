@@ -101,6 +101,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   python3-colcon-common-extensions \
   python3-colcon-mixin \
   python3-rosdep \
+  python3-rosinstall-generator \
   python3-vcstool \
   python3-ament-pep257 \
   python3-flake8 \
@@ -148,15 +149,30 @@ RUN \
 # ---- ROS ----
 # clone source, ROS core
 ENV ROS2_WS=/opt/ros2_ws
-RUN mkdir -p $ROS2_WS/src
 WORKDIR $ROS2_WS
-COPY ros-controls.$ROS_DISTRO.repos .
-RUN vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src &&\
-  vcs import src < ros-controls.$ROS_DISTRO.repos
-# build source, ROS core
+ARG SOURCE_PACKAGES=""
 RUN \
   : "build ROS core from source" && \
   . "$HOME/.cargo/env" && \
+  mkdir -p src/ros2 && \
+  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src/ros2 && \
+  if [ -n "$SOURCE_PACKAGES" ]; then \
+    # get the release repos from gpb and its dependencies not included in ros2.repos
+    for i in {1..5}; do \
+      rosinstall_generator $SOURCE_PACKAGES --exclude-path src/ros2 --rosdistro $ROS_DISTRO --deps \
+        > deps.repos && break || echo "retry #${i} .." && sleep 60; \
+    done && \
+    mkdir -p src/additional_pkgs && \
+    vcs import src/additional_pkgs < deps.repos && \
+    apt-get update -y -qq && \
+    # install only dependencies for additional_pkgs, not for ros2.repos
+    ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/additional_pkgs || true ; \
+  fi && \
+  if [ $ROS_DISTRO = "rolling" ]; then \
+    apt-get update -y -qq && \
+    apt-get -y install --no-install-recommends liborocos-kdl-dev liborocos-kdl1.5 ;\
+  fi && \
+  # build source, ROS core
   colcon build \
   --mixin release build-testing-off \
   --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized"  \
@@ -171,10 +187,13 @@ RUN \
   colcon build \
     --mixin release build-testing-off \
     --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
-      -DCOAL_BACKWARD_COMPATIBILITY_WITH_HPP_FCL=TRUE \
-    --packages-select coal pinocchio && \
+      -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
+    --base-path src/additional_pkgs --packages-up-to pinocchio && \
   # cleanup
-  rm -rf log src build
+  rm -rf log src build *.repos \
+  && \
+  : "remove cache" && \
+  rm -rf /var/lib/apt/lists/*
 
 # add default.yaml to the image
 COPY defaults.yaml /root/.colcon/defaults.yaml

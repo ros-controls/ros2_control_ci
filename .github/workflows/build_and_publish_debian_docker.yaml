@@ -22,12 +22,17 @@ jobs:
         include:
           - ros_distro: 'humble'
             debian_version: 'debian11'
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs pal_statistics topic_tools
           - ros_distro: 'jazzy'
             debian_version: 'debian12'
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
           - ros_distro: 'kilted'
             debian_version: 'debian12'
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
           - ros_distro: 'rolling'
             debian_version: 'debian12'
+            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
+
     steps:
       - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
@@ -44,3 +49,4 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-debian
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
+            SOURCE_PACKAGES=${{ matrix.source_packages }}
