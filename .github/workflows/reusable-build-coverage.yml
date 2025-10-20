@@ -30,7 +30,7 @@ jobs:
           echo "need_ros2=$(if [ -d "/opt/ros/${{ inputs.ros_distro }}" ]; then echo 0; else echo 1; fi)" >> $GITHUB_OUTPUT
 
       # needed for github actions, and only if a bare ubuntu image is used
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         if: ${{ steps.prereq.outputs.need_node == '1' && !env.ACT }}
       - name: Install node
         # Consider switching to https://github.com/actions/setup-node when it works
