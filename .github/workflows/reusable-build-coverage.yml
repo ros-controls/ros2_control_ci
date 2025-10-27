@@ -137,7 +137,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           token: ${{ secrets.CODECOV_TOKEN }}
-      - uses: actions/upload-artifact@v4.6.2
+      - uses: actions/upload-artifact@v5
         with:
           name: colcon-logs-coverage-${{ inputs.ros_distro }}
           path: ros_ws/log

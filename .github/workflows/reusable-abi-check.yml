@@ -24,7 +24,7 @@ jobs:
           ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
           NOT_TEST_BUILD: true
           BASEDIR: ${{ github.workspace }}/.work
-      - uses: actions/upload-artifact@v4.6.2
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: abi-checker-report-${{ inputs.ros_distro }}
