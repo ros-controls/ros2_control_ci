@@ -153,7 +153,7 @@ jobs:
           key: pixi|${{ inputs.ros_distro }}
 
       - name: Upload pixi lock file
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v5
         with:
           name: pixi.lock
           path: pixi.lock
@@ -213,7 +213,7 @@ jobs:
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
 
       - name: Upload repos file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.windows.repos
           path: deps.repos
