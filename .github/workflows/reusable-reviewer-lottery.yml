@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]' && github.actor != 'mergify[bot]' && github.actor != 'github-actions[bot]' && github.event.pull_request.title != 'Bump version of pre-commit hooks'
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run:
         wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/reviewer-lottery.yml -O .github/reviewer-lottery.yml
     - uses: uesteibar/reviewer-lottery@v3
