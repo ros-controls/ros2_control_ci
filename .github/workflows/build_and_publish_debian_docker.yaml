@@ -34,7 +34,7 @@ jobs:
             source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
