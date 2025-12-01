@@ -22,7 +22,7 @@ jobs:
         include:
           - ros_distro: humble
             rhel_version: rhel8
-            source_packages: rsl generate_parameter_library generate_parameter_library_py parameter_traits
+            source_packages: rsl generate_parameter_library generate_parameter_library_py
           - ros_distro: jazzy
             rhel_version: rhel9
             source_packages: pinocchio
