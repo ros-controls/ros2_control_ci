@@ -196,12 +196,14 @@ jobs:
           if (Test-Path "$repo_file") {
             Write-Output "Local repos file found"
             vcs import --input $repo_file ${{ env.upstream_workspace }}/src
+            vcs log -l1 src
           }
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
             $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
             if (Test-Path "$repo_file_win") {
               Write-Output "Windows repos file found"
               vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
+            vcs log -l1 src
             }
           }
 
@@ -211,6 +213,7 @@ jobs:
           rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --deps-only --format repos --exclude $underlay_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
           # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
+          vcs log -l1 src
 
       - name: Upload repos file
         uses: actions/upload-artifact@v5

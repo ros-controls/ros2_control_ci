@@ -61,6 +61,7 @@ jobs:
           source /opt/ros2_ws/install/local_setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
+            vcs log -l1 src
           fi
           dnf makecache --refresh # just updating cache, no packages are installed
           rosdep update --rosdistro ${{ inputs.ros_distro }}
