@@ -24,6 +24,17 @@ on:
         required: false
         default: ''
         type: string
+      extra-cmake-args:
+        default: ''
+        description: Additional flags passed to CMake (using colcon build --cmake-args)
+        required: false
+        type: string
+      exclude_source_packages:
+        default: 'pinocchio'
+        description: |
+          Space-separated list of packages to exclude from source build (e.g. packages that should be installed via apt). Note: Also its dependencies will be excluded from source build.
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -75,7 +86,7 @@ jobs:
         run: |
           for i in {1..5}; do
             rosinstall_generator ${{ steps.package_list_action.outputs.package_list }} --rosdistro ${{ inputs.ros_distro }} \
-            --deps-only --deps --upstream-development > /tmp/deps.repos && break || echo "retry #${i} .." && sleep 60;
+            --deps-only --deps --upstream-development --exclude ${{ inputs.exclude_source_packages }} > /tmp/deps.repos && break || echo "retry #${i} .." && sleep 60;
           done
           if [ -s /tmp/deps.repos ]; then
             echo "vcs_file_path=/tmp/deps.repos" >> $GITHUB_OUTPUT
@@ -91,6 +102,7 @@ jobs:
           rosdep-skip-keys: rti-connext-dds-7.3.0
           vcs-repo-file-url: ${{ steps.check_deps_file.outputs.vcs_file_path }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          extra-cmake-args: ${{ inputs.extra-cmake-args }}
           colcon-defaults: |
             {
                 "test": {
