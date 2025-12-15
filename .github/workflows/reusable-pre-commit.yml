@@ -49,7 +49,7 @@ jobs:
           fetch-depth: 0
           path: ${{ env.path }}
       - name: Restore pre-commit cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ inputs.ros_distro }}|${{ hashFiles( format('{0}/.pre-commit-config.yaml', env.path) ) }}
@@ -61,7 +61,7 @@ jobs:
           source .venv/bin/activate
           python3 -m pip install pre-commit
       - name: Cache pre-commit files
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         # independent on the success of the following steps, but only on default branch
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         with:
