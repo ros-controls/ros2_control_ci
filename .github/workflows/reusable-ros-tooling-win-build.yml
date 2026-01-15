@@ -167,7 +167,7 @@ jobs:
 
           mkdir -p ${{ env.ros_underlay_path }}
           Set-Location -Path ${{ env.ros_underlay_path }}
-          $url = "https://ci.ros2.org/view/packaging/job/packaging_windows/lastSuccessfulBuild/artifact/ws/ros2-package-windows-AMD64.zip"
+          $url = "https://github.com/claraberendsen/ros2/releases/download/release-rolling-nightlies/ros2-rolling-nightly-windows-amd64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
