@@ -1,6 +1,6 @@
 groups:
   # Default reviewers for all pull requests.
-  # Usually, at least on of the maintainers should approve PR before merging.
+  # Usually, at least one of the maintainers should approve PR before merging.
   # The best is if two maintainers do that.
   - name: maintainers # name of the group
     reviewers: 2 # how many reviewers do you want to assign?
