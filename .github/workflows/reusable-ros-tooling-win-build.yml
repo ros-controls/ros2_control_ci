@@ -164,14 +164,14 @@ jobs:
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
 
-          mkdir -p ${{ env.ros_underlay_path }}
+          New-Item -ItemType Directory -Force -Path ${{ env.ros_underlay_path }}
           Set-Location -Path ${{ env.ros_underlay_path }}
           $url = "https://github.com/ros2/ros2/releases/download/release-rolling-nightlies/ros2-rolling-nightly-windows-amd64.zip"
           $output = "ros2-package-windows-AMD64.zip"
           Invoke-WebRequest -Uri $url -OutFile $output
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
           Remove-Item $output
-          cd ros2_${{ inputs.ros_distro }}
+          Set-Location -Path ros2_${{ inputs.ros_distro }}
           Get-ChildItem -Path . -Force
           python preinstall_setup_windows.py
 
