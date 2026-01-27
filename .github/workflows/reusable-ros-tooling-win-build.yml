@@ -172,7 +172,6 @@ jobs:
           Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
           Remove-Item $output
           Set-Location -Path ros2_${{ inputs.ros_distro }}\ros2-windows
-          Get-ChildItem -Path . -Force
           python preinstall_setup_windows.py
 
       - name: Get package list
