@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v6
     - run:
         wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/reviewer-lottery.yml -O .github/reviewer-lottery.yml
-    - uses: uesteibar/reviewer-lottery@v3
+    - uses: uesteibar/reviewer-lottery@v4
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         config: .github/reviewer-lottery.yml
