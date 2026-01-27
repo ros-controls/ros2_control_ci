@@ -161,6 +161,7 @@ jobs:
       - name: Install ROS
         # Download and extract ROS 2 package and patch paths, see
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
+        # Note: We don't use the shipped pixi.toml file, we generated our own above
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
 
