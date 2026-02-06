@@ -115,7 +115,8 @@ jobs:
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule' }}
         run:
           wget https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/.github/issue_template_failed_ci.md -O ${{ env.repo_path }}/.github/issue_template_failed_ci.md
-      - uses: JasonEtco/create-an-issue@v2
+      - name: Create an issue on failure
+        uses: JasonEtco/create-an-issue@v2
         # action-ros-ci does not report more details on test failures afaik
         if: ${{ always() && steps.action-ros.outcome == 'failure' && github.event_name == 'schedule'}}
         env:
