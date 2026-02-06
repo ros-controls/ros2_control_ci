@@ -99,7 +99,7 @@ jobs:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
-          rosdep-skip-keys: rti-connext-dds-7.3.0
+          rosdep-skip-keys: rmw_zenoh_cpp
           vcs-repo-file-url: ${{ steps.check_deps_file.outputs.vcs_file_path }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           extra-cmake-args: ${{ inputs.extra-cmake-args }}
