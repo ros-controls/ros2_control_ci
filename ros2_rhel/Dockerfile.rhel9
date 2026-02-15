@@ -27,7 +27,7 @@ RUN dnf install -y \
   git \
   make \
   patch \
-  libboost-devel \
+  boost-devel \
   libcap-devel \
   urdfdom \
   urdfdom-devel \

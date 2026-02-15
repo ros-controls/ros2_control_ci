@@ -36,7 +36,7 @@ RUN dnf install -y \
   ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
   ros-${ROS_DISTRO}-sdformat-urdf \
   ros-${ROS_DISTRO}-xacro \
-  libboost-devel \
+  boost-devel \
   libcap-devel \
   urdfdom \
   urdfdom-devel \
