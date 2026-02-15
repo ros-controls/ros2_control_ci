@@ -29,10 +29,20 @@ RUN set -eux; \
 
 # install ros
 ENV ROS_DISTRO=${ROS_DISTRO}
-RUN dnf install -y ros-${ROS_DISTRO}-ros-base \
-  python3-rosdep \
+RUN dnf install -y \
+  ros-${ROS_DISTRO}-ros-base \
+  ros-${ROS_DISTRO}-backward-ros \
+  ros-${ROS_DISTRO}-pal-statistics \
+  ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
+  ros-${ROS_DISTRO}-xacro \
+  boost-devel \
+  libcap-devel \
+  urdfdom \
+  urdfdom-devel \
   python3-colcon-common-extensions \
+  python3-rosdep \
   python3-rosinstall_generator \
+  python3-rospkg \
   && dnf clean all \
   && rosdep init
 # somehow a wrong version of empy is installed, so we have to uninstall it first

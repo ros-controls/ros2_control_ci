@@ -59,11 +59,22 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV ROS_DISTRO=${ROS_DISTRO}
 
-# Install ROS packages and dev dependencies, which ros-tooling/setup-ros would install see
+# Install ROS packages, (ros-base) plus common packages,
+# https://www.ros.org/reps/rep-2001.html#id38
+# typical manual dev dependencies,
+# and dependencies which ros-tooling/setup-ros would install see
 # https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-ros-base \
+    libboost-dev \
+    libcap-dev \
+    liburdfdom-tools \
+    python3-rospkg \
+    ros-${ROS_DISTRO}-backward-ros \
+    ros-${ROS_DISTRO}-pal-statistics \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
+    ros-${ROS_DISTRO}-sdformat-urdf \
+    ros-${ROS_DISTRO}-xacro \
     $(if [ $(lsb_release -sc) = "noble" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata libclang-rt-dev"; fi) \
     $(if [ $(lsb_release -sc) = "jammy" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-flake8-docstrings python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-builtins python3-flake8-class-newline python3-flake8-comprehensions python3-flake8-deprecated python3-flake8-import-order python3-flake8-quotes python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin libasio-dev libtinyxml2-dev"; fi) \
     && rm -rf /var/lib/apt/lists/*
