@@ -77,6 +77,11 @@ on:
         default: ''
         required: false
         type: string
+      rmw_implementation:
+        description: 'RMW implementation to use'
+        default: 'rmw_cyclonedds_cpp'
+        required: false
+        type: string
 
 
 jobs:
@@ -128,6 +133,7 @@ jobs:
           CC: ${{ inputs.c_compiler }}
           CXX: ${{ inputs.cxx_compiler }}
           CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
+          RMW_IMPLEMENTATION: ${{ inputs.rmw_implementation }}
         id: ici
       - name: Save ccache folder
         uses: actions/cache/save@v5
