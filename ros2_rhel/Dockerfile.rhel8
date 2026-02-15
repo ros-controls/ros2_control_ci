@@ -36,9 +36,10 @@ RUN dnf install -y \
   ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
   ros-${ROS_DISTRO}-sdformat-urdf \
   ros-${ROS_DISTRO}-xacro \
-  libboost-dev \
-  libcap-dev \
-  liburdfdom-tools \
+  libboost-devel \
+  libcap-devel \
+  urdfdom \
+  urdfdom-devel \
   python3-colcon-common-extensions \
   python3-rosdep \
   python3-rosinstall_generator \
