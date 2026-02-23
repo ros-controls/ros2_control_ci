@@ -79,7 +79,7 @@ on:
         type: string
       rmw_implementation:
         description: 'RMW implementation to use'
-        default: 'rmw_fastrtps_cpp'
+        default: 'rmw_cyclonedds_cpp'
         required: false
         type: string
 
