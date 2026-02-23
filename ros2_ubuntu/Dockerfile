@@ -72,7 +72,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-rospkg \
     ros-${ROS_DISTRO}-backward-ros \
     ros-${ROS_DISTRO}-pal-statistics \
-    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     ros-${ROS_DISTRO}-sdformat-urdf \
     ros-${ROS_DISTRO}-xacro \
     $(if [ $(lsb_release -sc) = "noble" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata libclang-rt-dev"; fi) \
