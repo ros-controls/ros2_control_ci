@@ -44,6 +44,7 @@ RUN apt-get update -y -qq && \
   libssl-dev \
   libtinyxml-dev \
   libtinyxml2-dev \
+  libyaml-dev \
   lsb-release \
   lttng-tools \
   mlocate \
