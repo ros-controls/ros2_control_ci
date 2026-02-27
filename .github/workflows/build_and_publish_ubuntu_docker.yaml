@@ -62,3 +62,31 @@ jobs:
             FROM=${{ matrix.base_image }}
             ROS_DISTRO=${{ matrix.ros_distro }}
             ROS_REPO_PACKAGES=${{ matrix.ros-repo-packages }}
+
+  stack-build:
+    needs: build_images
+    uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [rolling, humble, jazzy, kilted]
+        ROS_REPO: [main, testing]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_repo: ${{ matrix.ROS_REPO }}
+      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      ref_for_scheduled_build: master
+
+  compatibility-stack-build:
+    needs: build_images
+    uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [kilted, humble, jazzy]
+        ROS_REPO: [main, testing]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_repo: ${{ matrix.ROS_REPO }}
+      target_workspace: ros_controls.rolling-on-${{ matrix.ROS_DISTRO }}.repos
+      ref_for_scheduled_build: master
