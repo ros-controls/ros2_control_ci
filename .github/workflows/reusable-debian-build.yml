@@ -59,10 +59,6 @@ jobs:
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
             vcs log -l1 src
           fi
-      - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
-        with:
-          path: ${{ env.path }}
       - name: Install dependencies
         shell: bash
         run: |
@@ -74,10 +70,10 @@ jobs:
         shell: bash
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-skip ${{ inputs.skip_packages }}
       - name: Test workspace
         shell: bash
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test --executor sequential --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
