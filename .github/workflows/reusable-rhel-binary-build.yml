@@ -32,6 +32,11 @@ on:
         default: ''
         required: false
         type: string
+      target_cmake_args:
+        description: "Additional arguments to pass to CMake for target workspace, e.g. -DBUILD_TESTING=OFF"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   rhel_binary:
@@ -75,7 +80,7 @@ jobs:
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon build --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
       - name: Test workspace
         shell: bash
         run: |
