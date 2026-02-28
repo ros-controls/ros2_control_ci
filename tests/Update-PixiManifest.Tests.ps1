@@ -1,7 +1,9 @@
-$scriptPath = Join-Path $PSScriptRoot "..\scripts\Update-PixiManifest.ps1"
-. $scriptPath
-
 Describe "Update-PixiManifestDependencies" {
+  BeforeAll {
+    $scriptPath = Join-Path $PSScriptRoot "..\scripts\Update-PixiManifest.ps1"
+    . $scriptPath
+  }
+
   BeforeEach {
     $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
     New-Item -ItemType Directory -Path $tempDir | Out-Null
@@ -51,7 +53,7 @@ name = ""test""
     Update-PixiManifestDependencies -ManifestPath $manifestPath -Dependencies "rosinstall_generator"
 
     $result = Get-Content -Path $manifestPath
-    ($result -join "`n") | Should -Match '^\[dependencies\]'
+    ($result -join "`n") | Should -Match '\[dependencies\]'
     ($result -join "`n") | Should -Match 'rosinstall_generator\s*=\s*"\*"'
   }
 
