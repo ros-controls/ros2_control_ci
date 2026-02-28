@@ -97,7 +97,8 @@ jobs:
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
           $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
-          & "${{ env.repo_path }}\scripts\Update-PixiManifest.ps1" -ManifestPath $manifest -Dependencies $deps
+          . "${{ env.repo_path }}\scripts\Update-PixiManifest.ps1"
+          Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
 
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.9.4

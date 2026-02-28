@@ -1,11 +1,3 @@
-param(
-  [Parameter(Mandatory = $false)]
-  [string]$ManifestPath,
-
-  [Parameter(Mandatory = $false)]
-  [string]$Dependencies = ""
-)
-
 function Update-PixiManifestDependencies {
   param(
     [Parameter(Mandatory = $true)]
@@ -51,12 +43,4 @@ function Update-PixiManifestDependencies {
   else {
     Write-Host "No additional dependencies specified."
   }
-}
-
-if ($MyInvocation.InvocationName -ne '.') {
-  if ([string]::IsNullOrWhiteSpace($ManifestPath)) {
-    throw "ManifestPath is required when executing this script directly."
-  }
-
-  Update-PixiManifestDependencies -ManifestPath $ManifestPath -Dependencies $Dependencies
 }
