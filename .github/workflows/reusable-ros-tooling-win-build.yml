@@ -105,14 +105,7 @@ jobs:
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
           $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
-          $toolingRoot = Join-Path -Path $PWD -ChildPath "${{ env.tooling_repo_path }}"
-          $updateScript = Join-Path -Path $toolingRoot -ChildPath "scripts\Update-PixiManifest.ps1"
-          if (-not (Test-Path -Path $updateScript)) {
-            Write-Error "Update-PixiManifest script not found at: $updateScript"
-            Get-ChildItem -Path $PWD -Recurse -Depth 3 | Select-Object -ExpandProperty FullName
-            exit 1
-          }
-          . $updateScript
+          . "${{ env.tooling_repo_path }}\scripts\Update-PixiManifest.ps1"
           Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
 
       - name: Install pixi
