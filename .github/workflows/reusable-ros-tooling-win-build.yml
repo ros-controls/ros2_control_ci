@@ -70,6 +70,7 @@ jobs:
       upstream_workspace: C:\upstream_ws
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
+      tooling_repo_path: src/ros-controls/ros2_control_ci
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -82,6 +83,13 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
+
+      - name: Checkout ros2_control_ci tooling scripts
+        uses: actions/checkout@v6
+        with:
+          repository: ros-controls/ros2_control_ci
+          ref: master
+          path: ${{ env.tooling_repo_path }}
 
       - name: Restore pixi.lock
         uses: actions/cache/restore@v5
@@ -97,7 +105,7 @@ jobs:
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
           $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
-          . "${{ env.repo_path }}\scripts\Update-PixiManifest.ps1"
+          . "${{ env.tooling_repo_path }}\scripts\Update-PixiManifest.ps1"
           Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
 
       - name: Install pixi
