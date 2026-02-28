@@ -54,33 +54,32 @@ jobs:
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.path }}
-      - name: Install dependencies
+      - name: Import upstream workspace
         shell: bash
         run: |
-          source /opt/ros/${{ inputs.ros_distro }}/setup.bash
-          source /opt/ros2_ws/install/local_setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
             vcs log -l1 src
           fi
+      - name: Install dependencies
+        shell: bash
+        run: |
           dnf makecache --refresh # just updating cache, no packages are installed
+          source /opt/ros/${{ inputs.ros_distro }}/setup.bash
+          source /opt/ros2_ws/install/local_setup.bash
           rosdep update --rosdistro ${{ inputs.ros_distro }}
           rosdep install -iyr --from-path src || true # ignore errors, as some packages might not be available
-      - id: package_list_action
-        uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
-        with:
-          path: ${{ env.path }}
       - name: Build workspace
         shell: bash
         # source also underlay workspace with generate_parameter_library on rhel9
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon build --packages-up-to ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-skip ${{ inputs.skip_packages }}
       - name: Test workspace
         shell: bash
         run: |
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
-          colcon test --executor sequential --packages-select ${{ steps.package_list_action.outputs.package_list }} --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test --executor sequential --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
