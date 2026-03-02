@@ -52,13 +52,18 @@ on:
         default: ""
         required: false
         type: string
+      docker_image_tag_suffix:
+        description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   rhel_binary:
     name: ${{ inputs.ros_distro }} RHEL build
     if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
-    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-rhel
+    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-rhel${{ inputs.docker_image_tag_suffix }}
     env:
       target_ws: target_ws
       upstream_ws: upstream_ws

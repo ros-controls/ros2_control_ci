@@ -49,6 +49,11 @@ on:
         default: ""
         required: false
         type: string
+      docker_image_tag_suffix:
+        description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
+        default: ''
+        required: false
+        type: string
 
 
 jobs:
@@ -63,7 +68,7 @@ jobs:
       target_path: target_ws/src/${{ github.repository }}
       CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
       CACHE_PREFIX: ${{ inputs.ros_distro }}-${{ inputs.upstream_workspace }}-${{ inputs.target_workspace }}-${{ github.job }}
-    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian
+    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian${{ inputs.docker_image_tag_suffix }}
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
