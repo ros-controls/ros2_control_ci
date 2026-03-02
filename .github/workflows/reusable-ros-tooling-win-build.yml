@@ -159,15 +159,9 @@ jobs:
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+          mkdir -p ${{ env.upstream_workspace }}/src
 
           # check for repos files, and pass them to vcstool
-          mkdir -p ${{ env.upstream_workspace }}/src
-          $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
-          if (Test-Path "$repo_file") {
-            Write-Output "Local repos file found"
-            vcs import --input $repo_file ${{ env.upstream_workspace }}/src
-            vcs log -l1 src
-          }
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
             $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
             if (Test-Path "$repo_file_win") {
