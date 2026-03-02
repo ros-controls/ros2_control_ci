@@ -203,27 +203,55 @@ jobs:
           # use rosinstall_generator to get all dependencies which are not yet installed
           $underlay_ws_pkgs=$(ros2 pkg list)
           # Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
-          $skip_regex_arg=""
-          $skip_regex_exclude_path_arg=""
+          $skip_regex_packages=@()
+          $skip_regex_paths=@()
           if (![string]::IsNullOrWhiteSpace("${{ inputs.skip_packages_regex }}")) {
             $skip_regex_packages = @(colcon list --names-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src |
               Select-String -Pattern "${{ inputs.skip_packages_regex }}" |
               ForEach-Object { $_.Line.Trim() } |
               Where-Object { $_ })
 
-            $skip_regex_arg = ($skip_regex_packages -join ' ')
-
             if ($skip_regex_packages.Length -gt 0) {
               $skip_regex_paths = @(colcon list --paths-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src --packages-select $skip_regex_packages)
-              if ($skip_regex_paths.Length -gt 0) {
-                $skip_regex_exclude_path_arg = "--exclude-path $($skip_regex_paths -join ' ')"
-              }
             }
 
-            Write-Host "Skipping packages from skip_regex_arg: $skip_regex_arg"
-            Write-Host "Skipping local paths via exclude-path: $skip_regex_exclude_path_arg"
+            Write-Host "Skipping packages from skip_regex_arg: $($skip_regex_packages -join ' ')"
+            Write-Host "Skipping local paths via exclude-path: $($skip_regex_paths -join ' ')"
           }
-          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --deps-only --format repos --exclude $underlay_ws_pkgs ${{inputs.skip_dependencies}} $skip_regex_arg $skip_regex_exclude_path_arg --from-path ${{ env.upstream_workspace }} $target_from_path > deps.repos
+
+          $skip_dependencies = @("${{inputs.skip_dependencies}}" -split '\s+' | Where-Object { $_ })
+          $exclude_packages = @($underlay_ws_pkgs) + $skip_dependencies + $skip_regex_packages
+
+          $rosinstall_args = @(
+            '--rosdistro', '${{ inputs.ros_distro }}',
+            '--deps',
+            '--deps-only',
+            '--format', 'repos'
+          )
+
+          if ($exclude_packages.Length -gt 0) {
+            $rosinstall_args += '--exclude'
+            $rosinstall_args += $exclude_packages
+          }
+
+          if ($skip_regex_paths.Length -gt 0) {
+            $rosinstall_args += '--exclude-path'
+            $rosinstall_args += $skip_regex_paths
+          }
+
+          $rosinstall_args += '--from-path'
+          $rosinstall_args += @('${{ env.upstream_workspace }}', $target_from_path)
+
+          $rosinstall_cmd = @('rosinstall_generator') + ($rosinstall_args | ForEach-Object {
+            if ($_ -match '\s') {
+              '"' + ($_ -replace '"', '\"') + '"'
+            } else {
+              $_
+            }
+          })
+          Write-Host "Running command: $($rosinstall_cmd -join ' ')"
+
+          & rosinstall_generator @rosinstall_args > deps.repos
           # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
           vcs log -l1 src
