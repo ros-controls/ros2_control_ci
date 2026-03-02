@@ -18,5 +18,5 @@ jobs:
       ros_distro: rolling
       pixi_dependencies: typeguard jinja2 boost compilers octomap
       ninja_packages: rsl
-      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      target_workspace: ros_controls.rolling.repos
       skip_packages_regex: '^mujoco_ros2_control.*$|^gz_ros2_control.*$|^ros2_control_demo_example_9$|^ros2_control_demo_example_14$'
