@@ -34,6 +34,11 @@ on:
         default: ''
         required: false
         type: string
+      skip_packages_regex:
+        description: 'Regex for packages to skip from build and test'
+        default: ''
+        required: false
+        type: string
       skip_packages_test:
         description: 'Packages to skip from test additionally to skip_packages'
         default: ''
@@ -118,7 +123,11 @@ jobs:
         working-directory: ${{ env.upstream_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --packages-skip ${{ inputs.skip_packages }} --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon build --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - name: Build target workspace
         id: build_target_workspace
         shell: bash
@@ -133,7 +142,11 @@ jobs:
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
             exit 1
           fi
-          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }}
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }}
       - name: Test target workspace
         shell: bash
         working-directory: ${{ env.target_ws }}
@@ -148,7 +161,11 @@ jobs:
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
             exit 1
           fi
-          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
       - name: Show ccache stats
         if: ${{ always() }}

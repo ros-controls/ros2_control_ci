@@ -60,4 +60,5 @@ jobs:
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      skip_packages_regex: '^mujoco_ros2_control.*$|^gz_ros2_control.*$'
       ref_for_scheduled_build: master
