@@ -102,18 +102,6 @@ jobs:
           ref: master
           path: ${{ env.tooling_repo_path }}
 
-      - name: Prepare target workspace
-        run: |
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.target_workspace }}")) {
-            mkdir -p ${{ env.target_workspace }}/src
-            $repo_file = "${{ env.repo_path }}\${{ inputs.target_workspace }}"
-            if (Test-Path "$repo_file") {
-              vcs import --input $repo_file ${{ env.target_workspace }}/src
-              vcs log -l1 ${{ env.target_workspace }}/src
-              New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
-            }
-          }
-
       - name: Restore pixi.lock
         uses: actions/cache/restore@v5
         id: cache
@@ -178,10 +166,24 @@ jobs:
           path: ${{ env.repo_path }}
           manifest-path: pixi.toml
 
+      - name: Prepare target workspace
+        if: ${{ inputs.target_workspace != '' }}
+        run: |
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
+
+          mkdir -p ${{ env.target_workspace }}/src
+          $repo_file = "${{ env.repo_path }}\${{ inputs.target_workspace }}"
+          if (Test-Path "$repo_file") {
+            vcs import --input $repo_file ${{ env.target_workspace }}/src
+            vcs log -l1 ${{ env.target_workspace }}/src
+            New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
+          }
+
       - name: Clone dependencies
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
+
           mkdir -p ${{ env.upstream_workspace }}/src
           $target_from_path = "${{ env.repo_path }}"
           if (![string]::IsNullOrWhiteSpace("${{ inputs.target_workspace }}")) {
