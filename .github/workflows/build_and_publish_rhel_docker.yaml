@@ -49,3 +49,15 @@ jobs:
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
             SOURCE_PACKAGES=${{ matrix.source_packages }}
+
+  stack-build:
+    needs: build_images
+    uses: ./.github/workflows/reusable-rhel-binary-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [rolling, humble, jazzy, kilted]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      ref_for_scheduled_build: master

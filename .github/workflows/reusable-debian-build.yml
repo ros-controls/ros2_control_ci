@@ -24,6 +24,11 @@ on:
         default: ''
         required: false
         type: string
+      ccache_dir:
+        description: 'Local path to store ccache (from github.workspace).'
+        default: '.ccache'
+        required: false
+        type: string
       skip_packages:
         description: 'Packages to skip from build and test'
         default: ''
@@ -51,6 +56,8 @@ jobs:
       upstream_ws: upstream_ws
       # this will be target_ws/src/{repo-owner}/{repo-name}
       target_path: target_ws/src/${{ github.repository }}
+      CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
+      CACHE_PREFIX: ${{ inputs.ros_distro }}-${{ inputs.upstream_workspace }}-${{ inputs.target_workspace }}-${{ github.job }}
     container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian
     steps:
       - name: Checkout default ref when build is not scheduled
@@ -72,6 +79,20 @@ jobs:
             vcs log -l1 ${{ env.target_ws }}/src
             touch ${{ env.target_path }}/COLCON_IGNORE
           fi
+      - name: Restore ccache folder
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+      - name: Initialize ccache
+        shell: bash
+        run: |
+          mkdir -p ${{ env.CCACHE_DIR }}
+          ccache --show-config || true
+          ccache --zero-stats || true
       - name: Import upstream workspace
         shell: bash
         run: |
@@ -97,8 +118,9 @@ jobs:
         working-directory: ${{ env.upstream_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-skip ${{ inputs.skip_packages }} --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
       - name: Build target workspace
+        id: build_target_workspace
         shell: bash
         working-directory: ${{ env.target_ws }}
         run: |
@@ -111,7 +133,7 @@ jobs:
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
             exit 1
           fi
-          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
+          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }}
       - name: Test target workspace
         shell: bash
         working-directory: ${{ env.target_ws }}
@@ -128,3 +150,13 @@ jobs:
           fi
           colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
+      - name: Show ccache stats
+        if: ${{ always() }}
+        shell: bash
+        run: ccache --show-stats || true
+      - name: Save ccache folder
+        if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}

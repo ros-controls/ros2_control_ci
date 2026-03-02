@@ -6,6 +6,7 @@ ARG ROS_DISTRO=rolling
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
+  ccache \
   cmake \
   gcc-c++ \
   make \

@@ -23,6 +23,7 @@ RUN set -eux; \
 # install system dependencies
 RUN dnf makecache -y
 RUN dnf install -y \
+  ccache \
   gcc-c++ \
   git \
   make \
