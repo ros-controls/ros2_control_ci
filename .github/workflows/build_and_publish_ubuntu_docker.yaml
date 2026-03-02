@@ -94,6 +94,7 @@ jobs:
             ROS_REPO_PACKAGES=${{ matrix.ros-repo-packages }}
 
   stack-build:
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build_images
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
@@ -106,9 +107,10 @@ jobs:
       ros_repo: ${{ matrix.ROS_REPO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
-      docker_image_tag_suffix: ${{ github.event_name == 'pull_request' && format('-pr-{0}', github.event.pull_request.number) || '' }}
+      docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}
 
   compatibility-stack-build:
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build_images
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
@@ -121,4 +123,4 @@ jobs:
       ros_repo: ${{ matrix.ROS_REPO }}
       target_workspace: ros_controls.rolling-on-${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
-      docker_image_tag_suffix: ${{ github.event_name == 'pull_request' && format('-pr-{0}', github.event.pull_request.number) || '' }}
+      docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}

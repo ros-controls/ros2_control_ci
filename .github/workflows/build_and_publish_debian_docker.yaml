@@ -78,6 +78,7 @@ jobs:
             SOURCE_PACKAGES=${{ matrix.source_packages }}
 
   stack-build:
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build_images
     uses: ./.github/workflows/reusable-debian-build.yml
     strategy:
@@ -89,4 +90,4 @@ jobs:
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
       skip_packages_regex: '^mujoco_ros2_control.*$|^gz_ros2_control.*$|^ros2_control_demo_example_9$|^ros2_control_demos$'
       ref_for_scheduled_build: master
-      docker_image_tag_suffix: ${{ github.event_name == 'pull_request' && format('-pr-{0}', github.event.pull_request.number) || '' }}
+      docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}
