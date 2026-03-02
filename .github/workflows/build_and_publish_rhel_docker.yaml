@@ -4,6 +4,8 @@ name: Build and publish RHEL docker images
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
     paths:
       - '.github/workflows/build_and_publish_rhel_docker.yaml'
       - 'ros2_rhel/**'

@@ -4,6 +4,8 @@ name: Build and publish Ubuntu docker images
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
     paths:
       - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
       - 'ros2_ubuntu/**'

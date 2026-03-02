@@ -4,6 +4,8 @@ name: Build and publish debian docker images
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
     paths:
       - '.github/workflows/build_and_publish_debian_docker.yaml'
       - 'ros2_debian/**'
