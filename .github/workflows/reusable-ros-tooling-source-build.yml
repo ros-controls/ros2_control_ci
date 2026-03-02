@@ -128,13 +128,13 @@ jobs:
           update_existing: true
           filename: ${{ env.repo_path }}/.github/issue_template_failed_ci.md
       - name: Upload colcon logs
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: colcon-logs-${{ inputs.os_name }}-${{ inputs.ros_distro }}
           path: ros_ws/log
       - name: Upload repos file
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: repos-${{ inputs.os_name }}-${{ inputs.ros_distro }}
