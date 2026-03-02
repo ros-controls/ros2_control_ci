@@ -67,6 +67,10 @@ jobs:
           push: true
           file: ros2_debian/Dockerfile.${{ matrix.debian_version }}
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ steps.image_meta.outputs.image_tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
+            org.opencontainers.image.description=${{ matrix.debian_version }} for ros-controls CI
+            org.opencontainers.image.licenses=Apache-2.0
           cache-from: type=gha,scope=debian-${{ matrix.ros_distro }}
           cache-to: type=gha,scope=debian-${{ matrix.ros_distro }},mode=max
           build-args: |
