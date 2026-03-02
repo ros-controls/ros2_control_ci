@@ -19,6 +19,11 @@ on:
         default: ''
         required: false
         type: string
+      target_workspace:
+        description: 'Path to local .repos file for target workspace.'
+        default: ''
+        required: false
+        type: string
       skip_packages:
         description: 'Packages to skip from build and test'
         default: ''
@@ -38,31 +43,42 @@ on:
 
 jobs:
   debian_source:
-    name: ${{ inputs.ros_distro }} debian build
+    name: ${{ inputs.ros_distro }} Debian build
     if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     env:
-      # this will be src/{repo-owner}/{repo-name}
-      path: src/${{ github.repository }}
+      target_ws: target_ws
+      upstream_ws: upstream_ws
+      # this will be target_ws/src/{repo-owner}/{repo-name}
+      target_path: target_ws/src/${{ github.repository }}
     container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v6
         with:
-          path: ${{ env.path }}
+          path: ${{ env.target_path }}
       - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
         if: ${{ github.event_name == 'schedule' }}
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
-          path: ${{ env.path }}
+          path: ${{ env.target_path }}
+      - name: Prepare target workspace
+        shell: bash
+        run: |
+          if [[ -n "${{ inputs.target_workspace }}" ]]; then
+            vcs import ${{ env.target_ws }}/src < ${{ env.target_path }}/${{ inputs.target_workspace }}
+            vcs log -l1 ${{ env.target_ws }}/src
+            touch ${{ env.target_path }}/COLCON_IGNORE
+          fi
       - name: Import upstream workspace
         shell: bash
         run: |
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
-            vcs log -l1 src
+            mkdir -p ${{ env.upstream_ws }}/src
+            vcs import ${{ env.upstream_ws }}/src < ${{ env.target_path }}/${{ inputs.upstream_workspace }}
+            vcs log -l1 ${{ env.upstream_ws }}/src
           fi
       - name: Install dependencies
         shell: bash
@@ -70,15 +86,42 @@ jobs:
           apt-get update
           source /opt/ros2_ws/install/setup.bash
           rosdep update --rosdistro ${{ inputs.ros_distro }}
-          rosdep install -iyr --from-path src || true # ignore errors, as some packages might not be available
-      - name: Build workspace
+          FROM_PATHS="${{ env.target_ws }}/src"
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            FROM_PATHS="${{ env.upstream_ws }}/src $FROM_PATHS"
+          fi
+          rosdep install -iyr --from-path $FROM_PATHS || true # ignore errors, as some packages might not be available
+      - name: Build upstream workspace (no test)
+        if: ${{ inputs.upstream_workspace != '' }}
         shell: bash
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
-      - name: Test workspace
+          colcon build --base-paths ${{ env.upstream_ws }}/src --build-base ${{ env.upstream_ws }}/build --install-base ${{ env.upstream_ws }}/install --log-base ${{ env.upstream_ws }}/log --packages-skip ${{ inputs.skip_packages }}
+      - name: Build target workspace
         shell: bash
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon test --executor sequential --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
-          colcon test-result --verbose
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            source ${{ env.upstream_ws }}/install/setup.bash
+          fi
+          TARGET_PACKAGES=$(colcon list --names-only --base-paths ${{ env.target_ws }}/src | tr '\n' ' ')
+          if [[ -z "$TARGET_PACKAGES" ]]; then
+            echo "No packages found in target workspace at ${{ env.target_ws }}/src"
+            exit 1
+          fi
+          colcon build --base-paths ${{ env.target_ws }}/src --build-base ${{ env.target_ws }}/build --install-base ${{ env.target_ws }}/install --log-base ${{ env.target_ws }}/log --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
+      - name: Test target workspace
+        shell: bash
+        run: |
+          source /opt/ros2_ws/install/setup.bash
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            source ${{ env.upstream_ws }}/install/setup.bash
+          fi
+          source ${{ env.target_ws }}/install/setup.bash
+          TARGET_PACKAGES=$(colcon list --names-only --base-paths ${{ env.target_ws }}/src | tr '\n' ' ')
+          if [[ -z "$TARGET_PACKAGES" ]]; then
+            echo "No packages found in target workspace at ${{ env.target_ws }}/src"
+            exit 1
+          fi
+          colcon test --base-paths ${{ env.target_ws }}/src --build-base ${{ env.target_ws }}/build --install-base ${{ env.target_ws }}/install --log-base ${{ env.target_ws }}/log --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test-result --verbose --test-result-base ${{ env.target_ws }}/build
