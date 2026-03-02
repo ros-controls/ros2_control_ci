@@ -9,6 +9,8 @@ on:
       - '.github/workflows/humble-binary-build.yml'
       - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.humble.repos'
+      - '!.github/workflows/build_and_publish_ubuntu_docker.yaml'
+      - '!ros2_ubuntu/**'
   push:
     branches:
       - master

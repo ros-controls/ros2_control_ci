@@ -11,6 +11,8 @@ on:
       - 'ros_controls.jazzy.repos'
       - 'ros_controls.kilted.repos'
       - 'ros_controls.rolling.repos'
+      - '!.github/workflows/build_and_publish_rhel_docker.yaml'
+      - '!ros2_rhel/**'
   schedule:
     # Run every day to detect flakiness and broken dependencies
     - cron: '42 4 * * MON-FRI'

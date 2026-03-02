@@ -9,6 +9,8 @@ on:
       - '.github/workflows/kilted-binary-build.yml'
       - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.kilted.repos'
+      - '!.github/workflows/build_and_publish_ubuntu_docker.yaml'
+      - '!ros2_ubuntu/**'
   push:
     branches:
       - master

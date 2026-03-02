@@ -11,6 +11,8 @@ on:
       - 'ros_controls.jazzy.repos'
       - 'ros_controls.kilted.repos'
       - 'ros_controls.rolling.repos'
+      - '!.github/workflows/build_and_publish_debian_docker.yaml'
+      - '!ros2_debian/**'
   schedule:
     # Run every day to detect flakiness and broken dependencies
     - cron: '33 2 * * MON-FRI'
