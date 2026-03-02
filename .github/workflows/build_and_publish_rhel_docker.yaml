@@ -64,6 +64,8 @@ jobs:
         with:
           context: ros2_rhel
           push: true
+          provenance: false
+          sbom: false
           file: ros2_rhel/Dockerfile.${{ matrix.rhel_version }}
           tags: ghcr.io/${{ github.repository_owner }}/ros:${{ steps.image_meta.outputs.image_tag }}
           labels: |
