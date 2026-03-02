@@ -1,0 +1,21 @@
+name: Rolling Windows Semi-Binary Build
+# author: Christoph Fröhlich <christoph.froehlich@ait.ac.at>
+# description: 'Build & test all dependencies from semi-binary packages.'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/windows-stack-build.yml'
+      - 'ros_controls.rolling.repos'
+
+jobs:
+  binary-windows:
+    uses: ./.github/workflows/reusable-ros-tooling-win-build.yml
+    with:
+      ros_distro: rolling
+      pixi_dependencies: typeguard jinja2 boost compilers octomap
+      ninja_packages: rsl
+      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
