@@ -94,34 +94,37 @@ jobs:
       - name: Build upstream workspace (no test)
         if: ${{ inputs.upstream_workspace != '' }}
         shell: bash
+        working-directory: ${{ env.upstream_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --base-paths ${{ env.upstream_ws }}/src --build-base ${{ env.upstream_ws }}/build --install-base ${{ env.upstream_ws }}/install --log-base ${{ env.upstream_ws }}/log --packages-skip ${{ inputs.skip_packages }}
+          colcon build --packages-skip ${{ inputs.skip_packages }}
       - name: Build target workspace
         shell: bash
+        working-directory: ${{ env.target_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            source ${{ env.upstream_ws }}/install/setup.bash
+            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
           fi
-          TARGET_PACKAGES=$(colcon list --names-only --base-paths ${{ env.target_ws }}/src | tr '\n' ' ')
+          TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
             exit 1
           fi
-          colcon build --base-paths ${{ env.target_ws }}/src --build-base ${{ env.target_ws }}/build --install-base ${{ env.target_ws }}/install --log-base ${{ env.target_ws }}/log --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
+          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
       - name: Test target workspace
         shell: bash
+        working-directory: ${{ env.target_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            source ${{ env.upstream_ws }}/install/setup.bash
+            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
           fi
-          source ${{ env.target_ws }}/install/setup.bash
-          TARGET_PACKAGES=$(colcon list --names-only --base-paths ${{ env.target_ws }}/src | tr '\n' ' ')
+          source install/setup.bash
+          TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
             exit 1
           fi
-          colcon test --base-paths ${{ env.target_ws }}/src --build-base ${{ env.target_ws }}/build --install-base ${{ env.target_ws }}/install --log-base ${{ env.target_ws }}/log --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
-          colcon test-result --verbose --test-result-base ${{ env.target_ws }}/build
+          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          colcon test-result --verbose
