@@ -6,15 +6,16 @@ ARG ROS_DISTRO=rolling
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
-  ccache \
-  cmake \
-  gcc-c++ \
-  make \
   langpacks-en \
   git \
   wget \
   -y --refresh \
   && dnf config-manager --set-enabled powertools \
+  && dnf install -y \
+  ccache \
+  cmake \
+  gcc-c++ \
+  make \
   && dnf clean all
 
 # Setup Sources
