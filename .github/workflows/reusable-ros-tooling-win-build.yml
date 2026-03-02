@@ -206,16 +206,18 @@ jobs:
           $skip_regex_arg=""
           $skip_regex_exclude_path_arg=""
           if (![string]::IsNullOrWhiteSpace("${{ inputs.skip_packages_regex }}")) {
-            $matching_packages = colcon list --base-paths $target_from_path ${{ env.upstream_workspace }}/src |
-              Select-String -Pattern "${{ inputs.skip_packages_regex }}"
+            $skip_regex_packages = @(colcon list --names-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src |
+              Select-String -Pattern "${{ inputs.skip_packages_regex }}" |
+              ForEach-Object { $_.Line.Trim() } |
+              Where-Object { $_ })
 
-            $skip_regex_arg = ($matching_packages |
-              ForEach-Object { ($_ -split '\s+')[0] }) -join ' '
+            $skip_regex_arg = ($skip_regex_packages -join ' ')
 
-            $skip_regex_paths = $matching_packages |
-              ForEach-Object { ($_ -split '\s+', 2)[1] }
-            if ($skip_regex_paths) {
-              $skip_regex_exclude_path_arg = "--exclude-path $($skip_regex_paths -join ' ')"
+            if ($skip_regex_packages.Length -gt 0) {
+              $skip_regex_paths = @(colcon list --paths-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src --packages-select $skip_regex_packages)
+              if ($skip_regex_paths.Length -gt 0) {
+                $skip_regex_exclude_path_arg = "--exclude-path $($skip_regex_paths -join ' ')"
+              }
             }
 
             Write-Host "Skipping packages from skip_regex_arg: $skip_regex_arg"
