@@ -1,0 +1,33 @@
+name: RHEL Stack Build
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/rhel-stack-build.yml'
+      - '.github/workflows/reusable-rhel-binary-build.yml'
+      - 'ros_controls.humble.repos'
+      - 'ros_controls.jazzy.repos'
+      - 'ros_controls.kilted.repos'
+      - 'ros_controls.rolling.repos'
+  schedule:
+    # Run every day to detect flakiness and broken dependencies
+    - cron: '42 4 * * MON-FRI'
+
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
+
+jobs:
+  rhel_stack_build:
+    uses: ./.github/workflows/reusable-rhel-binary-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [humble, jazzy, kilted, rolling]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      ref_for_scheduled_build: master
