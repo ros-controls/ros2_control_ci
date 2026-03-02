@@ -11,8 +11,6 @@ on:
       - 'ros_controls.jazzy.repos'
       - 'ros_controls.kilted.repos'
       - 'ros_controls.rolling.repos'
-      - '!.github/workflows/build_and_publish_rhel_docker.yaml'
-      - '!ros2_rhel/**'
   schedule:
     # Run every day to detect flakiness and broken dependencies
     - cron: '42 4 * * MON-FRI'
@@ -23,7 +21,22 @@ concurrency:
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
 
 jobs:
+  rhel_stack_build_gate:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
+    steps:
+      - name: Evaluate stack build gate
+        id: gate
+        uses: ./.github/actions/stack-build-gate
+        with:
+          blocked_paths: |
+            - '.github/workflows/build_and_publish_rhel_docker.yaml'
+            - 'ros2_rhel/**'
+
   rhel_stack_build:
+    needs: rhel_stack_build_gate
+    if: ${{ needs.rhel_stack_build_gate.outputs.skip_stack_build != 'true' }}
     uses: ./.github/workflows/reusable-rhel-binary-build.yml
     strategy:
       fail-fast: false

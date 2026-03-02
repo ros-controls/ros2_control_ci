@@ -9,8 +9,6 @@ on:
       - '.github/workflows/rolling-binary-build.yml'
       - '.github/workflows/reusable-industrial-ci-with-cache.yml'
       - 'ros_controls.rolling.repos'
-      - '!.github/workflows/build_and_publish_ubuntu_docker.yaml'
-      - '!ros2_ubuntu/**'
   push:
     branches:
       - master
@@ -23,7 +21,22 @@ on:
     - cron: '03 1 * * *'
 
 jobs:
+  stack-build-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
+    steps:
+      - name: Evaluate stack build gate
+        id: gate
+        uses: ./.github/actions/stack-build-gate
+        with:
+          blocked_paths: |
+            - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
+            - 'ros2_ubuntu/**'
+
   stack-build:
+    needs: stack-build-gate
+    if: ${{ needs.stack-build-gate.outputs.skip_stack_build != 'true' }}
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false

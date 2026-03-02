@@ -1,0 +1,55 @@
+name: "Stack Build Gate"
+description: "Determine whether stack build should be skipped on pull requests based on changed paths."
+inputs:
+  blocked_paths:
+    description: "Multiline list of paths/globs that should block stack build when changed."
+    required: true
+outputs:
+  skip_stack_build:
+    description: "true when stack build should be skipped"
+    value: ${{ steps.compute.outputs.skip_stack_build }}
+runs:
+  using: "composite"
+  steps:
+    # blocked_paths is passed as multiline text from callers. We cannot inject it directly
+    # into the YAML mapping expected by dorny/paths-filter, so we normalize it here into
+    # a valid YAML list under the "blocked" filter.
+    - name: Prepare filters
+      if: ${{ github.event_name == 'pull_request' }}
+      id: prepare
+      shell: bash
+      run: |
+        FILTERS="blocked:"
+        while IFS= read -r raw_line; do
+          line="${raw_line#${raw_line%%[![:space:]]*}}"
+          if [[ -z "$line" ]]; then
+            continue
+          fi
+          if [[ "$line" == -* ]]; then
+            line="${line#-}"
+            line="${line#${line%%[![:space:]]*}}"
+          fi
+          FILTERS+=$'\n'"  - '$line'"
+        done <<< "${{ inputs.blocked_paths }}"
+
+        {
+          echo "filters<<EOF"
+          echo "$FILTERS"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Check changed files
+      if: ${{ github.event_name == 'pull_request' }}
+      id: filter
+      uses: dorny/paths-filter@v3
+      with:
+        filters: ${{ steps.prepare.outputs.filters }}
+    - name: Compute gate result
+      id: compute
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" && "${{ steps.filter.outputs.blocked }}" == "true" ]]; then
+          echo "skip_stack_build=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip_stack_build=false" >> "$GITHUB_OUTPUT"
+        fi
