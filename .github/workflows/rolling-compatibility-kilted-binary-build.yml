@@ -26,6 +26,8 @@ jobs:
     outputs:
       skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Evaluate stack build gate
         id: gate
         uses: ./.github/actions/stack-build-gate
