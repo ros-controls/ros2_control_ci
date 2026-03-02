@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: '1 0 * * MON'
 
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
+
 jobs:
   build_images:
     runs-on: ubuntu-latest
