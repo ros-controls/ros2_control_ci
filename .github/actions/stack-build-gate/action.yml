@@ -29,7 +29,14 @@ runs:
             line="${line#-}"
             line="${line#${line%%[![:space:]]*}}"
           fi
-          FILTERS+=$'\n'"  - '$line'"
+          if [[ "$line" =~ ^\'.*\'$ ]]; then
+            line="${line#\'}"
+            line="${line%\'}"
+          elif [[ "$line" =~ ^\".*\"$ ]]; then
+            line="${line#\"}"
+            line="${line%\"}"
+          fi
+          FILTERS+=$'\n'"  - ${line}"
         done <<< "${{ inputs.blocked_paths }}"
 
         {
