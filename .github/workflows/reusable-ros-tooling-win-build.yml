@@ -33,6 +33,11 @@ on:
         required: false
         default: ""
         type: string
+      target_workspace:
+        description: 'Path to local .repos file for target workspace.'
+        default: ''
+        required: false
+        type: string
       skip_dependencies:
         description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
         default: "sdformat_urdf"
@@ -68,6 +73,7 @@ jobs:
     env:
       ros_underlay_path: C:\dev
       upstream_workspace: C:\upstream_ws
+      target_workspace: C:\target_ws
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
       tooling_repo_path: src/ros-controls/ros2_control_ci
@@ -90,6 +96,18 @@ jobs:
           repository: ros-controls/ros2_control_ci
           ref: master
           path: ${{ env.tooling_repo_path }}
+
+      - name: Prepare target workspace
+        run: |
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.target_workspace }}")) {
+            mkdir -p ${{ env.target_workspace }}/src
+            $repo_file = "${{ env.repo_path }}\${{ inputs.target_workspace }}"
+            if (Test-Path "$repo_file") {
+              vcs import --input $repo_file ${{ env.target_workspace }}/src
+              vcs log -l1 ${{ env.target_workspace }}/src
+              New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
+            }
+          }
 
       - name: Restore pixi.lock
         uses: actions/cache/restore@v5
@@ -160,6 +178,10 @@ jobs:
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
           mkdir -p ${{ env.upstream_workspace }}/src
+          $target_from_path = "${{ env.repo_path }}"
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.target_workspace }}")) {
+            $target_from_path = "${{ env.target_workspace }}"
+          }
 
           # check for repos files, and pass them to vcstool
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
@@ -174,7 +196,7 @@ jobs:
           # use rosinstall_generator to get all dependencies which are not yet installed
           $underlay_ws_pkgs=$(ros2 pkg list)
           # Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
-          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --deps-only --format repos --exclude $underlay_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --deps-only --format repos --exclude $underlay_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} $target_from_path > deps.repos
           # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
           vcs log -l1 src
@@ -226,5 +248,8 @@ jobs:
           set skip_arg=
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
+          )
+          if not "${{ inputs.target_workspace }}"=="" (
+            pushd ${{ env.target_workspace }}
           )
           colcon build %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }} --merge-install
