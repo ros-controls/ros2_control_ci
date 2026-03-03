@@ -88,7 +88,7 @@ jobs:
             org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
             org.opencontainers.image.description=${{ matrix.base_image }} with preinstalled ROS for ros-controls CI
             org.opencontainers.image.licenses=Apache-2.0
-          cache-from: type=gha,scope=ubuntu-${{ matrix.ros_distro }}${{ matrix.ros-repo-packages }}
+          cache-from: ${{ github.event_name != 'schedule' && format('type=gha,scope=ubuntu-{0}{1}', matrix.ros_distro, matrix.ros-repo-packages) || '' }}
           cache-to: type=gha,scope=ubuntu-${{ matrix.ros_distro }}${{ matrix.ros-repo-packages }},mode=max
           build-args: |
             FROM=${{ matrix.base_image }}
