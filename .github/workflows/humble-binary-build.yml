@@ -20,8 +20,30 @@ on:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '03 1 * * *'
 
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
+
 jobs:
+  stack-build-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Evaluate stack build gate
+        id: gate
+        uses: ./.github/actions/stack-build-gate
+        with:
+          blocked_paths: |
+            - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
+            - 'ros2_ubuntu/**'
+
   stack-build:
+    needs: stack-build-gate
+    if: ${{ needs.stack-build-gate.outputs.skip_stack_build != 'true' }}
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false

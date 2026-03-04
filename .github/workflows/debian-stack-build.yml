@@ -1,0 +1,51 @@
+name: Debian Stack Build
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/debian-stack-build.yml'
+      - '.github/workflows/reusable-debian-build.yml'
+      - 'ros_controls.humble.repos'
+      - 'ros_controls.jazzy.repos'
+      - 'ros_controls.kilted.repos'
+      - 'ros_controls.rolling.repos'
+  schedule:
+    # Run every day to detect flakiness and broken dependencies
+    - cron: '33 2 * * MON-FRI'
+
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
+
+jobs:
+  debian_stack_build_gate:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Evaluate stack build gate
+        id: gate
+        uses: ./.github/actions/stack-build-gate
+        with:
+          blocked_paths: |
+            - '.github/workflows/build_and_publish_debian_docker.yaml'
+            - 'ros2_debian/**'
+
+  debian_stack_build:
+    needs: debian_stack_build_gate
+    if: ${{ needs.debian_stack_build_gate.outputs.skip_stack_build != 'true' }}
+    uses: ./.github/workflows/reusable-debian-build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [humble, jazzy, kilted, rolling]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
+      skip_packages_regex: '^mujoco_ros2_control.*$|^gz_ros2_control.*$|^ros2_control_demo_example_9$|^ros2_control_demos$'
+      ref_for_scheduled_build: master

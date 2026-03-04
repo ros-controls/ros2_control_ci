@@ -19,8 +19,23 @@ on:
         default: ''
         required: false
         type: string
+      target_workspace:
+        description: 'Path to local .repos file for target workspace.'
+        default: ''
+        required: false
+        type: string
+      ccache_dir:
+        description: 'Local path to store ccache (from github.workspace).'
+        default: '.ccache'
+        required: false
+        type: string
       skip_packages:
         description: 'Packages to skip from build and test'
+        default: ''
+        required: false
+        type: string
+      skip_packages_regex:
+        description: 'Regex for packages to skip from build and test'
         default: ''
         required: false
         type: string
@@ -34,35 +49,67 @@ on:
         default: ""
         required: false
         type: string
+      docker_image_tag_suffix:
+        description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
+        default: ''
+        required: false
+        type: string
 
 
 jobs:
   debian_source:
-    name: ${{ inputs.ros_distro }} debian build
+    name: ${{ inputs.ros_distro }} Debian build
     if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
     env:
-      # this will be src/{repo-owner}/{repo-name}
-      path: src/${{ github.repository }}
-    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian
+      target_ws: target_ws
+      upstream_ws: upstream_ws
+      # this will be target_ws/src/{repo-owner}/{repo-name}
+      target_path: target_ws/src/${{ github.repository }}
+      CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
+      CACHE_PREFIX: ${{ inputs.ros_distro }}-${{ inputs.upstream_workspace }}-${{ inputs.target_workspace }}-${{ github.job }}
+    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-debian${{ inputs.docker_image_tag_suffix }}
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
         uses: actions/checkout@v6
         with:
-          path: ${{ env.path }}
+          path: ${{ env.target_path }}
       - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
         if: ${{ github.event_name == 'schedule' }}
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref_for_scheduled_build }}
-          path: ${{ env.path }}
+          path: ${{ env.target_path }}
+      - name: Prepare target workspace
+        shell: bash
+        run: |
+          if [[ -n "${{ inputs.target_workspace }}" ]]; then
+            vcs import ${{ env.target_ws }}/src < ${{ env.target_path }}/${{ inputs.target_workspace }}
+            vcs log -l1 ${{ env.target_ws }}/src
+            touch ${{ env.target_path }}/COLCON_IGNORE
+          fi
+      - name: Restore ccache folder
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+      - name: Initialize ccache
+        shell: bash
+        run: |
+          mkdir -p ${{ env.CCACHE_DIR }}
+          ccache --show-config || true
+          ccache --zero-stats || true
       - name: Import upstream workspace
         shell: bash
         run: |
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            vcs import src < ${{ env.path }}/${{ inputs.upstream_workspace }}
-            vcs log -l1 src
+            mkdir -p ${{ env.upstream_ws }}/src
+            vcs import ${{ env.upstream_ws }}/src < ${{ env.target_path }}/${{ inputs.upstream_workspace }}
+            vcs log -l1 ${{ env.upstream_ws }}/src
           fi
       - name: Install dependencies
         shell: bash
@@ -70,15 +117,68 @@ jobs:
           apt-get update
           source /opt/ros2_ws/install/setup.bash
           rosdep update --rosdistro ${{ inputs.ros_distro }}
-          rosdep install -iyr --from-path src || true # ignore errors, as some packages might not be available
-      - name: Build workspace
+          FROM_PATHS="${{ env.target_ws }}/src"
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            FROM_PATHS="${{ env.upstream_ws }}/src $FROM_PATHS"
+          fi
+          rosdep install -iyr --from-path $FROM_PATHS || true # ignore errors, as some packages might not be available
+      - name: Build upstream workspace (no test)
+        if: ${{ inputs.upstream_workspace != '' }}
         shell: bash
+        working-directory: ${{ env.upstream_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon build --packages-skip ${{ inputs.skip_packages }} --cmake-args ${{ inputs.target_cmake_args }}
-      - name: Test workspace
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon build --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      - name: Build target workspace
+        id: build_target_workspace
         shell: bash
+        working-directory: ${{ env.target_ws }}
         run: |
           source /opt/ros2_ws/install/setup.bash
-          colcon test --executor sequential --packages-skip ${{ inputs.skip_packages }} ${{ inputs.skip_packages_test }}
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
+          fi
+          TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
+          if [[ -z "$TARGET_PACKAGES" ]]; then
+            echo "No packages found in target workspace at ${{ env.target_ws }}/src"
+            exit 1
+          fi
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon build --packages-up-to $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }}
+      - name: Test target workspace
+        shell: bash
+        working-directory: ${{ env.target_ws }}
+        run: |
+          source /opt/ros2_ws/install/setup.bash
+          if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
+            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
+          fi
+          source install/setup.bash
+          TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
+          if [[ -z "$TARGET_PACKAGES" ]]; then
+            echo "No packages found in target workspace at ${{ env.target_ws }}/src"
+            exit 1
+          fi
+          SKIP_PACKAGES_REGEX_ARG=""
+          if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
+            SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
+          fi
+          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }}
           colcon test-result --verbose
+      - name: Show ccache stats
+        if: ${{ always() }}
+        shell: bash
+        run: ccache --show-stats || true
+      - name: Save ccache folder
+        if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
