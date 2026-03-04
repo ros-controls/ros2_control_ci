@@ -9,13 +9,12 @@ Within this repo the full ros2_control stack is built and tested once per day.
 
 ## Released versions
 
-[![Rolling Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml)
-
-[![Kilted Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml)
-
-[![Jazzy Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml)
-
-[![Humble Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml)
+| Platform | Build status |
+| --- | --- |
+| Ubuntu | [![Rolling Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-binary-build.yml) [![Kilted Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/kilted-binary-build.yml) [![Jazzy Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/jazzy-binary-build.yml) [![Humble Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/humble-binary-build.yml) |
+| Debian | [![Debian Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/debian-stack-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/debian-stack-build.yml) |
+| RHEL | [![RHEL Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rhel-stack-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rhel-stack-build.yml) |
+| Windows | [![Windows Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/windows-stack-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/windows-stack-build.yml) |
 
 ## Compatibility versions
 We thrive to make the rolling development version of the ros2_control stack compatible with earlier releases of ROS 2. This is done by building the rolling version of the stack from source with the earlier releases of ROS 2.
