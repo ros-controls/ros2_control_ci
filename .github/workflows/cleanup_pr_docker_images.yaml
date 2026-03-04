@@ -1,0 +1,43 @@
+---
+name: Cleanup PR-tagged docker images
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to clean up (required for manual runs)'
+        required: false
+        type: string
+
+concurrency:
+  group: cleanup-pr-images-${{ github.event.pull_request.number || inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup-pr-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Resolve PR number
+        id: resolve_pr
+        shell: bash
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || inputs.pr_number }}"
+          if [[ -z "$PR_NUMBER" ]]; then
+            echo "No PR number provided. Set workflow_dispatch input 'pr_number' or run on pull_request.closed."
+            exit 1
+          fi
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+      - name: Delete PR-tagged GHCR versions
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repository: ${{ github.event.repository.name }}
+          packages: ros
+          delete-tags: '*-pr-${{ steps.resolve_pr.outputs.pr_number }}'
+          delete-untagged: false

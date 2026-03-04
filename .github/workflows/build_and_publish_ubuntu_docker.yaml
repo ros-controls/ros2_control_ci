@@ -3,12 +3,23 @@ name: Build and publish Ubuntu docker images
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
+      - 'ros2_ubuntu/**'
   pull_request:
     paths:
       - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
       - 'ros2_ubuntu/**'
   schedule:
     - cron: '1 2 * * MON'
+
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
 
 jobs:
   build_images:
@@ -47,23 +58,45 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
+      - name: Set image tag
+        id: image_meta
+        run: |
+          tag_suffix=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            tag_suffix="-pr-${{ github.event.pull_request.number }}"
+          fi
+          if [ "${{ matrix.ros-repo-packages }}" = "-testing" ]; then
+            echo "image_tag=${{ matrix.ros_distro }}-ubuntu-testing${tag_suffix}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_tag=${{ matrix.ros_distro }}-ubuntu${tag_suffix}" >> "$GITHUB_OUTPUT"
+          fi
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
+      - name: Build and push image
+        uses: docker/build-push-action@v6
         with:
           context: ros2_ubuntu
           push: true
+          provenance: false
+          sbom: false
           file: ros2_ubuntu/Dockerfile
-          tags: ghcr.io/${{ github.repository_owner }}/ros:${{ matrix.ros_distro }}-ubuntu${{ matrix.ros-repo-packages }}
+          tags: ghcr.io/${{ github.repository_owner }}/ros:${{ steps.image_meta.outputs.image_tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
+            org.opencontainers.image.description=${{ matrix.base_image }} with preinstalled ROS for ros-controls CI
+            org.opencontainers.image.licenses=Apache-2.0
+          cache-from: ${{ github.event_name != 'schedule' && format('type=gha,scope=ubuntu-{0}{1}', matrix.ros_distro, matrix.ros-repo-packages) || '' }}
+          cache-to: type=gha,scope=ubuntu-${{ matrix.ros_distro }}${{ matrix.ros-repo-packages }},mode=max
           build-args: |
             FROM=${{ matrix.base_image }}
             ROS_DISTRO=${{ matrix.ros_distro }}
             ROS_REPO_PACKAGES=${{ matrix.ros-repo-packages }}
 
   stack-build:
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build_images
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
@@ -76,8 +109,10 @@ jobs:
       ros_repo: ${{ matrix.ROS_REPO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
+      docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}
 
   compatibility-stack-build:
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build_images
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
@@ -90,3 +125,4 @@ jobs:
       ros_repo: ${{ matrix.ROS_REPO }}
       target_workspace: ros_controls.rolling-on-${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
+      docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}

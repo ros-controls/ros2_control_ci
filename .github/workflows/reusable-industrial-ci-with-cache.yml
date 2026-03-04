@@ -82,6 +82,11 @@ on:
         default: 'rmw_cyclonedds_cpp'
         required: false
         type: string
+      docker_image_tag_suffix:
+        description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
+        default: ''
+        required: false
+        type: string
 
 
 jobs:
@@ -114,9 +119,9 @@ jobs:
         id: docker_image
         run: |
           if [ "${{ inputs.ros_repo }}" = "main" ]; then
-            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu" >> $GITHUB_OUTPUT
+            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu${{ inputs.docker_image_tag_suffix }}" >> $GITHUB_OUTPUT
           else
-            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing" >> $GITHUB_OUTPUT
+            echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing${{ inputs.docker_image_tag_suffix }}" >> $GITHUB_OUTPUT
           fi
       - uses: 'ros-industrial/industrial_ci@master'
         env:

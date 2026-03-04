@@ -6,14 +6,16 @@ ARG ROS_DISTRO=rolling
 RUN dnf install \
   'dnf-command(config-manager)' \
   epel-release \
-  cmake \
-  gcc-c++ \
-  make \
   langpacks-en \
   git \
   wget \
   -y --refresh \
   && dnf config-manager --set-enabled powertools \
+  && dnf install -y \
+  ccache \
+  cmake \
+  gcc-c++ \
+  make \
   && dnf clean all
 
 # Setup Sources
@@ -88,8 +90,3 @@ COPY ./ros_entrypoint.sh /
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 CMD ["bash"]
-
-# setup github labels
-LABEL org.opencontainers.image.source=https://github.com/ros-controls/ros2_control_ci
-LABEL org.opencontainers.image.description="RHEL 8 for ros-controls"
-LABEL org.opencontainers.image.licenses=Apache-2.0
