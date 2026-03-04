@@ -25,15 +25,16 @@ We thrive to make the rolling development version of the ros2_control stack comp
 
 [![Check Rolling Compatibility on Humble with Stack Build](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-humble-binary-build.yml/badge.svg)](https://github.com/ros-controls/ros2_control_ci/actions/workflows/rolling-compatibility-humble-binary-build.yml)
 
-## ros2_ubuntu
+## Docker images
+### ros2_ubuntu
 Extension of the [official OSRF docker images](https://github.com/osrf/docker_images), but with versions for `ros2`(main) and `ros2-testing` binaries.
 
-## ros2_rhel
+### ros2_rhel
 This is a sample Dockerfile that show ros2 installed on almalinux based on the [binary installation instructions at docs.ros.org](https://docs.ros.org/en/rolling/Installation/RHEL-Install-RPMs.html). The most recent public build can be found with the docker tag: `ghcr.io/ros-controls/ros:<ROS_DISTRO>-rhel` where `<ROS_DISTRO>` is replaced with the ros distribution you are targeting.
 
 The image tries to emulate the official ros2 images but on alma (downstream RHEL) linux. Therefore a few extra packages can be found within this repo that are not mentioned at the above link, i.e. colcon, etc.
 
-## ros2_debian
+### ros2_debian
 Provides docker images for building ros2_control on debian.
 
 Pull and run the images with:
