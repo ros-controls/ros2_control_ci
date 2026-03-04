@@ -146,7 +146,12 @@ jobs:
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
+            UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
+            if [[ ! -f "$UPSTREAM_SETUP" ]]; then
+              echo "Missing upstream setup script: $UPSTREAM_SETUP" >&2
+              exit 1
+            fi
+            source "$UPSTREAM_SETUP"
           fi
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
@@ -165,7 +170,12 @@ jobs:
           source /opt/ros/${{ inputs.ros_distro }}/setup.bash
           source /opt/ros2_ws/install/local_setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
-            source ${{ github.workspace }}/${{ env.upstream_ws }}/install/setup.bash
+            UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
+            if [[ ! -f "$UPSTREAM_SETUP" ]]; then
+              echo "Missing upstream setup script: $UPSTREAM_SETUP" >&2
+              exit 1
+            fi
+            source "$UPSTREAM_SETUP"
           fi
           source install/setup.bash
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
