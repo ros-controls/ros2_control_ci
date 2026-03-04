@@ -68,6 +68,11 @@ on:
         default: ""
         required: false
         type: string
+      ccache_dir:
+        description: "Local path to store ccache (from github.workspace)."
+        default: ".ccache"
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -82,6 +87,8 @@ jobs:
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
       tooling_repo_path: src/ros-controls/ros2_control_ci
+      CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
+      CACHE_PREFIX: win-${{ inputs.ros_distro }}-${{ inputs.target_workspace }}-${{ github.job }}
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -116,7 +123,7 @@ jobs:
           $manifest = "pixi.toml"
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
-          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
+          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator ccache"
           . "${{ env.tooling_repo_path }}\scripts\Update-PixiManifest.ps1"
           Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
 
@@ -179,6 +186,21 @@ jobs:
             vcs log -l1 ${{ env.target_workspace }}/src
             New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
           }
+          fi
+      - name: Restore ccache folder
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+      - name: Initialize ccache
+        shell: bash
+        run: |
+          mkdir -p ${{ env.CCACHE_DIR }}
+          ccache --show-config || true
+          ccache --zero-stats || true
 
       - name: Clone dependencies
         run: |
@@ -293,9 +315,10 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }} --merge-install
+          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
 
       - name: Build target workspace
+        id: build_target_workspace
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
@@ -317,4 +340,14 @@ jobs:
           if not "${{ inputs.target_workspace }}"=="" (
             pushd ${{ env.target_workspace }}
           )
-          colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }} --merge-install
+          colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }} --merge-install
+      - name: Show ccache stats
+        if: ${{ always() }}
+        shell: bash
+        run: ccache --show-stats || true
+      - name: Save ccache folder
+        if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
