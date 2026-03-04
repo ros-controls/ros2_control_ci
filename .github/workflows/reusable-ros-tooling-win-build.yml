@@ -186,7 +186,6 @@ jobs:
             vcs log -l1 ${{ env.target_workspace }}/src
             New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
           }
-          fi
       - name: Restore ccache folder
         uses: actions/cache/restore@v5
         with:
@@ -318,12 +317,12 @@ jobs:
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
 
           # Check if 'pinocchio' is in the list of packages
-          if colcon list --names-only | findstr /C:"pinocchio" >nul 2>&1; then
+          if (colcon list --names-only | Select-String -Pattern "pinocchio") {
             colcon build \
               --mixin release build-testing-off \
               --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
               --packages-select pinocchio
-          fi
+          }
 
       - name: Build target workspace
         id: build_target_workspace
