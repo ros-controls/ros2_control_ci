@@ -328,7 +328,10 @@ jobs:
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if not errorlevel 1 (
               colcon build ^
-                --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ^
+                --cmake-args --no-warn-unused-cli ^
+                  -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
+                  -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
+                  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ^
                 --packages-select pinocchio ^
                 --merge-install
           )
