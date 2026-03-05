@@ -194,7 +194,7 @@ RUN \
   colcon build \
     --mixin release build-testing-off \
     --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" \
-    --packages-skip pinocchio eigenpy && \
+    --packages-skip pinocchio eigenpy hpp-fcl && \
   if colcon list --base-paths src/generated --names-only | grep -qx pinocchio; then \
     . install/setup.sh && \
     colcon build \
