@@ -316,13 +316,14 @@ jobs:
 
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
 
-          # Check if 'pinocchio' is in the list of packages
-          if (colcon list --names-only | Select-String -Pattern "pinocchio") {
-            colcon build \
-              --mixin release build-testing-off \
-              --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
-              --packages-select pinocchio
-          }
+          REM Check if 'pinocchio' is in the list of packages
+          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
+          if not errorlevel 1 (
+              colcon build ^
+                --mixin release build-testing-off ^
+                --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
+                --packages-select pinocchio
+          )
 
       - name: Build target workspace
         id: build_target_workspace
