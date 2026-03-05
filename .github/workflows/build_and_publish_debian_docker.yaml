@@ -13,6 +13,7 @@ on:
     paths:
       - '.github/workflows/build_and_publish_debian_docker.yaml'
       - 'ros2_debian/**'
+      - 'ros_controls.*.repos'
   schedule:
     - cron: '0 1 * * MON'
 
@@ -33,16 +34,16 @@ jobs:
         include:
           - ros_distro: 'humble'
             debian_version: 'debian11'
-            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs pal_statistics topic_tools
+            exclude_packages: ''
           - ros_distro: 'jazzy'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
+            exclude_packages: ''
           - ros_distro: 'kilted'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
+            exclude_packages: ''
           - ros_distro: 'rolling'
             debian_version: 'debian12'
-            source_packages: filters xacro diagnostic_updater backward_ros generate_parameter_library angles ackermann_msgs sdformat_urdf pal_statistics pinocchio topic_tools
+            exclude_packages: ''
 
     steps:
       - uses: actions/checkout@v6
@@ -63,7 +64,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ros2_debian
+          context: .
           push: true
           provenance: false
           sbom: false
@@ -77,7 +78,7 @@ jobs:
           cache-to: type=gha,scope=debian-${{ matrix.ros_distro }},mode=max
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
-            SOURCE_PACKAGES=${{ matrix.source_packages }}
+            EXCLUDE_PACKAGES=gz_ros2_control gz_ros2_control_demos ign_ros2_control mujoco_ros2_control ros_gz_sim ros_gz_bridge rviz2 eigenpy hpp-fcl ${{ matrix.exclude_packages }}
 
   stack-build:
     if: ${{ github.event_name == 'pull_request' }}

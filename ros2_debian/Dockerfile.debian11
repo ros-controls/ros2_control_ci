@@ -4,6 +4,7 @@ FROM ${from}
 
 ARG CMAKE_INSTALL_PREFIX=/usr/local
 ARG NUM_THREADS=8
+ARG EXCLUDE_PACKAGES=""
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -142,43 +143,58 @@ RUN \
 # ---- ROS ----
 # clone source, ROS core
 ENV ROS2_WS=/opt/ros2_ws
-ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
+COPY ros_controls.*.repos /tmp/
 RUN \
-  : "build ROS core from source" && \
-  mkdir -p src/ros2 && \
-  vcs import --input https://raw.githubusercontent.com/ros2/ros2/$ROS_DISTRO/ros2.repos src/ros2 && \
-  if [ -n "$SOURCE_PACKAGES" ]; then \
-    # get the release repos from gpb and its dependencies not included in ros2.repos
-    for i in {1..5}; do \
-      rosinstall_generator $SOURCE_PACKAGES --exclude-path src/ros2 --rosdistro $ROS_DISTRO --deps \
-        > deps.repos && break || echo "retry #${i} .." && sleep 60; \
-    done && \
-    mkdir -p src/additional_pkgs && \
-    vcs import src/additional_pkgs < deps.repos && \
-    apt-get update -y -qq && \
-    # install only dependencies for additional_pkgs, not for ros2.repos
-    ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/additional_pkgs || true ; \
+  : "build dependencies for ros-controls stack from release repos" && \
+  repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos && \
+  if [ ! -f "$repo_file" ]; then \
+    echo "Missing repos file: $repo_file" >&2; \
+    exit 1; \
   fi && \
-  # build source, ROS core
+  mkdir -p src/imported_pkgs && \
+  vcs import src/imported_pkgs < "$repo_file" && \
+  TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' ') && \
+  if [ -z "$TARGET_PACKAGES" ]; then \
+    echo "No packages found in imported repos" >&2; \
+    exit 1; \
+  fi && \
+  EXCLUDE_ARGS="" && \
+  if [ -n "$EXCLUDE_PACKAGES" ]; then \
+    EXCLUDE_ARGS="--exclude $EXCLUDE_PACKAGES"; \
+  fi && \
+  success=0 && \
+  for i in 1 2 3 4 5; do \
+    if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos $EXCLUDE_ARGS > deps.repos; then \
+      success=1; \
+      break; \
+    fi; \
+    echo "retry #${i} .."; \
+    sleep 60; \
+  done && \
+  if [ "$success" -ne 1 ] || [ ! -s deps.repos ]; then \
+    echo "Failed to generate deps.repos" >&2; \
+    exit 1; \
+  fi && \
+  rm -rf src/imported_pkgs && \
+  mkdir -p src/generated && \
+  vcs import src/generated < deps.repos && \
+  apt-get update -y -qq && \
+  ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true && \
+  # build generated stack
   colcon build \
   --mixin release build-testing-off \
-  --cmake-args --no-warn-unused-cli \
-  --packages-up-to robot_state_publisher tf2_ros tf2_eigen tf2_kdl tf2_eigen_kdl yaml_cpp_vendor filters \
-  ros2param ros2interface ros2topic ros2action ros2lifecycle ros2launch ros2run ros_testing \
-  xacro diagnostic_updater generate_parameter_library angles example_interfaces \
-  backward_ros pal_statistics topic_tools \
-  ackermann_msgs trajectory_msgs tf2_msgs tf2_geometry_msgs sensor_msgs geometry_msgs nav_msgs && \
-  rm -rf log src build *.repos
+  --cmake-args --no-warn-unused-cli && \
+  rm -rf log src build *.repos /tmp/ros_controls.*.repos
 
 # add default.yaml to the image
-COPY defaults.yaml /root/.colcon/defaults.yaml
+COPY ros2_debian/defaults.yaml /root/.colcon/defaults.yaml
 
 # there is no python3-graphviz on debian11, so install it via pip
 RUN pip3 install --no-cache-dir graphviz
 
 # Setup entrypoint (sourcing of ROS)
-COPY ./ros_entrypoint.sh /
+COPY ros2_debian/ros_entrypoint.sh /
 RUN chmod +x /ros_entrypoint.sh
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 CMD ["bash"]
