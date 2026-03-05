@@ -9,6 +9,7 @@ on:
       - master
     paths:
       - '.github/workflows/windows-stack-build.yml'
+      - '.github/workflows/reusable-ros-tooling-win-build.yml'
       - 'ros_controls.rolling.repos'
 
 jobs:
