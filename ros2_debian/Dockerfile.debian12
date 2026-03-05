@@ -194,13 +194,14 @@ RUN \
   colcon build \
     --mixin build-testing-off \
     --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" \
-    --packages-skip pinocchio eigenpy hpp-fcl && \
+    --packages-skip pinocchio && \
   if colcon list --base-paths src/generated --names-only | grep -qx pinocchio; then \
     . install/setup.sh && \
     colcon build \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
         -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
-      --base-path src/generated --packages-select pinocchio; \
+      --continue-on-error \
+      --packages-select pinocchio; \
   fi && \
   # cleanup
   rm -rf log src build *.repos /tmp/ros_controls.*.repos \
