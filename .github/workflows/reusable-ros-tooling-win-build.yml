@@ -40,7 +40,7 @@ on:
         type: string
       skip_dependencies:
         description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
-        default: "sdformat_urdf"
+        default: "sdformat_urdf pinocchio"
         required: false
         type: string
       skip_packages:
@@ -314,15 +314,7 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
-
-          # Check if 'pinocchio' is in the list of packages
-          if (colcon list --names-only | Select-String -Pattern "pinocchio") {
-            colcon build \
-              --mixin release build-testing-off \
-              --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
-              --packages-select pinocchio
-          }
+          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
 
       - name: Build target workspace
         id: build_target_workspace
