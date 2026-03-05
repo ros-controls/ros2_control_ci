@@ -314,13 +314,16 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} --merge-install
+          colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+            --mixin build-testing-off ^
+            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} ^
+            --merge-install
 
           REM Check if 'pinocchio' is in the list of packages
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if not errorlevel 1 (
               colcon build ^
-                --mixin release build-testing-off ^
+                --mixin build-testing-off ^
                 --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
                 --packages-select pinocchio
           )
@@ -348,7 +351,10 @@ jobs:
           if not "${{ inputs.target_workspace }}"=="" (
             pushd ${{ env.target_workspace }}
           )
-          colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }} --merge-install
+          colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }} ^
+            --merge-install
+
       - name: Show ccache stats
         if: ${{ always() }}
         shell: bash
