@@ -201,7 +201,7 @@ RUN \
       --mixin release build-testing-off \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
         -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
-      --base-path src/generated --packages-up-to pinocchio; \
+      --base-path src/generated --packages-select pinocchio; \
   fi && \
   # cleanup
   rm -rf log src build *.repos /tmp/ros_controls.*.repos \
