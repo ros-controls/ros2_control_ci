@@ -1,7 +1,7 @@
 name: RHEL Stack Build
 on:
   workflow_dispatch:
-  pull_request:
+  pull_request: &event
     branches:
       - master
     paths:
@@ -11,6 +11,7 @@ on:
       - 'ros_controls.jazzy.repos'
       - 'ros_controls.kilted.repos'
       - 'ros_controls.rolling.repos'
+  push: *event
   schedule:
     # Run every day to detect flakiness and broken dependencies
     - cron: '42 4 * * MON-FRI'
