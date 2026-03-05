@@ -325,7 +325,11 @@ jobs:
 
           REM Check if 'pinocchio' is in the list of packages, and build it
           REM eigenpy and hpp-fcl is not needed with the used cmake args
-          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul && (
+          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
+          if errorlevel 1 (
+              REM pinocchio not present → do nothing but succeed
+              exit /b 0
+          ) else (
               colcon build ^
                 --cmake-args --no-warn-unused-cli ^
                   -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
