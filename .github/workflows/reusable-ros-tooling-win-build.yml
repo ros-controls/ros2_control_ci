@@ -33,13 +33,23 @@ on:
         required: false
         default: ""
         type: string
+      target_workspace:
+        description: 'Path to local .repos file for target workspace.'
+        default: ''
+        required: false
+        type: string
       skip_dependencies:
         description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
-        default: "sdformat_urdf"
+        default: "sdformat_urdf eigenpy hpp-fcl"
         required: false
         type: string
       skip_packages:
         description: "Space-separated list of packages to skip from build"
+        default: ""
+        required: false
+        type: string
+      skip_packages_regex:
+        description: "Regex for packages to skip from build"
         default: ""
         required: false
         type: string
@@ -58,6 +68,11 @@ on:
         default: ""
         required: false
         type: string
+      ccache_dir:
+        description: "Local path to store ccache (from github.workspace)."
+        default: ".ccache"
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -68,9 +83,12 @@ jobs:
     env:
       ros_underlay_path: C:\dev
       upstream_workspace: C:\upstream_ws
+      target_workspace: C:\target_ws
       # this will be src/{repo-owner}/{repo-name}
       repo_path: src/${{ github.repository }}
       tooling_repo_path: src/ros-controls/ros2_control_ci
+      CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
+      CACHE_PREFIX: win-${{ inputs.ros_distro }}-${{ inputs.target_workspace }}-${{ github.job }}
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -85,6 +103,7 @@ jobs:
           path: ${{ env.repo_path }}
 
       - name: Checkout ros2_control_ci tooling scripts
+        if: ${{ github.repository != 'ros-controls/ros2_control_ci' }}
         uses: actions/checkout@v6
         with:
           repository: ros-controls/ros2_control_ci
@@ -104,7 +123,7 @@ jobs:
           $manifest = "pixi.toml"
           irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
 
-          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator"
+          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator ccache"
           . "${{ env.tooling_repo_path }}\scripts\Update-PixiManifest.ps1"
           Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
 
@@ -155,19 +174,49 @@ jobs:
           path: ${{ env.repo_path }}
           manifest-path: pixi.toml
 
+      - name: Prepare target workspace
+        if: ${{ inputs.target_workspace != '' }}
+        run: |
+          Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
+
+          mkdir -p ${{ env.target_workspace }}/src
+          $repo_file = "${{ env.repo_path }}\${{ inputs.target_workspace }}"
+          if (Test-Path "$repo_file") {
+            vcs import --input $repo_file ${{ env.target_workspace }}/src
+            vcs log -l1 ${{ env.target_workspace }}/src
+            New-Item -ItemType File -Path "${{ env.repo_path }}\COLCON_IGNORE" -Force | Out-Null
+          }
+      - name: Restore ccache folder
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
+            ccache-${{ env.CACHE_PREFIX }}
+
+      - name: Initialize ccache
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          mkdir -p ${{ env.CCACHE_DIR }}
+          ccache --show-config
+          ccache --zero-stats
+
       - name: Clone dependencies
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
           ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.ps1
 
-          # check for repos files, and pass them to vcstool
           mkdir -p ${{ env.upstream_workspace }}/src
-          $repo_file = "${{ env.repo_path }}\${{ steps.package_list_action.outputs.repo_name }}.${{ inputs.ros_distro }}.repos"
-          if (Test-Path "$repo_file") {
-            Write-Output "Local repos file found"
-            vcs import --input $repo_file ${{ env.upstream_workspace }}/src
-            vcs log -l1 src
+          $target_from_path = "${{ env.repo_path }}"
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.target_workspace }}")) {
+            $target_from_path = "${{ env.target_workspace }}"
           }
+
+          # check for repos files, and pass them to vcstool
           if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
             $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
             if (Test-Path "$repo_file_win") {
@@ -180,7 +229,55 @@ jobs:
           # use rosinstall_generator to get all dependencies which are not yet installed
           $underlay_ws_pkgs=$(ros2 pkg list)
           # Write-Host "Packages in ROS installation: $underlay_ws_pkgs"
-          rosinstall_generator --rosdistro ${{ inputs.ros_distro }} --deps --deps-only --format repos --exclude $underlay_ws_pkgs ${{inputs.skip_dependencies}} --from-path ${{ env.upstream_workspace }} ${{ env.repo_path }} > deps.repos
+          $skip_regex_packages=@()
+          $skip_regex_paths=@()
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.skip_packages_regex }}")) {
+            $skip_regex_packages = @(colcon list --names-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src |
+              Select-String -Pattern "${{ inputs.skip_packages_regex }}" |
+              ForEach-Object { $_.Line.Trim() } |
+              Where-Object { $_ })
+
+            if ($skip_regex_packages.Length -gt 0) {
+              $skip_regex_paths = @(colcon list --paths-only --base-paths $target_from_path ${{ env.upstream_workspace }}/src --packages-select $skip_regex_packages)
+            }
+
+            Write-Host "Skipping packages from skip_regex_arg: $($skip_regex_packages -join ' ')"
+            Write-Host "Skipping local paths via exclude-path: $($skip_regex_paths -join ' ')"
+          }
+
+          $skip_dependencies = @("${{inputs.skip_dependencies}}" -split '\s+' | Where-Object { $_ })
+          $exclude_packages = @($underlay_ws_pkgs) + $skip_dependencies + $skip_regex_packages
+
+          $rosinstall_args = @(
+            '--rosdistro', '${{ inputs.ros_distro }}',
+            '--deps',
+            '--deps-only',
+            '--format', 'repos'
+          )
+
+          if ($exclude_packages.Length -gt 0) {
+            $rosinstall_args += '--exclude'
+            $rosinstall_args += $exclude_packages
+          }
+
+          if ($skip_regex_paths.Length -gt 0) {
+            $rosinstall_args += '--exclude-path'
+            $rosinstall_args += $skip_regex_paths
+          }
+
+          $rosinstall_args += '--from-path'
+          $rosinstall_args += @('${{ env.upstream_workspace }}', $target_from_path)
+
+          $rosinstall_cmd = @('rosinstall_generator') + ($rosinstall_args | ForEach-Object {
+            if ($_ -match '\s') {
+              '"' + ($_ -replace '"', '\"') + '"'
+            } else {
+              $_
+            }
+          })
+          Write-Host "Running command: $($rosinstall_cmd -join ' ')"
+
+          & rosinstall_generator @rosinstall_args > deps.repos
           # rosinstall_generator skips excludes with are from a different repo (gbp instead of development repo)
           vcs import --skip-existing --input deps.repos ${{ env.upstream_workspace }}/src
           vcs log -l1 src
@@ -211,14 +308,36 @@ jobs:
             set skip_arg=${{ inputs.skip_packages }}
           )
 
+          set skip_regex_arg=
+          if not "${{ inputs.skip_packages_regex }}"=="" (
+            set skip_regex_arg=--packages-skip-regex "${{ inputs.skip_packages_regex }}"
+          )
+
           if not "${{ inputs.ninja_packages }}"=="" (
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+ --merge-install
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          colcon build --packages-skip %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.upstream_cmake_args }} --merge-install
+          REM skip pinocchio, which take an eternity to build. build with different cmake args, see below
+          colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} ^
+            --merge-install
+
+          REM Check if 'pinocchio' is in the list of packages, and build it
+          REM eigenpy and hpp-fcl is not needed with the used cmake args
+          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
+          if not errorlevel 1 (
+              colcon build ^
+                --cmake-args --no-warn-unused-cli ^
+                  -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
+                  -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
+                  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ^
+                --packages-select pinocchio ^
+                --merge-install
+          )
 
       - name: Build target workspace
+        id: build_target_workspace
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
@@ -233,4 +352,28 @@ jobs:
           if not "${{ inputs.skip_packages }}"=="" (
             set skip_arg=--packages-skip ${{ inputs.skip_packages }}
           )
-          colcon build %skip_arg% --event-handler console_cohesion+ --cmake-args ${{ inputs.target_cmake_args }} --merge-install
+          set skip_regex_arg=
+          if not "${{ inputs.skip_packages_regex }}"=="" (
+            set skip_regex_arg=--packages-skip-regex "${{ inputs.skip_packages_regex }}"
+          )
+          if not "${{ inputs.target_workspace }}"=="" (
+            pushd ${{ env.target_workspace }}
+          )
+          colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }} ^
+            --merge-install
+
+      - name: Show ccache stats
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          ccache --show-stats
+
+      - name: Save ccache folder
+        if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}-${{ github.run_id }}
