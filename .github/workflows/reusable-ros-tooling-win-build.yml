@@ -194,12 +194,16 @@ jobs:
           restore-keys: |
             ccache-${{ env.CACHE_PREFIX }}-${{ github.sha }}
             ccache-${{ env.CACHE_PREFIX }}
+
       - name: Initialize ccache
-        shell: bash
+        shell: cmd
         run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
           mkdir -p ${{ env.CCACHE_DIR }}
-          ccache --show-config || true
-          ccache --zero-stats || true
+          ccache --show-config
+          ccache --zero-stats
 
       - name: Clone dependencies
         run: |
@@ -357,9 +361,13 @@ jobs:
             --merge-install
 
       - name: Show ccache stats
-        if: ${{ always() }}
-        shell: bash
-        run: ccache --show-stats || true
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          ccache --show-stats
+
       - name: Save ccache folder
         if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
         uses: actions/cache/save@v5
