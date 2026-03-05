@@ -40,7 +40,7 @@ on:
         type: string
       skip_dependencies:
         description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
-        default: "sdformat_urdf"
+        default: "sdformat_urdf eigenpy hpp-fcl"
         required: false
         type: string
       skip_packages:
@@ -314,15 +314,17 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
+          REM skip pinocchio, which take an eternity to build. build with different cmake args, see below
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
             --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} ^
             --merge-install
 
-          REM Check if 'pinocchio' is in the list of packages
+          REM Check if 'pinocchio' is in the list of packages, and build it
+          REM eigenpy and hpp-fcl is not needed with the used cmake args
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if not errorlevel 1 (
               colcon build ^
-                --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
+                --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ^
                 --packages-select pinocchio ^
                 --merge-install
           )
