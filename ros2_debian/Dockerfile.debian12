@@ -192,13 +192,12 @@ RUN \
   ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true && \
   # build generated stack, then build pinocchio with special flags when package is present
   colcon build \
-    --mixin release build-testing-off \
+    --mixin build-testing-off \
     --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" \
     --packages-skip pinocchio eigenpy hpp-fcl && \
   if colcon list --base-paths src/generated --names-only | grep -qx pinocchio; then \
     . install/setup.sh && \
     colcon build \
-      --mixin release build-testing-off \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
         -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
       --base-path src/generated --packages-select pinocchio; \
