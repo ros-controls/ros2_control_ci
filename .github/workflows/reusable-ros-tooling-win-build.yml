@@ -323,7 +323,8 @@ jobs:
           if not errorlevel 1 (
               colcon build ^
                 --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
-                --packages-select pinocchio
+                --packages-select pinocchio ^
+                --merge-install
           )
 
       - name: Build target workspace
