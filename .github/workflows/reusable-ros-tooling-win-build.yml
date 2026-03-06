@@ -89,6 +89,7 @@ jobs:
       tooling_repo_path: src/ros-controls/ros2_control_ci
       CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
       CACHE_PREFIX: win-${{ inputs.ros_distro }}-${{ inputs.target_workspace }}-${{ github.job }}
+      CCACHE_MSVC: "1"
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -201,7 +202,13 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          mkdir -p ${{ env.CCACHE_DIR }}
+          if not exist "${{ env.CCACHE_DIR }}" mkdir "${{ env.CCACHE_DIR }}"
+          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
+          > "%CCACHE_WRAPPER%" echo @echo off
+          >> "%CCACHE_WRAPPER%" echo ccache cl.exe %%*
+
+          echo CCACHE wrapper created at: %CCACHE_WRAPPER%
+          type "%CCACHE_WRAPPER%"
           ccache --show-config
           ccache --zero-stats
 
@@ -298,6 +305,7 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
+          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           pushd ${{ env.upstream_workspace }}
 
@@ -314,13 +322,13 @@ jobs:
           )
 
           if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja --event-handler console_cohesion+ --merge-install
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" --event-handler console_cohesion+ --merge-install
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
           REM skip pinocchio, which take an eternity to build. build with different cmake args, see below
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
-            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.upstream_cmake_args }} ^
+            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
             --merge-install
 
           REM Check if 'pinocchio' is in the list of packages, and build it
@@ -334,7 +342,7 @@ jobs:
                 --cmake-args --no-warn-unused-cli ^
                   -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
                   -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
-                  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ^
+                  -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
                 --packages-select pinocchio ^
                 --merge-install
           )
@@ -346,6 +354,7 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
+          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           call ${{ env.upstream_workspace }}\install\setup.bat
 
@@ -363,7 +372,7 @@ jobs:
             pushd ${{ env.target_workspace }}
           )
           colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
-            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ inputs.target_cmake_args }} ^
+            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
             --merge-install
 
       - name: Show ccache stats
