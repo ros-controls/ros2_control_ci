@@ -89,8 +89,7 @@ jobs:
       tooling_repo_path: src/ros-controls/ros2_control_ci
       CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
       CACHE_PREFIX: win-${{ inputs.ros_distro }}-${{ inputs.target_workspace }}-${{ github.job }}
-      CC: ${{ github.workspace }}/cl.bat
-      CXX: ${{ github.workspace }}/cl.bat
+      CCACHE_MSVC: "1"
     steps:
       - name: Checkout default ref when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
@@ -198,19 +197,10 @@ jobs:
             ccache-${{ env.CACHE_PREFIX }}
 
       - name: Initialize ccache
-        # create wrapper script for ccache see
-        # https://github.com/ccache/ccache/wiki/MS-Visual-Studio#alternative-2-make-a-wrapper-script
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
-
-          echo @echo off>cl.bat
-          echo setlocal>>cl.bat
-          echo set SCRIPT_DIR=%%~dp0>>cl.bat
-          echo "%%SCRIPT_DIR%%ccache.exe" cl.exe %%*>>cl.bat
-          echo exit /b %%ERRORLEVEL%%>>cl.bat
-          type "%CC%"
 
           mkdir -p ${{ env.CCACHE_DIR }}
           ccache --show-config
