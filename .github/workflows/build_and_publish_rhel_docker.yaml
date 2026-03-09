@@ -54,7 +54,7 @@ jobs:
             tag_suffix="-pr-${{ github.event.pull_request.number }}"
           fi
           echo "image_tag=${{ matrix.ros_distro }}-rhel${tag_suffix}" >> "$GITHUB_OUTPUT"
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
