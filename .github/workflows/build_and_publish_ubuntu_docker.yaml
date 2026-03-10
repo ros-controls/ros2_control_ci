@@ -70,7 +70,7 @@ jobs:
           else
             echo "image_tag=${{ matrix.ros_distro }}-ubuntu${tag_suffix}" >> "$GITHUB_OUTPUT"
           fi
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
