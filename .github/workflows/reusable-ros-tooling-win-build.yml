@@ -349,6 +349,14 @@ jobs:
                 --merge-install
           )
 
+      - name: Show ccache stats after building upstream workspace
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          ccache --show-stats
+
       - name: Build target workspace
         id: build_target_workspace
         shell: cmd
@@ -378,7 +386,7 @@ jobs:
             --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
             --merge-install
 
-      - name: Show ccache stats
+      - name: Show ccache stats after building target workspace
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
