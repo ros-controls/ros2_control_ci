@@ -206,31 +206,13 @@ jobs:
           if not exist "${{ env.CCACHE_DIR }}" mkdir "${{ env.CCACHE_DIR }}"
           set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
           set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
-          set "CCACHE_VS_HOOK_WIN=%RUNNER_TEMP%\ccache_vs_hook.cmake"
-          set "CCACHE_VS_HOOK=%CCACHE_VS_HOOK_WIN:\=/%"
           > "%CCACHE_WRAPPER_WIN%" echo @echo off
-          >> "%CCACHE_WRAPPER_WIN%" echo echo [wrapper] %%date%% %%time%% %%*^>^> "${{ env.CCACHE_LOGFILE }}"
           >> "%CCACHE_WRAPPER_WIN%" echo ccache cl.exe %%*
-
-          > "%CCACHE_VS_HOOK_WIN%" echo find_program(ccache_exe NAMES ccache ccache.exe REQUIRED)
-          >> "%CCACHE_VS_HOOK_WIN%" echo file(COPY_FILE $${ccache_exe} $${CMAKE_BINARY_DIR}/cl.exe ONLY_IF_DIFFERENT)
-          >> "%CCACHE_VS_HOOK_WIN%" echo set(CMAKE_VS_GLOBALS
-          >> "%CCACHE_VS_HOOK_WIN%" echo   "CLToolExe=cl.exe"
-          >> "%CCACHE_VS_HOOK_WIN%" echo   "CLToolPath=$${CMAKE_BINARY_DIR}"
-          >> "%CCACHE_VS_HOOK_WIN%" echo   "TrackFileAccess=false"
-          >> "%CCACHE_VS_HOOK_WIN%" echo   "UseMultiToolTask=true"
-          >> "%CCACHE_VS_HOOK_WIN%" echo   "DebugInformationFormat=OldStyle"
-          >> "%CCACHE_VS_HOOK_WIN%" echo )
 
           echo CCACHE wrapper created at: %CCACHE_WRAPPER%
           echo with content:
           type "%CCACHE_WRAPPER_WIN%"
           echo end CCACHE_WRAPPER%
-
-          echo CMake VS hook created at: %CCACHE_VS_HOOK%
-          echo with content:
-          type "%CCACHE_VS_HOOK_WIN%"
-          echo end CCACHE_VS_HOOK%
 
           if exist "${{ env.CCACHE_LOGFILE }}" del /f /q "${{ env.CCACHE_LOGFILE }}"
 
@@ -332,8 +314,6 @@ jobs:
 
           set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
           set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
-          set "CCACHE_VS_HOOK_WIN=%RUNNER_TEMP%\ccache_vs_hook.cmake"
-          set "CCACHE_VS_HOOK=%CCACHE_VS_HOOK_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           pushd ${{ env.upstream_workspace }}
 
@@ -350,13 +330,13 @@ jobs:
           )
 
           if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja -DCMAKE_PROJECT_INCLUDE_BEFORE="%CCACHE_VS_HOOK%" -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" --event-handler console_cohesion+ --merge-install
+            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" --event-handler console_cohesion+ --merge-install
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
           REM skip pinocchio, which take an eternity to build. build with different cmake args, see below
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
-            --cmake-args -DCMAKE_PROJECT_INCLUDE_BEFORE="%CCACHE_VS_HOOK%" -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
+            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
             --merge-install
 
           REM Check if 'pinocchio' is in the list of packages, and build it
@@ -368,7 +348,6 @@ jobs:
           ) else (
               colcon build ^
                 --cmake-args --no-warn-unused-cli ^
-                  -DCMAKE_PROJECT_INCLUDE_BEFORE="%CCACHE_VS_HOOK%" ^
                   -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
                   -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
                   -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
@@ -387,7 +366,7 @@ jobs:
           echo ===== CMake compiler entries (upstream build) =====
           for /r "${{ env.upstream_workspace }}\build" %%F in (CMakeCache.txt) do (
             echo [%%F]
-            type "%%F" | findstr /R /C:"^CMAKE_GENERATOR:INTERNAL=" /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH="
+            findstr /R /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH=" "%%F"
           )
 
           echo ===== CCACHE_LOGFILE =====
@@ -407,8 +386,6 @@ jobs:
 
           set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
           set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
-          set "CCACHE_VS_HOOK_WIN=%RUNNER_TEMP%\ccache_vs_hook.cmake"
-          set "CCACHE_VS_HOOK=%CCACHE_VS_HOOK_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           call ${{ env.upstream_workspace }}\install\setup.bat
 
@@ -426,7 +403,7 @@ jobs:
             pushd ${{ env.target_workspace }}
           )
           colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
-            --cmake-args -DCMAKE_PROJECT_INCLUDE_BEFORE="%CCACHE_VS_HOOK%" -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
+            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
             --merge-install
 
       - name: Show ccache stats after building target workspace
@@ -440,7 +417,7 @@ jobs:
           echo ===== CMake compiler entries (target build) =====
           for /r "${{ env.target_workspace }}\build" %%F in (CMakeCache.txt) do (
             echo [%%F]
-            type "%%F" | findstr /R /C:"^CMAKE_GENERATOR:INTERNAL=" /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH="
+            findstr /R /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH=" "%%F"
           )
 
           echo ===== CCACHE_LOGFILE =====
