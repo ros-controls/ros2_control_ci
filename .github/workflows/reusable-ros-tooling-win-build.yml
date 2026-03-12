@@ -209,7 +209,10 @@ jobs:
           >> "%CCACHE_WRAPPER_WIN%" echo ccache cl.exe %%*
 
           echo CCACHE wrapper created at: %CCACHE_WRAPPER%
+          echo with content:
           type "%CCACHE_WRAPPER_WIN%"
+          echo end CCACHE_WRAPPER%
+
           ccache --show-config
           ccache --zero-stats
 
