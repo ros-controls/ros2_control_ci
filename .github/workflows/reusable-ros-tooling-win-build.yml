@@ -88,6 +88,7 @@ jobs:
       repo_path: src/${{ github.repository }}
       tooling_repo_path: src/ros-controls/ros2_control_ci
       CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
+      CCACHE_LOGFILE: ${{ github.workspace }}/ccache.log
       CACHE_PREFIX: win-${{ inputs.ros_distro }}-${{ inputs.target_workspace }}-${{ github.job }}
       CCACHE_MSVC: "1"
     steps:
@@ -212,6 +213,8 @@ jobs:
           echo with content:
           type "%CCACHE_WRAPPER_WIN%"
           echo end CCACHE_WRAPPER%
+
+          if exist "${{ env.CCACHE_LOGFILE }}" del /f /q "${{ env.CCACHE_LOGFILE }}"
 
           ccache --show-config
           ccache --zero-stats
@@ -360,6 +363,20 @@ jobs:
 
           ccache --show-stats --verbose
 
+          echo ===== CMake compiler entries (upstream build) =====
+          for /r "${{ env.upstream_workspace }}\build" %%F in (CMakeCache.txt) do (
+            echo [%%F]
+            findstr /R /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH=" "%%F"
+          )
+
+          echo ===== CCACHE_LOGFILE =====
+          echo Path: ${{ env.CCACHE_LOGFILE }}
+          if exist "${{ env.CCACHE_LOGFILE }}" (
+            powershell -NoProfile -Command "Get-Content -Path '${{ env.CCACHE_LOGFILE }}' -Tail 200"
+          ) else (
+            echo CCACHE_LOGFILE not found
+          )
+
       - name: Build target workspace
         id: build_target_workspace
         shell: cmd
@@ -396,6 +413,20 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           ccache --show-stats --verbose
+
+          echo ===== CMake compiler entries (target build) =====
+          for /r "${{ env.target_workspace }}\build" %%F in (CMakeCache.txt) do (
+            echo [%%F]
+            findstr /R /C:"^CMAKE_C_COMPILER:FILEPATH=" /C:"^CMAKE_CXX_COMPILER:FILEPATH=" "%%F"
+          )
+
+          echo ===== CCACHE_LOGFILE =====
+          echo Path: ${{ env.CCACHE_LOGFILE }}
+          if exist "${{ env.CCACHE_LOGFILE }}" (
+            powershell -NoProfile -Command "Get-Content -Path '${{ env.CCACHE_LOGFILE }}' -Tail 200"
+          ) else (
+            echo CCACHE_LOGFILE not found
+          )
 
       - name: Save ccache folder
         if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
