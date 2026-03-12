@@ -203,12 +203,13 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           if not exist "${{ env.CCACHE_DIR }}" mkdir "${{ env.CCACHE_DIR }}"
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
-          > "%CCACHE_WRAPPER%" echo @echo off
-          >> "%CCACHE_WRAPPER%" echo ccache cl.exe %%*
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
+          > "%CCACHE_WRAPPER_WIN%" echo @echo off
+          >> "%CCACHE_WRAPPER_WIN%" echo ccache cl.exe %%*
 
           echo CCACHE wrapper created at: %CCACHE_WRAPPER%
-          type "%CCACHE_WRAPPER%"
+          type "%CCACHE_WRAPPER_WIN%"
           ccache --show-config
           ccache --zero-stats
 
@@ -305,7 +306,8 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           pushd ${{ env.upstream_workspace }}
 
@@ -354,7 +356,8 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           call ${{ env.upstream_workspace }}\install\setup.bat
 
