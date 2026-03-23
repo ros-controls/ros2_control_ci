@@ -121,12 +121,7 @@ jobs:
       - name: Bootstrap pixi and patch manifest file
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
         run: |
-          $manifest = "pixi.toml"
-          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile $manifest
-
-          $deps = "${{ inputs.pixi_dependencies }} rosinstall_generator ccache"
-          . "${{ env.tooling_repo_path }}\scripts\Update-PixiManifest.ps1"
-          Update-PixiManifestDependencies -ManifestPath $manifest -Dependencies $deps
+          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
 
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.9.4
@@ -135,6 +130,10 @@ jobs:
           cache: ${{ steps.cache.outputs.cache-hit == 'true' }} # only use cache if pixi.lock is present
           cache-write: ${{ steps.cache.outputs.cache-hit == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }} # only write cache on push to default branch to save disk space, caches from PRs can't be accessed anyways; only allowed if pixi.lock is present
           locked: false
+
+      - name: Add dependencies to pixi
+        run: |
+          pixi add ${{ inputs.pixi_dependencies }} rosinstall_generator ccache
 
       - name: Cache pixi.lock
         uses: actions/cache/save@v5
