@@ -130,6 +130,7 @@ jobs:
           cache: ${{ steps.cache.outputs.cache-hit == 'true' }} # only use cache if pixi.lock is present
           cache-write: ${{ steps.cache.outputs.cache-hit == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }} # only write cache on push to default branch to save disk space, caches from PRs can't be accessed anyways; only allowed if pixi.lock is present
           locked: false
+          post-cleanup: false
 
       - name: Add dependencies to pixi
         run: |
@@ -327,6 +328,7 @@ jobs:
 
           if not "${{ inputs.ninja_packages }}"=="" (
             colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" --event-handler console_cohesion+ --merge-install
+            if errorlevel 1 exit /b 1
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
@@ -334,6 +336,7 @@ jobs:
           colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
             --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
             --merge-install
+          if errorlevel 1 exit /b 1
 
           REM Check if 'pinocchio' is in the list of packages, and build it
           REM eigenpy and hpp-fcl is not needed with the used cmake args
@@ -387,6 +390,7 @@ jobs:
           colcon build %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
             --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
             --merge-install
+          if errorlevel 1 exit /b 1
 
       - name: Show ccache stats after building target workspace
         shell: cmd
