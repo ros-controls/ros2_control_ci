@@ -332,26 +332,30 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          REM skip pinocchio, which take an eternity to build. build with different cmake args, see below
-          colcon build --packages-skip pinocchio %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+          set pinocchio_present=0
+          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
+          if errorlevel 2 exit /b 1
+          if errorlevel 0 (
+            REM skip pinocchio in the main build and build it separately with different cmake args
+            set skip_arg=%skip_arg% pinocchio
+            set pinocchio_present=1
+          )
+          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
             --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
             --merge-install
           if errorlevel 1 exit /b 1
 
-          REM Check if 'pinocchio' is in the list of packages, and build it
-          REM eigenpy and hpp-fcl is not needed with the used cmake args
-          colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
-          if errorlevel 1 (
-              REM pinocchio not present → do nothing but succeed
-              exit /b 0
-          ) else (
-              colcon build ^
-                --cmake-args --no-warn-unused-cli ^
-                  -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
-                  -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
-                  -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
-                --packages-select pinocchio ^
-                --merge-install
+          if "%pinocchio_present%"=="1" (
+            REM Build pinocchio separately with different cmake args
+            REM eigenpy and hpp-fcl is not needed with the used cmake args
+            colcon build ^
+              --cmake-args --no-warn-unused-cli ^
+                -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
+                -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
+                -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
+              --packages-select pinocchio ^
+              --merge-install
+            if errorlevel 1 exit /b 1
           )
 
       - name: Show ccache stats after building upstream workspace
