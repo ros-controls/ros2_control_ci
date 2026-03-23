@@ -204,12 +204,16 @@ jobs:
           call pixi_env.bat >nul 2>&1
 
           if not exist "${{ env.CCACHE_DIR }}" mkdir "${{ env.CCACHE_DIR }}"
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
-          > "%CCACHE_WRAPPER%" echo @echo off
-          >> "%CCACHE_WRAPPER%" echo ccache cl.exe %%*
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
+          > "%CCACHE_WRAPPER_WIN%" echo @echo off
+          >> "%CCACHE_WRAPPER_WIN%" echo ccache cl.exe %%*
 
           echo CCACHE wrapper created at: %CCACHE_WRAPPER%
-          type "%CCACHE_WRAPPER%"
+          echo with content:
+          type "%CCACHE_WRAPPER_WIN%"
+          echo end CCACHE_WRAPPER%
+
           ccache --show-config
           ccache --zero-stats
 
@@ -306,7 +310,8 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           pushd ${{ env.upstream_workspace }}
 
@@ -348,6 +353,14 @@ jobs:
                 --merge-install
           )
 
+      - name: Show ccache stats after building upstream workspace
+        shell: cmd
+        run: |
+          call pixi shell-hook -s cmd > pixi_env.bat
+          call pixi_env.bat >nul 2>&1
+
+          ccache --show-stats --verbose
+
       - name: Build target workspace
         id: build_target_workspace
         shell: cmd
@@ -355,7 +368,8 @@ jobs:
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          set "CCACHE_WRAPPER=%RUNNER_TEMP:\=/%/cl_wrapper.bat"
+          set "CCACHE_WRAPPER_WIN=%RUNNER_TEMP%\cl_wrapper.bat"
+          set "CCACHE_WRAPPER=%CCACHE_WRAPPER_WIN:\=/%"
           call ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows\setup.bat
           call ${{ env.upstream_workspace }}\install\setup.bat
 
@@ -376,13 +390,13 @@ jobs:
             --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.target_cmake_args }} ^
             --merge-install
 
-      - name: Show ccache stats
+      - name: Show ccache stats after building target workspace
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
           call pixi_env.bat >nul 2>&1
 
-          ccache --show-stats
+          ccache --show-stats --verbose
 
       - name: Save ccache folder
         if: ${{ always() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.build_target_workspace.outcome == 'success' }}
