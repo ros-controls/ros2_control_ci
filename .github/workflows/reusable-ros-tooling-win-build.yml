@@ -332,10 +332,12 @@ jobs:
             set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
-          set pinocchio_present=0
+          colcon list --names-only
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if errorlevel 2 exit /b 1
-          if errorlevel 0 (
+          if errorlevel 1 (
+            set pinocchio_present=0
+          ) else (
             @echo skip pinocchio in the main build and build it separately with different cmake args
             set skip_arg=%skip_arg% pinocchio
             set pinocchio_present=1
