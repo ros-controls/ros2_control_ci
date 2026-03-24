@@ -103,14 +103,6 @@ jobs:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
 
-      - name: Checkout ros2_control_ci tooling scripts
-        if: ${{ github.repository != 'ros-controls/ros2_control_ci' }}
-        uses: actions/checkout@v6
-        with:
-          repository: ros-controls/ros2_control_ci
-          ref: master
-          path: ${{ env.tooling_repo_path }}
-
       - name: Restore pixi.lock
         uses: actions/cache/restore@v5
         id: cache
