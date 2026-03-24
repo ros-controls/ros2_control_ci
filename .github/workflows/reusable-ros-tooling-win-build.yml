@@ -300,10 +300,6 @@ jobs:
           path: deps.repos
 
       - name: Build upstream workspace
-        # use Ninja generator optionally for selected packages.
-        # This is needed for RSL, but doesn't work for msg packages
-        # https://github.com/search?q=repo%3APickNikRobotics%2FRSL%20ninja&type=code
-        # https://github.com/colcon/colcon-ros/issues/84#issuecomment-1862881299
         shell: cmd
         run: |
           call pixi shell-hook -s cmd > pixi_env.bat
@@ -324,12 +320,6 @@ jobs:
           set skip_regex_arg=
           if not "${{ inputs.skip_packages_regex }}"=="" (
             set skip_regex_arg=--packages-skip-regex "${{ inputs.skip_packages_regex }}"
-          )
-
-          if not "${{ inputs.ninja_packages }}"=="" (
-            colcon build --packages-up-to ${{ inputs.ninja_packages }} --cmake-args -G Ninja -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" --event-handler console_cohesion+ --merge-install
-            if errorlevel 1 exit /b 1
-            set skip_arg=%skip_arg% ${{ inputs.ninja_packages }}
           )
 
           colcon list --names-only
