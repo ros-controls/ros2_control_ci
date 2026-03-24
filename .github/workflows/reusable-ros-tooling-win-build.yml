@@ -53,11 +53,6 @@ on:
         default: ""
         required: false
         type: string
-      ninja_packages:
-        description: "Space-separated list of packages to be built with Ninja generator (default is MSVC otherwise)"
-        default: ""
-        required: false
-        type: string
       upstream_cmake_args:
         description: "Additional arguments to pass to CMake for upstream workspace, e.g. -DBUILD_TESTING=OFF"
         default: "-DBUILD_TESTING=OFF"
