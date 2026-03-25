@@ -164,17 +164,15 @@ RUN \
   mkdir -p src/imported_pkgs && \
   vcs import src/imported_pkgs < "$repo_file" && \
   TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' ') && \
+  UNRELEASED_PACKAGES=$(rosdep keys --from-path src/imported_pkgs/ros2_control_demos/ | tr '\n' ' ') && \
   if [ -z "$TARGET_PACKAGES" ]; then \
     echo "No packages found in imported repos" >&2; \
     exit 1; \
   fi && \
-  EXCLUDE_ARGS="" && \
-  if [ -n "$EXCLUDE_PACKAGES" ]; then \
-    EXCLUDE_ARGS="--exclude $EXCLUDE_PACKAGES"; \
-  fi && \
+
   success=0 && \
   for i in 1 2 3 4 5; do \
-    if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos $EXCLUDE_ARGS > deps.repos; then \
+    if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos --exclude $EXCLUDE_PACKAGES > deps.repos; then \
       success=1; \
       break; \
     fi; \
@@ -185,11 +183,29 @@ RUN \
     echo "Failed to generate deps.repos" >&2; \
     exit 1; \
   fi && \
+
+  success=0 && \
+  for i in 1 2 3 4 5; do \
+    if rosinstall_generator $UNRELEASED_PACKAGES --rosdistro $ROS_DISTRO --deps --format repos --exclude $EXCLUDE_PACKAGES $TARGET_PACKAGES  > deps_unreleased.repos; then \
+      success=1; \
+      break; \
+    fi; \
+    echo "retry #${i} .."; \
+    sleep 60; \
+  done && \
+  if [ "$success" -ne 1 ] || [ ! -s deps_unreleased.repos ]; then \
+    echo "Failed to generate deps_unreleased.repos" >&2; \
+    exit 1; \
+  fi && \
+
+  # import repos and install dependencies via rosdep
   rm -rf src/imported_pkgs && \
   mkdir -p src/generated && \
   vcs import src/generated < deps.repos && \
+  vcs import src/generated < deps_unreleased.repos && \
   apt-get update -y -qq && \
   ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true && \
+
   # build generated stack, then build pinocchio with special flags when package is present
   colcon build \
     --mixin build-testing-off \
