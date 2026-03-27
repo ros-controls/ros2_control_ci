@@ -147,6 +147,7 @@ WORKDIR $ROS2_WS
 COPY ros_controls.*.repos /tmp/
 RUN \
   : "build dependencies for ros-controls stack from release repos" && \
+  set -eux && \
   repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos && \
   if [ ! -f "$repo_file" ]; then \
     echo "Missing repos file: $repo_file" >&2; \
