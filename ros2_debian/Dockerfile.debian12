@@ -7,6 +7,7 @@ ARG EXCLUDE_PACKAGES=""
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Update all packages
 RUN apt-get update && apt-get -y upgrade \
@@ -76,7 +77,8 @@ RUN set -eux; \
       echo "Failed to fetch ROS_APT_SOURCE_VERSION" >&2; \
       exit 1; \
     fi ; \
-    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" ; \
+    OS_CODENAME="$(awk -F= '/^VERSION_CODENAME=/{print $2}' /etc/os-release)" ; \
+    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${OS_CODENAME}_all.deb" ; \
     echo "Downloading and installing ROS apt source package: ${ROS_APT_PACKAGE}" ; \
     curl -fL -o /tmp/ros2-apt-source.deb "${ROS_APT_PACKAGE}" ; \
     if [ ! -s /tmp/ros2-apt-source.deb ]; then \
@@ -84,7 +86,7 @@ RUN set -eux; \
       exit 1; \
     fi ; \
     dpkg-deb -I /tmp/ros2-apt-source.deb > /dev/null || { echo "Invalid .deb file"; exit 1; } ; \
-    apt-get install -y /tmp/ros2-apt-source.deb ; \
+    apt-get install -y --no-install-recommends /tmp/ros2-apt-source.deb ; \
     rm /tmp/ros2-apt-source.deb
 
 # setup environment
@@ -143,6 +145,7 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 # rust, needed for zenoh
+# hadolint ignore=SC1091
 RUN \
   curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh -s -- -y && \
   . "$HOME/.cargo/env" && \
@@ -153,60 +156,71 @@ RUN \
 ENV ROS2_WS=/opt/ros2_ws
 WORKDIR $ROS2_WS
 COPY ros_controls.*.repos /tmp/
-RUN \
-  : "build dependencies for ros-controls stack from release repos" && \
-  . "$HOME/.cargo/env" && \
-  repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos && \
+# hadolint ignore=SC1091
+RUN set -ex; \
+  : "build dependencies for ros-controls stack from release repos"; \
+  . "$HOME/.cargo/env"; \
+  repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos; \
   if [ ! -f "$repo_file" ]; then \
     echo "Missing repos file: $repo_file" >&2; \
     exit 1; \
-  fi && \
-  mkdir -p src/imported_pkgs && \
-  vcs import src/imported_pkgs < "$repo_file" && \
-  TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' ') && \
+  fi; \
+  mkdir -p src/imported_pkgs; \
+  vcs import src/imported_pkgs < "$repo_file"; \
+  TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' '); \
+  UNRELEASED_PACKAGES=$(rosdep keys --from-path src/imported_pkgs/ros-controls/ros2_control_demos/ | tr '\n' ' '); \
   if [ -z "$TARGET_PACKAGES" ]; then \
     echo "No packages found in imported repos" >&2; \
     exit 1; \
-  fi && \
-  EXCLUDE_ARGS="" && \
-  if [ -n "$EXCLUDE_PACKAGES" ]; then \
-    EXCLUDE_ARGS="--exclude $EXCLUDE_PACKAGES"; \
-  fi && \
-  success=0 && \
+  fi; \
+  success=0; \
   for i in 1 2 3 4 5; do \
-    if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos $EXCLUDE_ARGS > deps.repos; then \
+    if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos --exclude $EXCLUDE_PACKAGES > deps.repos; then \
       success=1; \
       break; \
     fi; \
     echo "retry #${i} .."; \
     sleep 60; \
-  done && \
+  done; \
   if [ "$success" -ne 1 ] || [ ! -s deps.repos ]; then \
     echo "Failed to generate deps.repos" >&2; \
     exit 1; \
-  fi && \
-  rm -rf src/imported_pkgs && \
-  mkdir -p src/generated && \
-  vcs import src/generated < deps.repos && \
-  apt-get update -y -qq && \
-  ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true && \
-  # build generated stack, then build pinocchio with special flags when package is present
+  fi; \
+  : > deps_unreleased.repos; \
+  if [ -n "$UNRELEASED_PACKAGES" ]; then \
+    success=0; \
+    for i in 1 2 3 4 5; do \
+      if rosinstall_generator $UNRELEASED_PACKAGES --rosdistro $ROS_DISTRO --deps --format repos --exclude $EXCLUDE_PACKAGES $TARGET_PACKAGES > deps_unreleased.repos; then \
+        success=1; \
+        break; \
+      fi; \
+      echo "retry #${i} .."; \
+      sleep 60; \
+    done; \
+    if [ "$success" -ne 1 ] || [ ! -s deps_unreleased.repos ]; then \
+      echo "Failed to generate deps_unreleased.repos" >&2; \
+      exit 1; \
+    fi; \
+  fi; \
+  rm -rf src/imported_pkgs; \
+  mkdir -p src/generated; \
+  vcs import src/generated < deps.repos; \
+  vcs import src/generated < deps_unreleased.repos; \
+  apt-get update -y -qq; \
+  ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true; \
   colcon build \
     --mixin build-testing-off \
     --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" \
-    --packages-skip pinocchio && \
+    --packages-skip pinocchio; \
   if colcon list --base-paths src/generated --names-only | grep -qx pinocchio; then \
-    . install/setup.sh && \
+    . install/setup.sh; \
     colcon build \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
         -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
       --continue-on-error \
       --packages-select pinocchio; \
-  fi && \
-  # cleanup
-  rm -rf log src build *.repos /tmp/ros_controls.*.repos \
-  && \
-  : "remove cache" && \
+  fi; \
+  rm -rf -- log src build ./*.repos /tmp/ros_controls.*.repos; \
   rm -rf /var/lib/apt/lists/*
 
 # add default.yaml to the image
