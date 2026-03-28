@@ -8,6 +8,7 @@ ARG EXCLUDE_PACKAGES=""
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Update all packages
 RUN apt-get update && apt-get -y upgrade \
@@ -72,7 +73,8 @@ RUN set -eux; \
       echo "Failed to fetch ROS_APT_SOURCE_VERSION" >&2; \
       exit 1; \
     fi ; \
-    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" ; \
+    OS_CODENAME="$(awk -F= '/^VERSION_CODENAME=/{print $2}' /etc/os-release)" ; \
+    ROS_APT_PACKAGE="https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.${OS_CODENAME}_all.deb" ; \
     echo "Downloading and installing ROS apt source package: ${ROS_APT_PACKAGE}" ; \
     curl -fL -o /tmp/ros2-apt-source.deb "${ROS_APT_PACKAGE}" ; \
     if [ ! -s /tmp/ros2-apt-source.deb ]; then \
@@ -80,7 +82,7 @@ RUN set -eux; \
       exit 1; \
     fi ; \
     dpkg-deb -I /tmp/ros2-apt-source.deb > /dev/null || { echo "Invalid .deb file"; exit 1; } ; \
-    apt-get install -y /tmp/ros2-apt-source.deb ; \
+    apt-get install -y --no-install-recommends /tmp/ros2-apt-source.deb ; \
     rm /tmp/ros2-apt-source.deb
 
 # setup environment
@@ -136,7 +138,7 @@ RUN \
 # install cmake 3.22.1 (the same version as Ubuntu Jammy default). Needed for RSL
 WORKDIR /usr
 RUN \
-  wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
+  curl -fL --progress-bar -o cmake-3.22.1-linux-x86_64.tar.gz https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
   tar --strip-components=1 -xzf cmake-3.22.1-linux-x86_64.tar.gz  && \
   rm cmake-3.22.1-linux-x86_64.tar.gz
 
@@ -145,6 +147,7 @@ RUN \
 ENV ROS2_WS=/opt/ros2_ws
 WORKDIR $ROS2_WS
 COPY ros_controls.*.repos /tmp/
+# hadolint ignore=SC2086
 RUN set -eux; \
   : "build dependencies for ros-controls stack from release repos"; \
   repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos; \
@@ -198,7 +201,7 @@ RUN set -eux; \
   colcon build \
     --mixin release build-testing-off \
     --cmake-args --no-warn-unused-cli; \
-  rm -rf log src build *.repos /tmp/ros_controls.*.repos
+  rm -rf -- log src build ./*.repos /tmp/ros_controls.*.repos
 
 # add default.yaml to the image
 COPY ros2_debian/defaults.yaml /root/.colcon/defaults.yaml
