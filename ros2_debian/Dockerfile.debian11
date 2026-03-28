@@ -148,7 +148,7 @@ ENV ROS2_WS=/opt/ros2_ws
 WORKDIR $ROS2_WS
 COPY ros_controls.*.repos /tmp/
 # hadolint ignore=SC2086
-RUN set -eux; \
+RUN set -ex; \
   : "build dependencies for ros-controls stack from release repos"; \
   repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos; \
   if [ ! -f "$repo_file" ]; then \
