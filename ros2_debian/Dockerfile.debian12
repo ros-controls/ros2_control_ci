@@ -153,25 +153,23 @@ RUN \
 ENV ROS2_WS=/opt/ros2_ws
 WORKDIR $ROS2_WS
 COPY ros_controls.*.repos /tmp/
-RUN \
-  : "build dependencies for ros-controls stack from release repos" && \
-  . "$HOME/.cargo/env" && \
-  set -eux && \
-  repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos && \
+RUN set -eux; \
+  : "build dependencies for ros-controls stack from release repos"; \
+  . "$HOME/.cargo/env"; \
+  repo_file=/tmp/ros_controls.${ROS_DISTRO}.repos; \
   if [ ! -f "$repo_file" ]; then \
     echo "Missing repos file: $repo_file" >&2; \
     exit 1; \
-  fi && \
-  mkdir -p src/imported_pkgs && \
-  vcs import src/imported_pkgs < "$repo_file" && \
-  TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' ') && \
-  UNRELEASED_PACKAGES=$(rosdep keys --from-path src/imported_pkgs/ros-controls/ros2_control_demos/ | tr '\n' ' ') && \
+  fi; \
+  mkdir -p src/imported_pkgs; \
+  vcs import src/imported_pkgs < "$repo_file"; \
+  TARGET_PACKAGES=$(colcon list --base-paths src/imported_pkgs --names-only | tr '\n' ' '); \
+  UNRELEASED_PACKAGES=$(rosdep keys --from-path src/imported_pkgs/ros-controls/ros2_control_demos/ | tr '\n' ' '); \
   if [ -z "$TARGET_PACKAGES" ]; then \
     echo "No packages found in imported repos" >&2; \
     exit 1; \
-  fi && \
-
-  success=0 && \
+  fi; \
+  success=0; \
   for i in 1 2 3 4 5; do \
     if rosinstall_generator $TARGET_PACKAGES --rosdistro $ROS_DISTRO --deps --deps-only --format repos --exclude $EXCLUDE_PACKAGES > deps.repos; then \
       success=1; \
@@ -179,54 +177,46 @@ RUN \
     fi; \
     echo "retry #${i} .."; \
     sleep 60; \
-  done && \
+  done; \
   if [ "$success" -ne 1 ] || [ ! -s deps.repos ]; then \
     echo "Failed to generate deps.repos" >&2; \
     exit 1; \
-  fi && \
-
-
+  fi; \
+  : > deps_unreleased.repos; \
   if [ -n "$UNRELEASED_PACKAGES" ]; then \
-    success=0 && \
+    success=0; \
     for i in 1 2 3 4 5; do \
-      if rosinstall_generator $UNRELEASED_PACKAGES --rosdistro $ROS_DISTRO --deps --format repos --exclude $EXCLUDE_PACKAGES $TARGET_PACKAGES  > deps_unreleased.repos; then \
+      if rosinstall_generator $UNRELEASED_PACKAGES --rosdistro $ROS_DISTRO --deps --format repos --exclude $EXCLUDE_PACKAGES $TARGET_PACKAGES > deps_unreleased.repos; then \
         success=1; \
         break; \
       fi; \
       echo "retry #${i} .."; \
       sleep 60; \
-    done && \
+    done; \
     if [ "$success" -ne 1 ] || [ ! -s deps_unreleased.repos ]; then \
       echo "Failed to generate deps_unreleased.repos" >&2; \
       exit 1; \
-    fi && \
-  fi && \
-
-  # import repos and install dependencies via rosdep
-  rm -rf src/imported_pkgs && \
-  mkdir -p src/generated && \
-  vcs import src/generated < deps.repos && \
-  vcs import src/generated < deps_unreleased.repos && \
-  apt-get update -y -qq && \
-  ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true && \
-
-  # build generated stack, then build pinocchio with special flags when package is present
+    fi; \
+  fi; \
+  rm -rf src/imported_pkgs; \
+  mkdir -p src/generated; \
+  vcs import src/generated < deps.repos; \
+  vcs import src/generated < deps_unreleased.repos; \
+  apt-get update -y -qq; \
+  ROS_PACKAGE_PATH=$ROS2_WS rosdep install -iyr --from-path src/generated || true; \
   colcon build \
     --mixin build-testing-off \
     --cmake-args --no-warn-unused-cli -DCMAKE_CXX_FLAGS="-Wno-maybe-uninitialized" \
-    --packages-skip pinocchio && \
+    --packages-skip pinocchio; \
   if colcon list --base-paths src/generated --names-only | grep -qx pinocchio; then \
-    . install/setup.sh && \
+    . install/setup.sh; \
     colcon build \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
         -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
       --continue-on-error \
       --packages-select pinocchio; \
-  fi && \
-  # cleanup
-  rm -rf log src build *.repos /tmp/ros_controls.*.repos \
-  && \
-  : "remove cache" && \
+  fi; \
+  rm -rf log src build *.repos /tmp/ros_controls.*.repos; \
   rm -rf /var/lib/apt/lists/*
 
 # add default.yaml to the image
