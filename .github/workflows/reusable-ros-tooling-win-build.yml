@@ -28,8 +28,8 @@ on:
         required: false
         default: ""
         type: string
-      windows_dependencies:
-        description: "Path to a repos file with additional windows dependencies"
+      upstream_workspace:
+        description: 'Path to local .repos file for upstream workspace. If empty or dependencies are missing, rosinstall_generator will fetch released packages from gbp (similar to ros-testing).'
         required: false
         default: ""
         type: string
@@ -215,8 +215,8 @@ jobs:
           }
 
           # check for repos files, and pass them to vcstool
-          if (![string]::IsNullOrWhiteSpace("${{ inputs.windows_dependencies }}")) {
-            $repo_file_win = "${{ env.repo_path }}\${{ inputs.windows_dependencies }}"
+          if (![string]::IsNullOrWhiteSpace("${{ inputs.upstream_workspace }}")) {
+            $repo_file_win = "${{ env.repo_path }}\${{ inputs.upstream_workspace }}"
             if (Test-Path "$repo_file_win") {
               Write-Output "Windows repos file found"
               vcs import --input $repo_file_win ${{ env.upstream_workspace }}/src
