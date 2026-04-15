@@ -312,7 +312,9 @@ jobs:
           colcon list --names-only
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if errorlevel 2 exit /b 1
-          if not errorlevel 1 (
+          if errorlevel 1 (
+            @echo pinocchio seems to be no dependency
+          ) else (
             @echo skip pinocchio in the main build and build it separately with different cmake args
             set skip_arg=%skip_arg% pinocchio
             @echo eigenpy and hpp-fcl is not needed with the used cmake args (see 'skip_dependencies' default)
