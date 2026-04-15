@@ -312,30 +312,23 @@ jobs:
           colcon list --names-only
           colcon list --names-only | findstr /R /C:"^pinocchio$" >nul
           if errorlevel 2 exit /b 1
-          if errorlevel 1 (
-            set pinocchio_present=0
-          ) else (
+          if not errorlevel 1 (
             @echo skip pinocchio in the main build and build it separately with different cmake args
             set skip_arg=%skip_arg% pinocchio
-            set pinocchio_present=1
-          )
-          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
-            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
-            --merge-install
-          if errorlevel 1 exit /b 1
-
-          if "%pinocchio_present%"=="1" (
-            @echo Build pinocchio separately with different cmake args
-            @echo eigenpy and hpp-fcl is not needed with the used cmake args
+            @echo eigenpy and hpp-fcl is not needed with the used cmake args (see 'skip_dependencies' default)
             colcon build ^
               --cmake-args --no-warn-unused-cli ^
                 -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
                 -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
                 -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
-              --packages-select pinocchio ^
+              --packages-up-to pinocchio ^
               --merge-install
             if errorlevel 1 exit /b 1
           )
+          colcon build --packages-skip %skip_arg% %skip_regex_arg% --event-handler console_cohesion+ ^
+            --cmake-args -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ${{ inputs.upstream_cmake_args }} ^
+            --merge-install
+          if errorlevel 1 exit /b 1
 
       - name: Show ccache stats after building upstream workspace
         shell: cmd
