@@ -321,7 +321,7 @@ jobs:
                 -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
                 -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
                 -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
-              --packages-select pinocchio ^
+              --packages-up-to pinocchio ^
               --merge-install
             if errorlevel 1 exit /b 1
           )
