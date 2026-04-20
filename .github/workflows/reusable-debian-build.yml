@@ -106,6 +106,7 @@ jobs:
       - name: Import upstream workspace
         shell: bash
         run: |
+          set -x
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             mkdir -p ${{ env.upstream_ws }}/src
             vcs import ${{ env.upstream_ws }}/src < ${{ env.target_path }}/${{ inputs.upstream_workspace }}
@@ -114,6 +115,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          set -x
           apt-get update
           source /opt/ros2_ws/install/setup.bash
           rosdep update --rosdistro ${{ inputs.ros_distro }}
@@ -127,6 +129,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.upstream_ws }}
         run: |
+          set -x
           source /opt/ros2_ws/install/setup.bash
           SKIP_PACKAGES_REGEX_ARG=""
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
@@ -138,6 +141,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.target_ws }}
         run: |
+          set -x
           source /opt/ros2_ws/install/setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
@@ -161,6 +165,7 @@ jobs:
         shell: bash
         working-directory: ${{ env.target_ws }}
         run: |
+          set -x
           source /opt/ros2_ws/install/setup.bash
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
