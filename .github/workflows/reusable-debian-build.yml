@@ -106,6 +106,7 @@ jobs:
       - name: Import upstream workspace
         shell: bash
         run: |
+          set -x
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             mkdir -p ${{ env.upstream_ws }}/src
             vcs import ${{ env.upstream_ws }}/src < ${{ env.target_path }}/${{ inputs.upstream_workspace }}
@@ -114,8 +115,9 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          set -x
           apt-get update
-          source /opt/ros2_ws/install/setup.bash
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           rosdep update --rosdistro ${{ inputs.ros_distro }}
           FROM_PATHS="${{ env.target_ws }}/src"
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
@@ -127,7 +129,8 @@ jobs:
         shell: bash
         working-directory: ${{ env.upstream_ws }}
         run: |
-          source /opt/ros2_ws/install/setup.bash
+          set -x
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           SKIP_PACKAGES_REGEX_ARG=""
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
             SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
@@ -138,7 +141,8 @@ jobs:
         shell: bash
         working-directory: ${{ env.target_ws }}
         run: |
-          source /opt/ros2_ws/install/setup.bash
+          set -x
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
@@ -161,7 +165,8 @@ jobs:
         shell: bash
         working-directory: ${{ env.target_ws }}
         run: |
-          source /opt/ros2_ws/install/setup.bash
+          set -x
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
@@ -170,7 +175,7 @@ jobs:
             fi
             source "$UPSTREAM_SETUP"
           fi
-          source install/setup.bash
+          source install/setup.bash >/dev/null 2>&1
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
@@ -180,7 +185,7 @@ jobs:
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
             SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
           fi
-          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }}
+          colcon test --event-handlers console_direct+ --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }} || true
           colcon test-result --verbose
       - name: Show ccache stats
         if: ${{ always() }}
