@@ -117,7 +117,7 @@ jobs:
         run: |
           set -x
           apt-get update
-          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
+          source /opt/ros2_ws/install/setup.bash > /dev/null 2>&1
           rosdep update --rosdistro ${{ inputs.ros_distro }}
           FROM_PATHS="${{ env.target_ws }}/src"
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
@@ -130,7 +130,7 @@ jobs:
         working-directory: ${{ env.upstream_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
+          source /opt/ros2_ws/install/setup.bash > /dev/null 2>&1
           SKIP_PACKAGES_REGEX_ARG=""
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
             SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
@@ -142,14 +142,14 @@ jobs:
         working-directory: ${{ env.target_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
+          source /opt/ros2_ws/install/setup.bash > /dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
               echo "Missing upstream setup script: $UPSTREAM_SETUP" >&2
               exit 1
             fi
-            source "$UPSTREAM_SETUP"
+            source "$UPSTREAM_SETUP" > /dev/null 2>&1
           fi
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
@@ -166,16 +166,16 @@ jobs:
         working-directory: ${{ env.target_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
+          source /opt/ros2_ws/install/setup.bash > /dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
               echo "Missing upstream setup script: $UPSTREAM_SETUP" >&2
               exit 1
             fi
-            source "$UPSTREAM_SETUP"
+            source "$UPSTREAM_SETUP" > /dev/null 2>&1
           fi
-          source install/setup.bash >/dev/null 2>&1
+          source install/setup.bash > /dev/null 2>&1
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
