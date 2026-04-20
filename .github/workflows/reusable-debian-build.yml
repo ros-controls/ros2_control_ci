@@ -180,7 +180,7 @@ jobs:
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
             SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
           fi
-          colcon test --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }} || true
+          colcon test --event-handlers console_direct+ --executor sequential --packages-select $TARGET_PACKAGES --packages-skip ${{ inputs.skip_packages }} $SKIP_PACKAGES_REGEX_ARG ${{ inputs.skip_packages_test }} || true
           colcon test-result --verbose
       - name: Show ccache stats
         if: ${{ always() }}
