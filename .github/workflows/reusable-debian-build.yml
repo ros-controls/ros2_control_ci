@@ -175,7 +175,7 @@ jobs:
             fi
             source "$UPSTREAM_SETUP"
           fi
-          source install/setup.bash
+          source install/setup.bash >/dev/null 2>&1
           TARGET_PACKAGES=$(colcon list --names-only | tr '\n' ' ')
           if [[ -z "$TARGET_PACKAGES" ]]; then
             echo "No packages found in target workspace at ${{ env.target_ws }}/src"
