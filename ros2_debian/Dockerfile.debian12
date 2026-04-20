@@ -113,9 +113,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   python3-mypy \
   && \
   # colcon-devtools>0.2.3 is not released for debian12, so override it with pip
-  # typing_extensions needs to be >4.7.0, but is available on apt with 4.4.0 only
   apt-get remove -y python3-colcon-devtools && \
-  pip3 install --no-cache-dir colcon-devtools typing_extensions --break-system-package && \
+  pip3 install --no-cache-dir colcon-devtools --break-system-packages && \
+  # typing_extensions needs to be >4.7.0, but is available on apt with 4.4.0 only
+  pip3 install --no-cache-dir --upgrade typing_extensions --break-system-packages && \
   : "remove cache" && \
   rm -rf /var/lib/apt/lists/*
 
