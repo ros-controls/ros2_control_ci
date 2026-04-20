@@ -117,7 +117,7 @@ jobs:
         run: |
           set -x
           apt-get update
-          source /opt/ros2_ws/install/setup.bash
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           rosdep update --rosdistro ${{ inputs.ros_distro }}
           FROM_PATHS="${{ env.target_ws }}/src"
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
@@ -130,7 +130,7 @@ jobs:
         working-directory: ${{ env.upstream_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           SKIP_PACKAGES_REGEX_ARG=""
           if [[ -n "${{ inputs.skip_packages_regex }}" ]]; then
             SKIP_PACKAGES_REGEX_ARG="--packages-skip-regex ${{ inputs.skip_packages_regex }}"
@@ -142,7 +142,7 @@ jobs:
         working-directory: ${{ env.target_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
@@ -166,7 +166,7 @@ jobs:
         working-directory: ${{ env.target_ws }}
         run: |
           set -x
-          source /opt/ros2_ws/install/setup.bash
+          source /opt/ros2_ws/install/setup.bash >/dev/null 2>&1
           if [[ -n "${{ inputs.upstream_workspace }}" ]]; then
             UPSTREAM_SETUP="$GITHUB_WORKSPACE/${{ env.upstream_ws }}/install/setup.bash"
             if [[ ! -f "$UPSTREAM_SETUP" ]]; then
