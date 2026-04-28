@@ -41,7 +41,7 @@ jobs:
             rhel_version: rhel9
             source_packages: pinocchio
           - ros_distro: rolling
-            rhel_version: rhel9
+            rhel_version: rhel10
             source_packages: pinocchio
     steps:
       - uses: actions/checkout@v6
