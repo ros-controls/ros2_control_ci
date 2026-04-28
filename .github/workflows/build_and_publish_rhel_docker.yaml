@@ -42,7 +42,7 @@ jobs:
             source_packages: pinocchio
           - ros_distro: rolling
             rhel_version: rhel9
-            source_packages: pinocchio
+            source_packages: pinocchio hpp-fcl
     steps:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v4
