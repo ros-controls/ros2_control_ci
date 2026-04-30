@@ -30,7 +30,7 @@ on:
         required: false
         type: string
       exclude_source_packages:
-        default: 'pinocchio'
+        default: ''
         description: |
           Space-separated list of packages to exclude from source build (e.g. packages that should be installed via apt). Note: Also its dependencies will be excluded from source build.
         required: false
