@@ -41,7 +41,7 @@ jobs:
             base_image: 'ubuntu:noble'
             ros-repo-packages: ""
           - ros_distro: 'rolling'
-            base_image: 'ubuntu:noble'
+            base_image: 'ubuntu:resolute'
             ros-repo-packages: ""
           - ros_distro: 'humble'
             base_image: 'ubuntu:jammy'
@@ -53,7 +53,7 @@ jobs:
             base_image: 'ubuntu:noble'
             ros-repo-packages: "-testing"
           - ros_distro: 'rolling'
-            base_image: 'ubuntu:noble'
+            base_image: 'ubuntu:resolute'
             ros-repo-packages: "-testing"
     steps:
       - uses: actions/checkout@v6
