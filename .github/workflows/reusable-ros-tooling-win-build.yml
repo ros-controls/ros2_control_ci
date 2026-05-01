@@ -318,7 +318,7 @@ jobs:
             @echo eigenpy and hpp-fcl is not needed with the used cmake args, see 'skip_dependencies' default
             colcon build ^
               --cmake-args --no-warn-unused-cli ^
-                -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF ^
+                -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
                 -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
                 -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
               --packages-up-to pinocchio ^
