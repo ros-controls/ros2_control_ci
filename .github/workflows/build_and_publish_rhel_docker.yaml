@@ -40,6 +40,9 @@ jobs:
           - ros_distro: kilted
             rhel_version: rhel9
             source_packages: pinocchio
+          - ros_distro: lyrical
+            rhel_version: rhel10
+            source_packages: pinocchio
           - ros_distro: rolling
             rhel_version: rhel10
             source_packages: pinocchio
@@ -85,7 +88,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [rolling, humble, jazzy, kilted]
+        ROS_DISTRO: [rolling, humble, jazzy, kilted, lyrical]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
