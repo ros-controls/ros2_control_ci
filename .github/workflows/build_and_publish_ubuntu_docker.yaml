@@ -40,8 +40,11 @@ jobs:
           - ros_distro: 'kilted'
             base_image: 'ubuntu:noble'
             ros-repo-packages: ""
+          - ros_distro: 'lyrical'
+            base_image: 'ubuntu:resolute'
+            ros-repo-packages: ""
           - ros_distro: 'rolling'
-            base_image: 'ubuntu:noble'
+            base_image: 'ubuntu:resolute'
             ros-repo-packages: ""
           - ros_distro: 'humble'
             base_image: 'ubuntu:jammy'
@@ -52,8 +55,11 @@ jobs:
           - ros_distro: 'kilted'
             base_image: 'ubuntu:noble'
             ros-repo-packages: "-testing"
+          - ros_distro: 'lyrical'
+            base_image: 'ubuntu:resolute'
+            ros-repo-packages: "-testing"
           - ros_distro: 'rolling'
-            base_image: 'ubuntu:noble'
+            base_image: 'ubuntu:resolute'
             ros-repo-packages: "-testing"
     steps:
       - uses: actions/checkout@v6
@@ -102,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [rolling, humble, jazzy, kilted]
+        ROS_DISTRO: [rolling, humble, jazzy, kilted, lyrical]
         ROS_REPO: [main, testing]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
@@ -118,7 +124,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [kilted, humble, jazzy]
+        ROS_DISTRO: [kilted, humble, jazzy, lyrical]
         ROS_REPO: [main, testing]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}

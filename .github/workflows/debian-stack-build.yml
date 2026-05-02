@@ -10,6 +10,7 @@ on:
       - 'ros_controls.humble.repos'
       - 'ros_controls.jazzy.repos'
       - 'ros_controls.kilted.repos'
+      - 'ros_controls.lyrical.repos'
       - 'ros_controls.rolling.repos'
   push: *event
   schedule:
@@ -44,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [humble, jazzy, kilted, rolling]
+        ROS_DISTRO: [humble, jazzy, kilted, lyrical, rolling]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
