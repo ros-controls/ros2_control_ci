@@ -217,7 +217,7 @@ RUN set -ex; \
     . install/setup.sh; \
     colcon build \
       --cmake-args --no-warn-unused-cli -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF \
-        -DBUILD_WITH_COLLISION_SUPPORT=OFF -DBUILD_WITH_HPP_FCL_SUPPORT=OFF \
+        -DBUILD_WITH_COLLISION_SUPPORT=OFF \
       --continue-on-error \
       --packages-select pinocchio; \
   fi; \
