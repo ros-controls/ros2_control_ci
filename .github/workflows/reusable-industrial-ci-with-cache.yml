@@ -123,7 +123,7 @@ jobs:
           else
             echo "DOCKER_IMAGE=ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing${{ inputs.docker_image_tag_suffix }}" >> $GITHUB_OUTPUT
           fi
-      - uses: 'ros-industrial/industrial_ci@master'
+      - uses: 'mathias-luedtke/industrial_ci@feature/rolling-resolute'
         env:
           UPSTREAM_WORKSPACE: ${{ inputs.upstream_workspace }}
           TARGET_WORKSPACE: ${{ inputs.target_workspace }}
