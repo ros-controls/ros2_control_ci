@@ -6,14 +6,14 @@ on:
   workflow_call:
     inputs:
       ros_distro:
-        description: 'ROS2 distribution name'
+        description: 'ROS 2 distribution name'
         required: true
         type: string
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
-    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu
+    container: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing
     env:
       # this will be src/{repo-owner}/{repo-name}
       path: src/${{ github.repository }}

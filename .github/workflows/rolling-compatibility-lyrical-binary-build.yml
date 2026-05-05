@@ -1,0 +1,57 @@
+name: Check Rolling Compatibility on Lyrical
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+# description: 'Build & test the rolling stack on lyrical distro.'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/rolling-compatibility-lyrical-binary-build.yml'
+      - '.github/workflows/reusable-industrial-ci-with-cache.yml'
+      - 'ros_controls.rolling-on-lyrical.repos'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/rolling-compatibility-lyrical-binary-build.yml'
+      - '.github/workflows/reusable-industrial-ci-with-cache.yml'
+      - 'ros_controls.rolling-on-lyrical.repos'
+  schedule:
+    # Run every morning to detect flakiness and broken dependencies
+    - cron: '03 1 * * *'
+
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on given branches
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/heads') }}
+
+jobs:
+  stack-build-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_stack_build: ${{ steps.gate.outputs.skip_stack_build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Evaluate stack build gate
+        id: gate
+        uses: ./.github/actions/stack-build-gate
+        with:
+          blocked_paths: |
+            - '.github/workflows/build_and_publish_ubuntu_docker.yaml'
+            - 'ros2_ubuntu/**'
+
+  stack-build-on-lyrical:
+    needs: stack-build-gate
+    if: ${{ needs.stack-build-gate.outputs.skip_stack_build != 'true' }}
+    uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [lyrical]
+        ROS_REPO: [main, testing]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_repo: ${{ matrix.ROS_REPO }}
+      target_workspace: ros_controls.rolling-on-lyrical.repos
+      ref_for_scheduled_build: master
