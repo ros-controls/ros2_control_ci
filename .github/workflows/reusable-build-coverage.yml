@@ -42,7 +42,8 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # overwrite ros distro with testing
-      - uses: ros-tooling/setup-ros@0.7.15
+      # TODO(christophfroehlich): revert this change once there is a newer tag than 0.7.15
+      - uses: ros-tooling/setup-ros@main
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
