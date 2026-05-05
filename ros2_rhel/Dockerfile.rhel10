@@ -45,7 +45,7 @@ RUN dnf install -y \
 
 # install some pip packages not available as RPMs
 # use the same versions as on Ubuntu Jammy
-RUN python3 -m pip install --no-cache-dir -U --user \
+RUN python3 -m pip install --no-cache-dir -U \
   flake8==4.0.1 \
   pyflakes==2.4.0 \
   flake8-blind-except==0.1.1 \
