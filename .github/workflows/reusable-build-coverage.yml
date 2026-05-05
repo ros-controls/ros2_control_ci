@@ -86,7 +86,9 @@ jobs:
             echo "No local repos file found"
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
-      - uses: ros-tooling/action-ros-ci@0.4.6
+
+        # TODO(christophfroehlich): switch bag to latest tag after https://github.com/ros-tooling/action-ros-ci/pull/1029 is merged
+      - uses: ros-tooling/action-ros-ci@christophebedard/lyrical
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
