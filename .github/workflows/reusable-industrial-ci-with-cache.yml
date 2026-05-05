@@ -132,7 +132,8 @@ jobs:
           NOT_TEST_DOWNSTREAM: ${{ inputs.not_test_downstream }}
           DOCKER_IMAGE: ${{ steps.docker_image.outputs.DOCKER_IMAGE }}
           ROS_REPO: ${{ inputs.ros_repo }}
-          OS_CODE_NAME: ${{ inputs.os_code_name }}
+          # TODO(christophfroehlich): revert this change once https://github.com/ros-industrial/industrial_ci/pull/935 is merged
+          OS_CODE_NAME: ${{ inputs.ros_distro == 'rolling' && 'resolute' || inputs.os_code_name }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
           ADDITIONAL_DEBS: ${{ inputs.additional_debs }}
           CC: ${{ inputs.c_compiler }}
