@@ -56,7 +56,7 @@ RUN python3 -m pip install --no-cache-dir -U --user \
   pydocstyle
 
 # enable RHEL testing repository
-https://docs.ros.org/en/rolling/Installation/Testing.html#rhel-testing-repository
+# https://docs.ros.org/en/rolling/Installation/Testing.html#rhel-testing-repository
 RUN \
   dnf config-manager setopt ros2-testing.enabled=1 && \
   dnf config-manager setopt ros2.enabled=0 && \
