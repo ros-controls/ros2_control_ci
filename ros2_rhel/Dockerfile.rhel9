@@ -50,7 +50,7 @@ RUN dnf install -y \
 # install some pip packages needed for testing and
 # not available as RPMs
 # use the same versions as on Ubuntu Jammy
-RUN python3 -m pip install --no-cache-dir -U --user \
+RUN python3 -m pip install --no-cache-dir -U \
   flake8==4.0.1 \
   pyflakes==2.4.0 \
   flake8-blind-except==0.1.1 \
@@ -69,13 +69,6 @@ RUN dnf install -y \
     ros-${ROS_DISTRO}-xacro \
   && rosdep init \
   && dnf clean all
-
-# install cmake 3.22.1 (the same version as Ubuntu Jammy default). Needed for RSL
-WORKDIR /usr
-RUN \
-  wget --progress=dot:giga https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz && \
-  tar --strip-components=1 -xzf cmake-3.22.1-linux-x86_64.tar.gz  && \
-  rm cmake-3.22.1-linux-x86_64.tar.gz
 
 # setup colcon mixin and metadata
 RUN colcon mixin add default \
