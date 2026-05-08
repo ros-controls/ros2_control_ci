@@ -66,8 +66,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # needed only if a non-ros image is used
-      # TODO(christophfroehlich): revert this change once there is a newer tag than 0.7.15
-      - uses: ros-tooling/setup-ros@main
+      - uses: ros-tooling/setup-ros@0.7.16
         with:
           use-ros2-testing: true
       - uses: actions/checkout@v6
@@ -95,8 +94,7 @@ jobs:
             echo "vcs_file_path=" >> $GITHUB_OUTPUT
           fi
 
-        # TODO(christophfroehlich): switch bag to latest tag after https://github.com/ros-tooling/action-ros-ci/pull/1029 is merged
-      - uses: ros-tooling/action-ros-ci@christophebedard/lyrical
+      - uses: ros-tooling/action-ros-ci@0.4.7
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ inputs.ref }}
