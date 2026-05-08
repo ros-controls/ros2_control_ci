@@ -42,8 +42,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # overwrite ros distro with testing
-      # TODO(christophfroehlich): revert this change once there is a newer tag than 0.7.15
-      - uses: ros-tooling/setup-ros@main
+      - uses: ros-tooling/setup-ros@0.7.16
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
@@ -87,8 +86,7 @@ jobs:
             echo "repo_file=" >> $GITHUB_OUTPUT
           fi
 
-        # TODO(christophfroehlich): switch bag to latest tag after https://github.com/ros-tooling/action-ros-ci/pull/1029 is merged
-      - uses: ros-tooling/action-ros-ci@christophebedard/lyrical
+      - uses: ros-tooling/action-ros-ci@0.4.7
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           import-token: ${{ secrets.GITHUB_TOKEN }}
