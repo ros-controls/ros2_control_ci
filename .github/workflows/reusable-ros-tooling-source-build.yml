@@ -69,7 +69,15 @@ jobs:
       - uses: ros-tooling/setup-ros@0.7.16
         with:
           use-ros2-testing: true
-      - uses: actions/checkout@v6
+
+      - name: Checkout ${{ github.ref }} when build is not scheduled
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.repo_path }}
+      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.repo_path }}
@@ -97,7 +105,7 @@ jobs:
       - uses: ros-tooling/action-ros-ci@0.4.7
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.event_name == 'schedule' && inputs.ref || '' }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           rosdep-skip-keys: rmw_zenoh_cpp coal
           vcs-repo-file-url: ${{ steps.check_deps_file.outputs.vcs_file_path }}
