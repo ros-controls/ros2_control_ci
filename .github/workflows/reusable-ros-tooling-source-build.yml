@@ -105,7 +105,7 @@ jobs:
       - uses: ros-tooling/action-ros-ci@0.4.7
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.event_name == 'schedule' && inputs.ref || '' }}
           package-name: ${{ steps.package_list_action.outputs.package_list }}
           rosdep-skip-keys: rmw_zenoh_cpp coal
           vcs-repo-file-url: ${{ steps.check_deps_file.outputs.vcs_file_path }}
