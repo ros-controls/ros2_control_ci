@@ -69,7 +69,15 @@ jobs:
       - uses: ros-tooling/setup-ros@0.7.16
         with:
           use-ros2-testing: true
-      - uses: actions/checkout@v6
+
+      - name: Checkout ${{ github.ref }} when build is not scheduled
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.repo_path }}
+      - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.repo_path }}
