@@ -26,6 +26,11 @@ on:
         required: false
         default: ''
         type: string
+      os_code_name:
+        description: 'OS_CODE_NAME variable for industrial_ci'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   default:
@@ -38,12 +43,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: industrial_ci
+        uses: ros-industrial/industrial_ci@master
         env:
           PRERELEASE: true
           # hardcode to 1 if label is check-prerelease-downstream, otherwise use input from workflow
           PRERELEASE_DOWNSTREAM_DEPTH: ${{ (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease-downstream')) && '1' || inputs.prerelease_downstream_depth}}
           PRERELEASE_EXCLUDE_PKG: ${{ inputs.prerelease_exclude_pkg }}
           BASEDIR: ${{ github.workspace }}/.work
-          ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
-          DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ROS_DISTRO }}-ubuntu-testing
-        uses: ros-industrial/industrial_ci@master
+          ROS_DISTRO: ${{ inputs.ros_distro }}
+          DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing
+          # TODO(christophfroehlich): revert this change once https://github.com/ros-industrial/industrial_ci/pull/935 is merged
+          OS_CODE_NAME: ${{ inputs.ros_distro == 'rolling' && 'resolute' || inputs.os_code_name }}
