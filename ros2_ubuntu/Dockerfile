@@ -82,8 +82,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     $(if [ $(lsb_release -sc) = "resolute" ]; then echo "gcc g++ g++-x86-64-linux-gnu"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
-# debub clang
-RUN clang++ -v
+# debug clang
+RUN clang++ -v && \
+  echo 'int main(){}' > test.cpp && \
+  clang++ test.cpp
 
 # Bootstrap rosdep
 RUN rosdep init && \
