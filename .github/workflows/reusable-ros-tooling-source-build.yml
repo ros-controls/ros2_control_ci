@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       os_name:
-        description: 'On which OS to run the linter'
+        description: 'On which OS to run the workflow'
         required: false
         default: 'ubuntu-latest'
         type: string
