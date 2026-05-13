@@ -135,10 +135,10 @@ jobs:
           # TODO(christophfroehlich): revert this change once https://github.com/ros-industrial/industrial_ci/pull/935 is merged
           OS_CODE_NAME: ${{ inputs.ros_distro == 'rolling' && 'resolute' || inputs.os_code_name }}
           ROSDEP_SKIP_KEYS: ${{ inputs.rosdep_skip_keys }}
-          ADDITIONAL_DEBS: ${{ inputs.additional_debs }}
+          ADDITIONAL_DEBS: ${{ inputs.additional_debs }}${{ inputs.cxx_compiler == 'clang++' && ' libc++-dev libc++abi-dev' || '' }}
           CC: ${{ inputs.c_compiler }}
           CXX: ${{ inputs.cxx_compiler }}
-          CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
+          CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include${{ inputs.cxx_compiler == 'clang++' && ' -stdlib=libc++' || '' }}"
           RMW_IMPLEMENTATION: ${{ inputs.rmw_implementation }}
         id: ici
       - name: Save ccache folder
