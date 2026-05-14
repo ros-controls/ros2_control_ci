@@ -82,6 +82,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     $(if [ $(lsb_release -sc) = "resolute" ]; then echo "build-essential"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
+# On resolute, clang-21 fails to detect the GCC 15 installation path, so ld can't find -lstdc++.
+# Create the symlink in a standard library search path as a workaround.
+RUN if [ "$(lsb_release -sc)" = "resolute" ]; then \
+    GCC_LIB=$(find /usr/lib/gcc -name "libstdc++.so" 2>/dev/null | sort -V | tail -1) && \
+    [ -n "$GCC_LIB" ] && ln -sf "${GCC_LIB}" /usr/lib/x86_64-linux-gnu/libstdc++.so; \
+  fi
+
 # debug clang
 RUN clang++ -v && \
   echo 'int main(){}' > test.cpp && \
