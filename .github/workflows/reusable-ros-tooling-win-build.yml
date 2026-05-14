@@ -40,7 +40,7 @@ on:
         type: string
       skip_dependencies:
         description: "Space-separated list of packages to skip from rosinstall_generator dependency resolution"
-        default: "sdformat_urdf eigenpy hpp-fcl"
+        default: "sdformat_urdf eigenpy hpp-fcl coal"
         required: false
         type: string
       skip_packages:
