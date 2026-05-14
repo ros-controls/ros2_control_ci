@@ -82,6 +82,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     $(if [ $(lsb_release -sc) = "resolute" ]; then echo "build-essential"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
+# TODO(christophfroehlich): remove once https://github.com/ros-controls/ros2_control_ci/issues/791 is fixed
 # On resolute, clang-21 fails to auto-detect the GCC 15 installation:
 # - /usr/lib/x86_64-linux-gnu/libstdc++.so is missing (ld can't find -lstdc++) -> create symlink
 # - C++ standard library headers are not found (<cmath> etc.) -> write a clang config file
@@ -92,10 +93,8 @@ RUN if [ "$(lsb_release -sc)" = "resolute" ]; then \
     CLANG_BIN=$(dirname $(readlink -f $(which clang++))) && \
     echo "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/${GCC_VER}" >> "${CLANG_BIN}/clang++.cfg" && \
     echo "Configured clang++ with GCC ${GCC_VER} (${CLANG_BIN}/clang++.cfg)"; \
-  fi
-
-# debug clang: verify both linking and C++ standard library headers work
-RUN clang++ -v && \
+  fi && \
+  clang++ -v && \
   printf '#include <cmath>\nint main(){}\n' > test.cpp && \
   clang++ test.cpp && \
   rm test.cpp
