@@ -82,17 +82,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     $(if [ $(lsb_release -sc) = "resolute" ]; then echo "build-essential"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
-# On resolute, clang-21 fails to detect the GCC 15 installation path, so ld can't find -lstdc++.
-# Create the symlink in a standard library search path as a workaround.
+# On resolute, clang-21 fails to auto-detect the GCC 15 installation:
+# - /usr/lib/x86_64-linux-gnu/libstdc++.so is missing (ld can't find -lstdc++) -> create symlink
+# - C++ standard library headers are not found (<cmath> etc.) -> write a clang config file
 RUN if [ "$(lsb_release -sc)" = "resolute" ]; then \
-    GCC_LIB=$(find /usr/lib/gcc -name "libstdc++.so" 2>/dev/null | sort -V | tail -1) && \
-    [ -n "$GCC_LIB" ] && ln -sf "${GCC_LIB}" /usr/lib/x86_64-linux-gnu/libstdc++.so; \
+    GCC_VER=$(ls /usr/lib/gcc/x86_64-linux-gnu/ | sort -V | tail -1) && \
+    GCC_LIB=$(find /usr/lib/gcc/x86_64-linux-gnu/${GCC_VER} -name "libstdc++.so" 2>/dev/null | tail -1) && \
+    [ -n "$GCC_LIB" ] && ln -sf "${GCC_LIB}" /usr/lib/x86_64-linux-gnu/libstdc++.so && \
+    CLANG_BIN=$(dirname $(readlink -f $(which clang++))) && \
+    echo "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/${GCC_VER}" >> "${CLANG_BIN}/clang++.cfg" && \
+    echo "Configured clang++ with GCC ${GCC_VER} (${CLANG_BIN}/clang++.cfg)"; \
   fi
 
-# debug clang
+# debug clang: verify both linking and C++ standard library headers work
 RUN clang++ -v && \
-  echo 'int main(){}' > test.cpp && \
-  clang++ test.cpp
+  printf '#include <cmath>\nint main(){}\n' > test.cpp && \
+  clang++ test.cpp && \
+  rm test.cpp
 
 # Bootstrap rosdep
 RUN rosdep init && \
