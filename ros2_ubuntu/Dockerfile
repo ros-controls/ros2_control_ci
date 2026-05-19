@@ -64,6 +64,7 @@ ENV ROS_DISTRO=${ROS_DISTRO}
 # typical manual dev dependencies,
 # and dependencies which ros-tooling/setup-ros would install see
 # https://github.com/ros-tooling/setup-ros/blob/master/src/package_manager/apt.ts
+# on resolute, install an explicit GCC toolchain so clang can resolve -lstdc++
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-ros-base \
     libboost-dev \
@@ -75,10 +76,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     ros-${ROS_DISTRO}-sdformat-urdf \
     ros-${ROS_DISTRO}-xacro \
-    $(if [ $(lsb_release -sc) = "resolute" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata libclang-rt-dev"; fi) \
+    $(if [ $(lsb_release -sc) = "resolute" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata"; fi) \
     $(if [ $(lsb_release -sc) = "noble" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-class-newline python3-flake8-deprecated python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin python3-importlib-metadata libclang-rt-dev"; fi) \
     $(if [ $(lsb_release -sc) = "jammy" ]; then echo "libssl-dev python3-dev clang lcov python3-rosinstall-generator python3-flake8-docstrings python3-pip python3-pytest-cov python3-flake8-blind-except python3-flake8-builtins python3-flake8-class-newline python3-flake8-comprehensions python3-flake8-deprecated python3-flake8-import-order python3-flake8-quotes python3-pytest-repeat python3-pytest-rerunfailures ros-dev-tools python3-colcon-coveragepy-result python3-colcon-lcov-result python3-colcon-meson python3-colcon-mixin libasio-dev libtinyxml2-dev"; fi) \
+    $(if [ $(lsb_release -sc) = "resolute" ]; then echo "build-essential"; fi) \
     && rm -rf /var/lib/apt/lists/*
+
+# TODO(christophfroehlich): remove once https://github.com/ros-controls/ros2_control_ci/issues/791 is fixed
+# On resolute, clang-21 fails to auto-detect the GCC 15 installation:
+# - /usr/lib/x86_64-linux-gnu/libstdc++.so is missing (ld can't find -lstdc++) -> create symlink
+# - C++ standard library headers are not found (<cmath> etc.) -> write a clang config file
+RUN if [ "$(lsb_release -sc)" = "resolute" ]; then \
+    GCC_VER=$(ls /usr/lib/gcc/x86_64-linux-gnu/ | sort -V | tail -1) && \
+    GCC_LIB=$(find /usr/lib/gcc/x86_64-linux-gnu/${GCC_VER} -name "libstdc++.so" 2>/dev/null | tail -1) && \
+    [ -n "$GCC_LIB" ] && ln -sf "${GCC_LIB}" /usr/lib/x86_64-linux-gnu/libstdc++.so && \
+    CLANG_BIN=$(dirname $(readlink -f $(which clang++))) && \
+    echo "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/${GCC_VER}" >> "${CLANG_BIN}/clang++.cfg" && \
+    echo "Configured clang++ with GCC ${GCC_VER} (${CLANG_BIN}/clang++.cfg)"; \
+  fi && \
+  clang++ -v && \
+  printf '#include <cmath>\nint main(){}\n' > test.cpp && \
+  clang++ test.cpp && \
+  rm test.cpp
 
 # Bootstrap rosdep
 RUN rosdep init && \
