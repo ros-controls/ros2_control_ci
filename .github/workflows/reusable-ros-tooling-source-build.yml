@@ -72,12 +72,12 @@ jobs:
 
       - name: Checkout ${{ github.ref }} when build is not scheduled
         if: ${{ github.event_name != 'schedule' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ${{ env.repo_path }}
       - name: Checkout ${{ inputs.ref_for_scheduled_build }} on scheduled build
         if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           path: ${{ env.repo_path }}
