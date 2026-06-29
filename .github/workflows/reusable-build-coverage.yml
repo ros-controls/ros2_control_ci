@@ -42,7 +42,7 @@ jobs:
           echo ~/.local/opt/node/bin >> $GITHUB_PATH
 
       # overwrite ros distro with testing
-      - uses: ros-tooling/setup-ros@0.7.17
+      - uses: ros-tooling/setup-ros@0.7.19
         if: ${{ steps.prereq.outputs.need_ros2 == '1' }}
         with:
           use-ros2-testing: true
@@ -72,7 +72,7 @@ jobs:
           coverage --version || true
           which coverage || true
           ls ~/.venv/bin || true
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - id: package_list_action
         uses: ros-controls/ros2_control_ci/.github/actions/set-package-list@master
       - name: Check for local repos file
