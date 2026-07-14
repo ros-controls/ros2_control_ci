@@ -43,9 +43,9 @@ jobs:
           - ros_distro: 'lyrical'
             base_image: 'ubuntu:resolute'
             ros-repo-packages: ""
-          - ros_distro: 'rolling'
-            base_image: 'ubuntu:resolute'
-            ros-repo-packages: ""
+          # - ros_distro: 'rolling'
+          #   base_image: 'ubuntu:resolute'
+          #   ros-repo-packages: ""
           - ros_distro: 'humble'
             base_image: 'ubuntu:jammy'
             ros-repo-packages: "-testing"
