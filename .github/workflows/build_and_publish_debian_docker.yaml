@@ -42,10 +42,10 @@ jobs:
             debian_version: 'debian12'
             exclude_packages: ''
           - ros_distro: 'lyrical'
-            debian_version: 'debian12'
+            debian_version: 'debian13'
             exclude_packages: ''
           - ros_distro: 'rolling'
-            debian_version: 'debian12'
+            debian_version: 'debian13'
             exclude_packages: ''
 
     steps:

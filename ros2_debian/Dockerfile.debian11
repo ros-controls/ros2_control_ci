@@ -90,7 +90,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ARG ROS_DISTRO
 # Environment variables defined using the ENV instruction always override an ARG instruction of the same name.
-ENV ROS_DISTRO=${ROS_DISTRO:-rolling}
+ENV ROS_DISTRO=${ROS_DISTRO:-humble}
 
 # ros-base include begin
 # https://github.com/osrf/docker_images/blob/master/ros/galactic/ubuntu/focal/ros-core/Dockerfile
