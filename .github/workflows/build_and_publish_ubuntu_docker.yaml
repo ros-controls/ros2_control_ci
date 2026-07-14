@@ -43,9 +43,9 @@ jobs:
           - ros_distro: 'lyrical'
             base_image: 'ubuntu:resolute'
             ros-repo-packages: ""
-          - ros_distro: 'rolling'
-            base_image: 'ubuntu:resolute'
-            ros-repo-packages: ""
+          # - ros_distro: 'rolling'
+          #   base_image: 'ubuntu:resolute'
+          #   ros-repo-packages: ""
           - ros_distro: 'humble'
             base_image: 'ubuntu:jammy'
             ros-repo-packages: "-testing"
@@ -110,6 +110,9 @@ jobs:
       matrix:
         ROS_DISTRO: [rolling, humble, jazzy, kilted, lyrical]
         ROS_REPO: [main, testing]
+        exclude:
+          - ROS_DISTRO: rolling
+            ROS_REPO: main
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: ${{ matrix.ROS_REPO }}
