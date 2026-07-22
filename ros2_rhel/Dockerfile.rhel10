@@ -88,6 +88,8 @@ RUN colcon mixin add default \
 ENV ROS2_WS=/opt/ros2_ws
 ARG SOURCE_PACKAGES=""
 WORKDIR $ROS2_WS
+# TODO(anyone): remove coal exclude once it is available on RHEL
+# https://build.ros2.org/job/Lbin_rhel_el1064__coal__rhel_10_x86_64__binary/
 RUN \
   . /opt/ros/$ROS_DISTRO/setup.sh && \
   if [ -n "$SOURCE_PACKAGES" ]; then \
@@ -98,7 +100,7 @@ RUN \
     mkdir -p src && \
     vcs import src < deps.repos && \
     rosdep update --rosdistro $ROS_DISTRO && \
-    rosdep install -iyr --from-path src ; \
+    rosdep install -iyr --from-path src --skip-keys=coal; \
   fi && \
   colcon build \
   --mixin release build-testing-off \
