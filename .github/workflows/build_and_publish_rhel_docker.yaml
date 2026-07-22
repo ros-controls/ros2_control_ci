@@ -29,6 +29,8 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
+      # TODO(anyone): remove pinocchio source build once it is available on RHEL
+      # https://build.ros2.org/job/Lbin_rhel_el1064__pinocchio__rhel_10_x86_64__binary/
       matrix:
         include:
           - ros_distro: humble
