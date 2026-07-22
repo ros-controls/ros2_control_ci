@@ -4,6 +4,13 @@ name: Reusable industrial_ci Workflow with Cache
 
 on:
   workflow_call:
+    outputs:
+      build_target_workspace_succeeded:
+        description: 'True if TARGET_WORKSPACE build stage succeeded (independent of subsequent test results).'
+        value: ${{ jobs.reusable_industrial_ci_with_cache.outputs.build_target_workspace_succeeded }}
+      build_target_workspace_code:
+        description: 'Raw build_target_workspace code emitted by industrial_ci.'
+        value: ${{ jobs.reusable_industrial_ci_with_cache.outputs.build_target_workspace_code }}
     inputs:
       ref_for_scheduled_build:
         description: 'Reference on which the repo should be checkout for scheduled build. Usually is this name of a branch or a tag.'
@@ -94,6 +101,9 @@ jobs:
     name: ${{ inputs.ros_distro }} ${{ inputs.ros_repo }} ${{ inputs.os_code_name }}
     if: ${{ !(github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts')) }}
     runs-on: ubuntu-latest
+    outputs:
+      build_target_workspace_succeeded: ${{ steps.evaluate_build_target.outputs.succeeded }}
+      build_target_workspace_code: ${{ steps.evaluate_build_target.outputs.code }}
     env:
       CCACHE_DIR: ${{ github.workspace }}/${{ inputs.ccache_dir }}
       BASEDIR: ${{ github.workspace }}/${{ inputs.basedir }}
@@ -141,6 +151,17 @@ jobs:
           CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
           RMW_IMPLEMENTATION: ${{ inputs.rmw_implementation }}
         id: ici
+      - name: Evaluate target build result
+        id: evaluate_build_target
+        if: ${{ always() }}
+        run: |
+          code="${{ steps.ici.outputs.build_target_workspace }}"
+          echo "code=${code}" >> "$GITHUB_OUTPUT"
+          if [[ "${code}" == "0" ]]; then
+            echo "succeeded=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "succeeded=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Save ccache folder
         uses: actions/cache/save@v6
         # save if build step succeeded, but only on default branch to save disk space
