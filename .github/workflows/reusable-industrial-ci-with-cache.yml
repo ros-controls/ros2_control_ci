@@ -89,6 +89,11 @@ on:
         default: 'rmw_cyclonedds_cpp'
         required: false
         type: string
+      target_cmake_args:
+        description: 'Additional arguments to pass to CMake for the target workspace, e.g. -DBUILD_TESTING=OFF'
+        default: ''
+        required: false
+        type: string
       docker_image_tag_suffix:
         description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
         default: ''
@@ -148,7 +153,9 @@ jobs:
           ADDITIONAL_DEBS: ${{ inputs.additional_debs }}
           CC: ${{ inputs.c_compiler }}
           CXX: ${{ inputs.cxx_compiler }}
-          CMAKE_ARGS: -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
+          CMAKE_ARGS: >-
+            -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
+            ${{ inputs.target_cmake_args }}
           RMW_IMPLEMENTATION: ${{ inputs.rmw_implementation }}
         id: ici
       - name: Evaluate target build result
