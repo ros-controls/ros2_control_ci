@@ -8,6 +8,11 @@ on:
         description: 'ROS_DISTRO variable for industrial_ci'
         required: true
         type: string
+      target_cmake_args:
+        description: "Additional arguments to pass to CMake, e.g. -DBUILD_TESTING=OFF"
+        default: ""
+        required: false
+        type: string
 
 
 jobs:
@@ -24,6 +29,7 @@ jobs:
           ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
           NOT_TEST_BUILD: true
           BASEDIR: ${{ github.workspace }}/.work
+          CMAKE_ARGS: ${{ inputs.target_cmake_args }}
       - uses: actions/upload-artifact@v7
         if: always()
         with:
