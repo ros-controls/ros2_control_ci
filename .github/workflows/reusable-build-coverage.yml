@@ -10,6 +10,10 @@ on:
         description: 'Add debug output'
         type: boolean
         default: false
+      target_cmake_args:
+        description: 'Additional CMake flags passed during build'
+        type: string
+        default: ''
 
 jobs:
   coverage:
@@ -104,6 +108,7 @@ jobs:
               }
             }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          extra-cmake-args: ${{ inputs.target_cmake_args }}
       - name: Test coverage tools
         if: ${{ inputs.debug }}
         run: |
