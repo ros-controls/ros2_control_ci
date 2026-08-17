@@ -31,6 +31,11 @@ on:
         default: ''
         required: false
         type: string
+      target_cmake_args:
+        description: "Additional arguments to pass to CMake, e.g. -DBUILD_TESTING=OFF"
+        default: ""
+        required: false
+        type: string
 
 jobs:
   default:
@@ -54,3 +59,4 @@ jobs:
           DOCKER_IMAGE: ghcr.io/ros-controls/ros:${{ inputs.ros_distro }}-ubuntu-testing
           # TODO(christophfroehlich): revert this change once https://github.com/ros-industrial/industrial_ci/pull/935 is merged
           OS_CODE_NAME: ${{ inputs.ros_distro == 'rolling' && 'resolute' || inputs.os_code_name }}
+          CMAKE_ARGS: ${{ inputs.target_cmake_args }}
