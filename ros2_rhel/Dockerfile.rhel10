@@ -28,6 +28,7 @@ RUN dnf install -y \
   git \
   make \
   patch \
+  procps-ng \
   boost-devel \
   libcap-devel \
   orocos-kdl-devel \

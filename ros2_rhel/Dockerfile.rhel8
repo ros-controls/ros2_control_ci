@@ -8,6 +8,7 @@ RUN dnf install \
   epel-release \
   langpacks-en \
   git \
+  procps-ng \
   wget \
   -y --refresh \
   && dnf config-manager --set-enabled powertools \
