@@ -299,7 +299,7 @@ jobs:
 
   stack-build:
     if: ${{ github.event_name == 'pull_request' }}
-    needs: build_images
+    needs: publish_manifests
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false
@@ -319,7 +319,7 @@ jobs:
 
   compatibility-stack-build:
     if: ${{ github.event_name == 'pull_request' }}
-    needs: build_images
+    needs: publish_manifests
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
     strategy:
       fail-fast: false
