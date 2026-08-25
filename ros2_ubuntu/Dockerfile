@@ -84,15 +84,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # TODO(christophfroehlich): remove once https://github.com/ros-controls/ros2_control_ci/issues/791 is fixed
 # On resolute, clang-21 fails to auto-detect the GCC 15 installation:
-# - /usr/lib/x86_64-linux-gnu/libstdc++.so is missing (ld can't find -lstdc++) -> create symlink
+# - libstdc++.so is missing (ld can't find -lstdc++) -> create symlink
 # - C++ standard library headers are not found (<cmath> etc.) -> write a clang config file
 RUN if [ "$(lsb_release -sc)" = "resolute" ]; then \
-    GCC_VER=$(ls /usr/lib/gcc/x86_64-linux-gnu/ | sort -V | tail -1) && \
-    GCC_LIB=$(find /usr/lib/gcc/x86_64-linux-gnu/${GCC_VER} -name "libstdc++.so" 2>/dev/null | tail -1) && \
-    [ -n "$GCC_LIB" ] && ln -sf "${GCC_LIB}" /usr/lib/x86_64-linux-gnu/libstdc++.so && \
-    CLANG_BIN=$(dirname $(readlink -f $(which clang++))) && \
-    echo "--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/${GCC_VER}" >> "${CLANG_BIN}/clang++.cfg" && \
-    echo "Configured clang++ with GCC ${GCC_VER} (${CLANG_BIN}/clang++.cfg)"; \
+    GCC_TRIPLE=$(gcc -dumpmachine) && \
+    GCC_VER=$(ls /usr/lib/gcc/${GCC_TRIPLE}/ | sort -V | tail -1) && \
+    GCC_LIB=$(find /usr/lib/gcc/${GCC_TRIPLE}/${GCC_VER} -name "libstdc++.so" 2>/dev/null | tail -1) && \
+    [ -n "$GCC_LIB" ] && \
+    ln -sf "${GCC_LIB}" "/usr/lib/${GCC_TRIPLE}/libstdc++.so" && \
+    CLANG_BIN=$(dirname "$(readlink -f "$(which clang++)")") && \
+    echo "--gcc-install-dir=/usr/lib/gcc/${GCC_TRIPLE}/${GCC_VER}" >> "${CLANG_BIN}/clang++.cfg" && \
+    echo "Configured clang++ with GCC ${GCC_VER} (${GCC_TRIPLE}) (${CLANG_BIN}/clang++.cfg)"; \
   fi && \
   clang++ -v && \
   printf '#include <cmath>\nint main(){}\n' > test.cpp && \
