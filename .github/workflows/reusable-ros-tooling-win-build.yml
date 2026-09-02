@@ -98,17 +98,23 @@ jobs:
           ref: ${{ inputs.ref_for_scheduled_build }}
           path: ${{ env.repo_path }}
 
+      - name: Download and extract ROS
+        run: |
+          New-Item -ItemType Directory -Force -Path ${{ env.ros_underlay_path }}
+          Set-Location -Path ${{ env.ros_underlay_path }}
+          $url = "https://github.com/ros2/ros2/releases/download/release-rolling-nightlies/ros2-rolling-nightly-windows-amd64.zip"
+          $output = "ros2-package-windows-AMD64.zip"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
+          Remove-Item $output
+          Copy-Item ros2_${{ inputs.ros_distro }}\ros2-windows\pixi.toml ${{ github.workspace }}\pixi.toml
+
       - name: Restore pixi.lock
         uses: actions/cache/restore@v6
         id: cache
         with:
           path: pixi.lock
           key: pixi|${{ inputs.ros_distro }}
-
-      - name: Bootstrap pixi and patch manifest file
-        # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
-        run: |
-          irm https://raw.githubusercontent.com/ros2/ros2/refs/heads/rolling/pixi.toml -OutFile pixi.toml
 
       - name: Install pixi
         uses: prefix-dev/setup-pixi@v0.10.2
@@ -139,20 +145,12 @@ jobs:
           path: pixi.lock
 
       - name: Install ROS
-        # Download and extract ROS 2 package and patch paths, see
+        # Patch paths in the extracted ROS 2 package, see
         # https://docs.ros.org/en/rolling/Installation/Windows-Install-Binary.html
-        # Note: We don't use the shipped pixi.toml file, we generated our own above
         run: |
           Invoke-Expression ((& pixi shell-hook -s powershell) -join "`n")
 
-          New-Item -ItemType Directory -Force -Path ${{ env.ros_underlay_path }}
-          Set-Location -Path ${{ env.ros_underlay_path }}
-          $url = "https://github.com/ros2/ros2/releases/download/release-rolling-nightlies/ros2-rolling-nightly-windows-amd64.zip"
-          $output = "ros2-package-windows-AMD64.zip"
-          Invoke-WebRequest -Uri $url -OutFile $output
-          Expand-Archive -Path $output -DestinationPath ros2_${{ inputs.ros_distro }}
-          Remove-Item $output
-          Set-Location -Path ros2_${{ inputs.ros_distro }}\ros2-windows
+          Set-Location -Path ${{ env.ros_underlay_path }}\ros2_${{ inputs.ros_distro }}\ros2-windows
           python preinstall_setup_windows.py
 
       - name: Get package list
