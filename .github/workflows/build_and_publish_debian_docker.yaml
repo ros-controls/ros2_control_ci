@@ -81,7 +81,7 @@ jobs:
           cache-to: type=gha,scope=debian-${{ matrix.ros_distro }},mode=max
           build-args: |
             ROS_DISTRO=${{ matrix.ros_distro }}
-            EXCLUDE_PACKAGES=gz_ros2_control gz_ros2_control_demos ign_ros2_control mujoco_ros2_control ros_gz_sim ros_gz_bridge rviz2 eigenpy hpp-fcl coal ${{ matrix.exclude_packages }}
+            EXCLUDE_PACKAGES=gz_ros2_control gz_ros2_control_demos ign_ros2_control mujoco_ros2_control mujoco_3d_lidar mujoco_vendor ros_gz_sim ros_gz_bridge rviz2 eigenpy hpp-fcl coal ${{ matrix.exclude_packages }}
 
   stack-build:
     if: ${{ github.event_name == 'pull_request' }}
@@ -95,6 +95,6 @@ jobs:
       target_cmake_args: -DROS2_CONTROL_STRICT_TIMING_TESTS=OFF
       ros_distro: ${{ matrix.ROS_DISTRO }}
       target_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
-      skip_packages_regex: '^mujoco_ros2_control.*$|^gz_ros2_control.*$|^ros2_control_demo_example_9$|^ros2_control_demos$|^ign_ros2_control.*$'
+      skip_packages_regex: '^mujoco.*$|^gz_ros2_control.*$|^ros2_control_demo_example_9$|^ros2_control_demos$|^ign_ros2_control.*$'
       ref_for_scheduled_build: master
       docker_image_tag_suffix: ${{ format('-pr-{0}', github.event.pull_request.number) }}
