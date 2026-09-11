@@ -50,7 +50,7 @@ on:
         type: string
       skip_packages_regex:
         description: "Regex for packages to skip from build"
-        default: ""
+        default: '^(iceoryx_.*|zenoh_.*)$'
         required: false
         type: string
       upstream_cmake_args:
