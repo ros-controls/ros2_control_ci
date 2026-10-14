@@ -209,7 +209,7 @@ jobs:
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: needs.config.outputs.push == 'true'
         with:
           name: digests-${{ matrix.ros_distro }}-${{ matrix.ros-repo-packages }}-${{ env.PLATFORM_PAIR }}
