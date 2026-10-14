@@ -266,7 +266,7 @@ jobs:
             tag: rolling-ubuntu-testing
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-${{ matrix.ros_distro }}-${{ matrix.ros-repo-packages }}-*
