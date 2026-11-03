@@ -317,7 +317,7 @@ jobs:
             colcon build --event-handler console_cohesion+ ^
               --cmake-args --no-warn-unused-cli ^
                 -DBUILD_EXAMPLES=OFF -DBUILD_PYTHON_INTERFACE=OFF ^
-                -DBUILD_WITH_COLLISION_SUPPORT=OFF ^
+                -DBUILD_WITH_COLLISION_SUPPORT=OFF -DCMAKE_CXX_FLAGS_INIT=/bigobj ^
                 -DCMAKE_C_COMPILER="%CCACHE_WRAPPER%" -DCMAKE_CXX_COMPILER="%CCACHE_WRAPPER%" ^
               --packages-up-to pinocchio ^
               --merge-install
