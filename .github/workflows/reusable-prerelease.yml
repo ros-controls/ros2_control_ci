@@ -5,6 +5,7 @@ name: Reusable pre-release workflow
 # Can be activated by
 # - workflow dispatch manual action
 # - adding labels: `check-prerelease` or `check-prerelease-downstream`. Once one of the label is added, it will be triggered by subsequent updates of the PR.
+# - setting the input `run_on_pull_request` to true, which runs it on every PR without a label.
 #
 # This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
@@ -36,13 +37,19 @@ on:
         default: ""
         required: false
         type: string
+      run_on_pull_request:
+        description: 'Run on every pull_request event, not only on PRs labeled check-prerelease'
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   default:
     if: |
       (github.event_name == 'workflow_dispatch') ||
       (github.event_name == 'pull_request'
-        && contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease')
+        && (inputs.run_on_pull_request
+          || contains(join(github.event.pull_request.labels.*.name, ','), 'check-prerelease'))
         && !contains(join(github.event.pull_request.labels.*.name, ','), 'conflicts'))
     runs-on: ubuntu-latest
     steps:
