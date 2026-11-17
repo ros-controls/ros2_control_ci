@@ -95,8 +95,8 @@ on:
         required: false
         type: string
       optimization_flags:
-        description: 'Compiler optimization flags for C and C++ (e.g. "-O2 -g" to match the flags of the released binary packages). By default, no CMAKE_BUILD_TYPE is set and the code is built without optimization.'
-        default: ''
+        description: 'Compiler optimization flags for C and C++. The default matches the flags of the released binary packages (no CMAKE_BUILD_TYPE is set). Set to empty string to build without optimization.'
+        default: '-O2 -g'
         required: false
         type: string
       docker_image_tag_suffix:
