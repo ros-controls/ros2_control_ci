@@ -35,6 +35,11 @@ on:
           Space-separated list of packages to exclude from source build (e.g. packages that should be installed via apt). Note: Also its dependencies will be excluded from source build.
         required: false
         type: string
+      optimization_flags:
+        description: 'Compiler optimization flags for C and C++ (e.g. "-O2 -g" to match the flags of the released binary packages). By default, no CMAKE_BUILD_TYPE is set and the code is built without optimization.'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   reusable_ros_tooling_source_build:
@@ -103,6 +108,11 @@ jobs:
           fi
 
       - uses: ros-tooling/action-ros-ci@0.4.8
+        env:
+          # picked up by CMake as initial CMAKE_C_FLAGS/CMAKE_CXX_FLAGS. Not passed via
+          # extra-cmake-args, as action-ros-ci puts it unquoted into a shell command
+          CFLAGS: ${{ inputs.optimization_flags }}
+          CXXFLAGS: ${{ inputs.optimization_flags }}
         with:
           target-ros2-distro: ${{ inputs.ros_distro }}
           ref: ${{ github.event_name == 'schedule' && inputs.ref || '' }}

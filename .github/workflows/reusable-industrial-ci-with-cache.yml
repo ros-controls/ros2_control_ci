@@ -94,6 +94,11 @@ on:
         default: ''
         required: false
         type: string
+      optimization_flags:
+        description: 'Compiler optimization flags for C and C++ (e.g. "-O2 -g" to match the flags of the released binary packages). By default, no CMAKE_BUILD_TYPE is set and the code is built without optimization.'
+        default: ''
+        required: false
+        type: string
       docker_image_tag_suffix:
         description: 'Optional suffix appended to the docker tag, e.g. -pr-123'
         default: ''
@@ -154,7 +159,8 @@ jobs:
           CC: ${{ inputs.c_compiler }}
           CXX: ${{ inputs.cxx_compiler }}
           CMAKE_ARGS: >-
-            -DCMAKE_CXX_FLAGS="-isystem /opt/ros/${{ inputs.ros_distro }}/include"
+            -DCMAKE_C_FLAGS="${{ inputs.optimization_flags }}"
+            -DCMAKE_CXX_FLAGS="${{ inputs.optimization_flags }} -isystem /opt/ros/${{ inputs.ros_distro }}/include"
             ${{ inputs.target_cmake_args }}
           RMW_IMPLEMENTATION: ${{ inputs.rmw_implementation }}
           # print Python tracebacks of all threads if a test process segfaults
