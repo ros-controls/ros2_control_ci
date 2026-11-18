@@ -269,7 +269,8 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-${{ matrix.ros_distro }}-${{ matrix.ros-repo-packages }}-*
+          # anchor on the platform slug: with an empty ros-repo-packages, '<distro>--*' would also match '<distro>--testing-*'
+          pattern: digests-${{ matrix.ros_distro }}-${{ matrix.ros-repo-packages }}-linux-*
           merge-multiple: true
 
       - uses: docker/setup-buildx-action@v4
